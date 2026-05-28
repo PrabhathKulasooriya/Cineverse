@@ -1,0 +1,93 @@
+.searchpage-container{
+   flex-direction: row;
+   text-align: center;
+   min-height: 100vh;
+   padding-top: 100px;
+}
+.title-block span{
+    font-size: 2rem;
+    font-weight: 700;
+    text-decoration: underline;
+}
+.row{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+}
+.movie-list {
+    display: flex;
+    flex-direction: column;
+    gap: 50px;
+    place-items: center;
+    width: 60vw;
+}
+.movie-card{
+    display: flex;
+    flex-direction: row;
+    justify-content:flex-start;
+    align-items: center;
+    min-width: 400px;
+    width: 85%;
+    height: auto;
+    gap: 30px;
+    padding: 0;
+    border: 1px solid white;
+    border-radius: 15px;
+}
+.movie-card-image img{
+    border: 1px solid white;
+    border-radius: 15px 0 0 15px;
+}
+
+.movie-card-image{
+    display: flex;
+    justify-content: flex-start;
+    width: 30%;
+    height: 250px;
+}
+.movie-card-details{
+    width: 60%;
+    text-align: start;
+    transition: transform 0.5s ease;
+}
+
+.movie-card-title{
+    font-size: 1.5em;
+}
+
+.dot {
+  font-size: 1.5em;
+  vertical-align: middle;
+  padding: 0 5px;
+}
+
+.movie-card:hover{
+    text-decoration: none;
+}
+.movie-card:hover .movie-card-details{
+    text-decoration: none;
+    transform: scale(1.1);
+    
+}
+.movie-card:hover .movie-card-title{
+    color: #ffD700;
+    
+}
+
+.movie-card:hover .movie-card-details{
+    
+}
+
+@media (max-width: 768px) {
+
+.searchpage-container{
+    padding-top: 80px ;
+   border: 1px solid red;
+   display: flex;
+   flex-direction: column;
+   justify-content: flex-start;
+   align-items: center;
+}
+ 
+}

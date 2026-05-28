@@ -1,0 +1,51 @@
+.revenue-amount {
+    font-weight: bold;
+    color: #28a745;
+}
+.seat-count {
+    text-align: center;
+    font-weight: 500;
+}
+.low-occupancy {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+.medium-occupancy {
+    background-color: #fff3cd;
+    color: #856404;
+}
+.high-occupancy {
+    background-color: #d4edda;
+    color: #155724;
+}
+.summary-row {
+    background-color: #e9ecef;
+    font-weight: bold;
+}
+.occupancy-row {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+.card-title {
+    color: #495057;
+    font-weight: 600;
+}
+.stats-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+.stats-card h4 {
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+.stats-card .stat-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+.stats-card .stat-item:last-child {
+    margin-bottom: 0;
+}

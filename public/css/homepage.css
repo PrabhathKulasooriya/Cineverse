@@ -1,0 +1,108 @@
+/* Home Section**************************************************************** */
+.section{
+  position: relative;
+}
+.home-section {
+  width:100vw !important;
+  height: 100vh !important; 
+  margin: 0px !important;
+  padding: 0px !important;
+  position: absolute;
+  overflow: hidden;
+  bottom: 0px !important;
+}
+
+
+/* Movies Section************************************************************** */
+.movies-section{
+  padding-top: 100px;
+}
+
+.movie-card-list{
+  padding-left: 2vw;
+}
+.movie-card {
+  position: relative;
+  overflow: hidden;
+}
+.movie-card img {
+  border: 2px solid #ffffff;
+  width: 250px;
+  height: 350px;
+  transition: transform 0.5s ease;
+}
+
+.movie-card img:hover {
+  transform: scale(0.95);
+  filter: blur(1px);
+}
+
+.movie-card-details {
+  position: absolute;
+  bottom: -35%;
+  left: 0;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: white;
+  padding: 15px;
+  transition: bottom 0.5s ease;
+}
+.movie-card-details .movie-card-title{
+  font-weight: bold;
+  color: #ffd700;
+}
+
+.movie-card:hover .movie-card-details {
+  bottom: 0px;
+}
+
+@media (max-width: 768px) {
+
+  .movie-card-list{
+    padding-left: 2vw;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .movie-card img:active{
+    transform: scale(0.95);
+    filter: blur(1px);
+  }
+  .movie-card:active .movie-card-details {
+    bottom: 0px;
+  }
+}
+
+/* Contact section************************************************************************************/
+
+.contact-row{
+  position: relative;
+}
+.contact-box-map{
+  display: none;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+}
+
+.contact-row-location:hover .contact-box-map{
+  display: block;
+  width: 100%;
+  height: 350px;
+}
+
+
+@media (max-width: 768px) {
+  /* Contact section************************************************************************************/
+  .section-contact{
+    height: calc(100vh - 350px);
+  }
+  .contact-row-location:hover .contact-box-map{
+  display: block;
+  width: 100%;
+  height: 250px;
+ }
+}

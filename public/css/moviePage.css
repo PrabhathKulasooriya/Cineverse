@@ -1,0 +1,483 @@
+.moviepage-section {
+  height: 100vh;
+  width: 100vw;
+  overflow-x: hidden;
+  overflow-y: visible;
+  margin: 0;
+  padding-top: 90px;
+  padding-bottom: 20px;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+/* top********************************************************/
+.top {
+  width: 100%;
+  height: 50vh;
+  display: flex;
+  position: relative;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+
+.top .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: inherit;
+  filter: blur(15px);
+  z-index: 1;
+}
+
+/* Create three sections */
+.top .movie-details,
+.top .movie-trailer {
+  flex: 1;
+  width: 40%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+}
+
+.top .image-container {
+  width: 20%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
+}
+
+/* Movie details styling */
+.top .movie-details {
+  flex-direction: column;
+  text-align: center;
+  color: white;
+}
+
+.top .movie-details div {
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-shadow: 2px 2px 2px #000000;
+}
+
+.dot {
+  font-size: 1.5em;
+  vertical-align: middle;
+  padding: 0 5px;
+}
+
+.top .movie-details .movie-title {
+  font-size: 2.2rem;
+  margin-bottom: 10px;
+  text-shadow: 4px 4px 4px #000000;
+}
+/* Image container styling */
+.top .image-container {
+  justify-content: center;
+  align-items: center;
+  max-width: 100%;
+  height: 100%;
+}
+
+.top img {
+  max-width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Movie trailer styling */
+
+.top .movie-trailer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.top .movie-ratings i {
+  color: #ffd700;
+}
+
+.top .movie-ratings {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.top .movie-ratings span {
+  font-size: 1.3rem;
+}
+
+.top .movie-trailer .movie-trailer-link {
+  cursor: pointer;
+  transition: transform 0.5s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.top .movie-trailer .movie-trailer-link span {
+  font-size: 1.3rem;
+}
+
+.top .movie-trailer .movie-trailer-link:hover {
+  transform: scale(1.1);
+  color: #ffd700;
+}
+
+.top .movie-trailer .movie-trailer-link {
+  text-decoration: none;
+  color: white;
+}
+.top .movie-trailer .movie-trailer-link .fa-youtube-play {
+  font-size: 60px;
+}
+
+@media (max-width: 768px) {
+  .top {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+    gap: 20px;
+    padding-top: 90px;
+  }
+
+  .top .movie-details,
+  .top .image-container,
+  .top .movie-trailer {
+    width: 100%;
+    flex: none;
+    height: auto;
+    text-align: center;
+    padding: 10px 0;
+  }
+
+  .top .movie-details .movie-title {
+    font-size: 1.8rem;
+  }
+
+  .top .movie-details div {
+    font-size: 1.2rem;
+  }
+
+  .top img {
+    max-width: 60%;
+    height: auto;
+  }
+
+  .top .movie-trailer .movie-trailer-link .fa-youtube-play,
+  .top .movie-trailer .movie-trailer-link .fa-play {
+    font-size: 40px;
+  }
+
+  .top .movie-trailer .movie-trailer-link span,
+  .top .movie-ratings span {
+    font-size: 1rem;
+  }
+
+  .top .movie-ratings {
+    margin-bottom: 10px;
+  }
+
+  .top .overlay {
+    display: none; /* Optional: remove blur overlay on mobile if it hinders readability */
+  }
+}
+
+/* bottom***************************************************************************************/
+
+.bottom {
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: flex-start;
+  margin-top: 35px;
+}
+.container-noshows span {
+  font-size: 1.5rem;
+  text-shadow: 2px 2px 2px #000000;
+  padding: 0px 20px;
+}
+.container-date-main {
+  width: 50%;
+  display: flex;
+  height: auto;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding-left: 10%;
+}
+.bottom .container-date-main span,
+.bottom .container-shows span {
+  font-size: 1.5rem;
+  text-shadow: 2px 2px 2px #000000;
+  text-decoration: underline;
+  padding: 0px 20px;
+}
+
+.container-date {
+  width: auto;
+  min-width: 120px;
+  height: 120px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  overflow: inherit;
+}
+
+.container-shows {
+  width: 50%;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding: 0px 20px;
+  overflow: visible;
+  height: 100%;
+  
+}
+
+/* Date selector styling */
+.date-selector {
+  max-width: auto;
+  height: 100px;
+  margin: 0px 20px;
+  position: relative;
+}
+
+.date-collapsed {
+  background-color: #000;
+  color: #fff;
+  width: 120px;
+  height: 100px;
+  border: 1px solid #ffffff;
+  border-radius: 5px;
+}
+
+.date-content,
+.date-item {
+  display: flex;
+  flex-direction: column;
+  width: 120px;
+  height: 100px;
+  align-items: center;
+  justify-content: center;
+}
+
+.date-expanded {
+  display: none;
+  background-color: #000;
+  color: #fff;
+  z-index: 99;
+  position: absolute;
+  top: 0px;
+  left: -40px;
+  border: 1px solid #ffffff;
+  border-radius: 5px;
+}
+
+.date-row {
+  display: flex;
+}
+
+.date-item {
+  flex: 1;
+  padding: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.date-item.selected {
+  background-color: #aaa;
+}
+
+.date-item:hover {
+  background-color: #555;
+}
+
+.date-day {
+  font-weight: 500;
+}
+
+.date-number {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.showtimes-form {
+  height: 120px;
+  padding: 0;
+  width: 100%;
+}
+
+.showtimes-list {
+  height: 90px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 15px 20px;
+}
+.showtimes-list a,
+.showtimes-list a:hover {
+  text-decoration: none;
+}
+
+.showtime-item {
+  transition: transform 0.5s ease;
+  margin-right: 25px;
+}
+
+.showtime-item:hover {
+  color: #ffd700;
+  border-color: #ffd700 !important;
+  cursor: pointer;
+  transform: scale(1.1);
+}
+
+.selected {
+  color: black;
+}
+
+/* Responsive design for smaller screens *****************************************************************************/
+
+@media (max-width: 768px) {
+  .date-collapsed {
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .date-collapsed::after {
+    content: '▼';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: #fff;
+  }
+  
+  .date-selector.hovered .date-collapsed::after {
+    content: '▲';
+  }
+  
+  .date-expanded {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    min-width: 100%;
+    z-index: 1000;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .date-row {
+    flex-wrap: wrap;
+    min-width: 240px;
+  }
+  
+  .date-item {
+    min-width: 120px;
+    border-right: 1px solid #333;
+  }
+  
+  .date-item:last-child {
+    border-right: none;
+  }
+  
+  /* Add visual feedback for mobile taps */
+  .date-collapsed:active {
+    background-color: #333;
+  }
+  
+  .date-item:active {
+    background-color: #666;
+  }
+  .showtimes-list{
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-evenly;
+  }
+}
+
+
+@media (min-width: 769px) and (max-width: 1100px) {
+  .date-collapsed {
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .date-collapsed::after {
+    content: '▼';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: #fff;
+  }
+  
+  .date-selector.hovered .date-collapsed::after {
+    content: '▲';
+  }
+  
+  .date-expanded {
+    position: absolute;
+    top: 0px;
+    left: -40px;
+    min-width: 100%;
+    z-index: 1000;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+
+  .date-collapsed:active {
+    background-color: #333;
+  }
+  
+  .date-item:active {
+    background-color: #666;
+  }
+}
+
+
+@media (hover: none) and (pointer: coarse) {
+  .date-collapsed {
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .date-collapsed::after {
+    content: '▼';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: #fff;
+  }
+  
+  .date-selector.hovered .date-collapsed::after {
+    content: '▲';
+  }
+  
+  .date-collapsed:active {
+    background-color: #333;
+  }
+  
+  .date-item:active {
+    background-color: #666;
+  }
+}

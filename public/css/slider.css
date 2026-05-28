@@ -1,0 +1,149 @@
+.home-section {
+    position: relative;
+    height: 100vh !important;
+    width: 100vw !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* Blurred background that covers full screen */
+.slider-container2 {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    filter: blur(25px);
+    z-index: 1;
+}
+
+.slider-container2 img {
+    object-fit: cover;
+    width: 100%;
+    height: 100%;
+}
+
+/* Foreground slider container */
+.slider-container {
+    position: absolute;
+    top: 90px;
+    left: 0;
+    width: 100vw;
+    height: calc(100vh - 90px);
+    overflow: hidden;
+    z-index: 2;
+}
+
+/* The scrolling area */
+.slider {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+    height: 100%;
+    width: 100%;
+}
+
+/* Each slide */
+.slide {
+    flex-shrink: 0;
+    width: 100vw;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.slider-image {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+}
+@media (max-width: 1100px) {
+    .slider-container {
+        top: 25%;
+        height: 50vh;
+    }
+
+    .slider a {
+        width: 100vw;
+        height: 50vh;
+    }
+
+    .slider a .slider-image {
+        max-height: 50vh;
+        object-fit: fill;
+    }
+
+    .slider-container2 {
+      height: 100vh;
+      top: 5%;
+    }
+}
+
+@media (max-width: 768px) {
+    .slider-container {
+        top: 30%;
+        height: 40vh;
+    }
+
+    .slider a {
+        width: 100vw;
+        height: 40vh;
+    }
+
+    .slider a .slider-image {
+        max-height: 40vh;
+        object-fit: fill;
+    }
+
+    .slider-container2 {
+      height: 80vh;
+      top: 15%;
+    }
+}
+
+/* Button Styles */
+.image-slider-btn {
+    all: unset;
+    display: block;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 1rem;
+    cursor: pointer;
+    z-index: 100;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.image-slider-btn:hover {
+    color: #ffd700;
+}
+
+.image-slider-btn:focus,
+.image-slider-btn:active {
+    outline: none;
+    box-shadow: none;
+    border: none;
+}
+
+/* Scroll link */
+.scroll-down {
+    text-decoration: none;
+    color: #fff;
+    z-index: 10;
+}
+
+.scroll-down span::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #fff;
+}
+
+.scroll-down:hover {
+    color: #ffd700;
+}

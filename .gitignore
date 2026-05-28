@@ -1,0 +1,29 @@
+### --- LARAVEL CORE DEFAULT EXCLUSIONS ---
+/node_modules
+/public/hot
+/public/storage
+/storage/*.key
+/vendor
+.env
+.env.backup
+.env.production
+.phpunit.result.cache
+homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+/.idea
+/.vscode
+
+### --- YOUR SPECIFIC PROJECT FILES (CRITICAL SECURITY) ---
+# Ignore all custom text files holding credentials, sketches, or documentation notes
+My Files/*.txt
+My Files/**/*.txt
+
+# Ignore all SQL database dumps and backups
+My Files/DB Backup/
+My Files/DB Backup/**/*
+
+# Ignore MySQL Workbench files and local UI sketches
+My Files/ERD(workbench)/
+My Files/UI Sketch/
