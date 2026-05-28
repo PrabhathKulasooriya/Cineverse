@@ -13,14 +13,7 @@ Route::get('/', 'ClientInterfaceController@index')->name('home');
 
 
 
-Route::get('/signin', function () {
-
-        if (!session()->has('url.intended')) {
-        session(['url.intended' => url()->previous()]);
-        }
-        
-        return view('signin');
-        })->middleware('guest')->name('signin');
+Route::get('/signin','SecurityController@showLoginPage' )->middleware('guest')->name('signin');
 
 
 //Login

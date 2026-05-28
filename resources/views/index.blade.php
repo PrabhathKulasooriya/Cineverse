@@ -15,12 +15,6 @@
             </div>
         </div>
 
-        <!-- Background Video Start-->
-            {{-- <video autoplay muted loop id="myVideo">
-            <source src="{{ URL::asset('assets\images\video-bg.mp4') }}" type="video/mp4">
-            </video>--}}
-        <!-- Background Video End-->
-
         <div id="fullpage" class="fullpage-default">
 
             <div class="section animated-row home-section" data-section="slide01">
@@ -218,29 +212,25 @@ window.addEventListener('load', function () {
         // Clone the link elements (which contain the images)
         linkElements.forEach(link => {
             const clone = link.cloneNode(true);
-            // Find the image inside the cloned link
             const img = clone.querySelector('img');
             if (img) {
                 img.style.width = '100%';
-                img.style.height = 'calc(100vh - 90px)';
+                img.style.height = 'calc(100vh - 80px)';
                 img.style.objectFit = 'fill'; 
             }
-            // Style the link to be a slide
+            
             clone.style.width = `${100 / slideCount}%`;
             clone.style.flexShrink = '0';
             slider.appendChild(clone);
         });
         
-        // Style the slider
         slider.style.width = `${slideCount * 100}%`;
         slider.style.display = 'flex';
         slider.style.transition = 'transform 0.8s ease-in-out';
         
-        // Replace the container content with the new slider
         container.innerHTML = '';
         container.appendChild(slider);
         
-        // Return the slider info object
         return {
             element: slider,
             slideCount: slideCount,
@@ -257,9 +247,7 @@ window.addEventListener('load', function () {
     if (slider2) sliders.push(slider2);
     
     function goToSlide(index) {
-        // Update all sliders to the same index
         sliders.forEach(slider => {
-            // Handle wraparound
             let newIndex = index;
             if (newIndex < 0) {
                 newIndex = slider.slideCount - 1;
@@ -277,19 +265,17 @@ window.addEventListener('load', function () {
     function startAutoSlide() {
         clearInterval(intervalId);
         intervalId = setInterval(() => {
-            // Get the next index from the first slider (assuming it exists)
+
             if (sliders.length > 0) {
                 goToSlide(sliders[0].currentIndex + 1);
             }
         }, 3000);
     }
     
-    // Start auto sliding initially if we have sliders
     if (sliders.length > 0) {
         startAutoSlide();
     }
     
-    // Set up button event listeners
     if (prevBtn) {
         prevBtn.addEventListener('click', () => {
             if (sliders.length > 0) {

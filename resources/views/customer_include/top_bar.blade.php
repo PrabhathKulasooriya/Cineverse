@@ -4,7 +4,7 @@
             <div class="nav-item nav-item-logo">
 
                 <a href="{{ URL::asset('/')}}" id="logo">
-                    <img src="{{ URL::asset('assets/images/logo/logo_3.png')}}" height="80" alt="logo">
+                    <img src="{{ URL::asset('assets/images/logo/logo_3.png')}}" height="70" alt="logo">
                 </a>
     
                 <div class="search-wrapper">

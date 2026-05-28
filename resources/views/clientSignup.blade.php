@@ -37,33 +37,6 @@
                             </div>
 
                             <div class="form-group">
-                                <label>Contact No<span style="color: red">*</span></label>
-                                <input type="number" class="form-control" id="contactNo" autocomplete="off" name="contactNo" placeholder="07X XXX XXXX" maxlength="10">
-                                <small class="text-danger" id="contactNoError"></small>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Date of Birth<span style="color: red">*</span></label>
-                                <input type="date" class="form-control" id="date" autocomplete="off" name="date" placeholder="Date of Birth" min= "1900-01-01" max="<?= date('Y-m-d') ?>" >
-                                <small class="text-danger" id="dateError"></small>
-                            </div>
-
-                            
-
-                            
-                        </div>
-
-                        <!-- Right Column -->
-                        <div class="col-md-6 col-lg-5"> 
-
-                           <div class="form-group">
-                                <label>Last Name<span style="color: red">*</span></label>
-                                <input type="text" class="form-control" id="lName" autocomplete="off" name="lName" placeholder="Last Name">
-                                <small class="text-danger" id="lNameError"></small>
-                            </div>
-                            
-
-                            <div class="form-group">
                                 <label for="password">Password<span style="color: red">*</span></label>
                                 <div class="input-group">
                                     <input type="password" class="form-control" id="password" autocomplete="off" name="password" placeholder="Enter password">
@@ -73,17 +46,33 @@
                                 </div>
                                 <small class="text-danger" id="passwordError"></small>
                             </div>
+                        </div>
 
-
+                        <!-- Right Column -->
+                        <div class="col-md-6 col-lg-5">
                             <div class="form-group">
-                                <label>Gender<span style="color: red">*</span></label>
-                                <select class="form-control" name="gender" id="gender" required>
-                                    <option> Male </option>
-                                    <option> Female </option>
-                                </select>
-                                <small class="text-danger" id="genderError"></small>
+                                <label>Last Name<span style="color: red">*</span></label>
+                                <input type="text" class="form-control" id="lName" autocomplete="off" name="lName" placeholder="Last Name">
+                                <small class="text-danger" id="lNameError"></small>
                             </div>
 
+                            <div class="form-group">
+                                <label>Contact No<span style="color: red">*</span></label>
+                                <input type="number" class="form-control" id="contactNo" autocomplete="off" name="contactNo" placeholder="07X XXX XXXX" maxlength="10">
+                                <small class="text-danger" id="contactNoError"></small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="confirmPassword">Confirm Password<span style="color: red">*</span></label>
+                                <div class="input-group">
+                                    {{-- ✅ Unique id and NO name — so it's never sent to the server --}}
+                                    <input type="password" class="form-control" id="confirmPassword" autocomplete="off" placeholder="Confirm password">
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="toggleConfirmPassword">
+                                        <i class="fa fa-eye" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                                <small class="text-danger" id="confirmPasswordError"></small>
+                            </div>
                         </div>
                     </div>
 
@@ -112,142 +101,108 @@
 
 @include('includes.footer_account')
 
-<script src="{{ URL::asset('assets/js/jquery.notify.min.js')}}"></script>
+<script src="{{ URL::asset('assets/js/jquery.notify.min.js') }}"></script>
 
 <script>
+    // ✅ Toggle for Password
     document.getElementById("togglePassword").addEventListener("click", function () {
-        var passwordInput = document.getElementById("password");
-        if (passwordInput.type === "password") {
-            passwordInput.type = "text";
+        var input = document.getElementById("password");
+        if (input.type === "password") {
+            input.type = "text";
             this.innerHTML = '<i class="fa fa-eye-slash" aria-hidden="true"></i>';
         } else {
-            passwordInput.type = "password";
+            input.type = "password";
             this.innerHTML = '<i class="fa fa-eye" aria-hidden="true"></i>';
         }
     });
 
-    document.getElementById('contactNo').addEventListener('input', function(e) {
-    let value = e.target.value.replace(/[^0-9]/g, ''); 
+    // ✅ Toggle for Confirm Password (separate id)
+    document.getElementById("toggleConfirmPassword").addEventListener("click", function () {
+        var input = document.getElementById("confirmPassword");
+        if (input.type === "password") {
+            input.type = "text";
+            this.innerHTML = '<i class="fa fa-eye-slash" aria-hidden="true"></i>';
+        } else {
+            input.type = "password";
+            this.innerHTML = '<i class="fa fa-eye" aria-hidden="true"></i>';
+        }
+    });
 
-    if (value.length > 10) {
-        value = value.substring(0, 10);
-    }
-
-    e.target.value = value;
-});
+    // Contact No — digits only, max 10
+    document.getElementById('contactNo').addEventListener('input', function (e) {
+        let value = e.target.value.replace(/[^0-9]/g, '');
+        if (value.length > 10) value = value.substring(0, 10);
+        e.target.value = value;
+    });
 </script>
 
 <script type="text/javascript">
-
     $(document).ready(function () {
-
         $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
         });
-
     });
+
     $(document).on("wheel", "input[type=number]", function (e) {
         $(this).blur();
     });
 
-
-
-
-
-    //Sign Up
     $("#saveUser").on("submit", function (event) {
+        event.preventDefault();
 
-            $("#fNameError").html('');
-            $("#lNameError").html('');
-            $("#contactNoError").html('');
-            $("#genderError").html('');
-            $("#dateError").html('');
-            $("#emailError").html('');
-            $("#passwordError").html('');
+        // Clear all errors
+        $("#fNameError").html('');
+        $("#lNameError").html('');
+        $("#contactNoError").html('');
+        $("#emailError").html('');
+        $("#passwordError").html('');
+        $("#confirmPasswordError").html('');
 
+        // ✅ Client-side confirm password check before sending to server
+        var password        = $("#password").val();
+        var confirmPassword = $("#confirmPassword").val();
 
-            event.preventDefault();
-
-            $.ajax({
-                url: '{{route('saveClient')}}',
-                type: 'POST',
-                data: $(this).serialize(),
-                success: function (data) {
-
-                 if (data.errors != null) {
-
-                        if(data.errors.fName) {
-                            var p = document.getElementById('fNameError');
-                            p.innerHTML = data.errors.fName[0];
-                        }
-
-                         if(data.errors.lName) {
-                             var p = document.getElementById('lNameError');
-                             p.innerHTML = data.errors.lName[0];
-                         }
-
-                        if(data.errors.contactNo) {
-                            var p = document.getElementById('contactNoError');
-                            p.innerHTML = data.errors.contactNo[0];
-                        }
-
-                        if(data.errors.gender) {
-                            var p = document.getElementById('genderError');
-                            p.innerHTML = data.errors.gender[0];
-                        }
-
-                        if(data.errors.date) {
-                            var p = document.getElementById('dateError');
-                            p.innerHTML = data.errors.date[0];
-                        }
-
-                        if(data.errors.email) {
-                            var p = document.getElementById('emailError');
-                            p.innerHTML = data.errors.email[0];
-                        }
-
-                         if(data.errors.password) {
-                             var p = document.getElementById('passwordError');
-                             p.innerHTML = data.errors.password[0];
-                         }
-
-
-
-                    }
-
-
-
-                    if (data.success != null) {
-
-
-                        notify({
-                            type: "success", //alert | success | error | warning | info
-                            title: 'Registration Success',
-                            autoHide: true, //true | false
-                            delay: 300, //number ms
-                            position: {
-                                x: "right",
-                                y: "top"
-                            },
-                            message: data.success,
-                        });
-
-                        setTimeout(function () {
-                            window.location.href = "signin"; 
-
-                        }, 200);
-
-
-                    }
-
-
-
-                }
-            });
+        if (confirmPassword === '') {
+            $("#confirmPasswordError").html('Please confirm your password.');
+            return; // stop here
         }
-    );
+
+        if (password !== confirmPassword) {
+            $("#confirmPasswordError").html('Passwords do not match!');
+            return; // stop here
+        }
+
+        $.ajax({
+            url: '{{ route("saveClient") }}',
+            type: 'POST',
+            data: $(this).serialize(), // confirmPassword has no name, so it's never sent
+            success: function (data) {
+
+                if (data.errors) {
+                    if (data.errors.fName)     $("#fNameError").html(data.errors.fName[0]);
+                    if (data.errors.lName)     $("#lNameError").html(data.errors.lName[0]);
+                    if (data.errors.contactNo) $("#contactNoError").html(data.errors.contactNo[0]);
+                    if (data.errors.email)     $("#emailError").html(data.errors.email[0]);
+                    if (data.errors.password)  $("#passwordError").html(data.errors.password[0]);
+                }
+
+                if (data.success) {
+                    notify({
+                        type: "success",
+                        title: 'Registration Success',
+                        autoHide: true,
+                        delay: 300,
+                        position: { x: "right", y: "top" },
+                        message: data.success,
+                    });
+                    setTimeout(function () {
+                        window.location.href = "signin";
+                    }, 200);
+                }
+            }
+        });
+    });
+</script>
 
 </script>
 
