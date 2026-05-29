@@ -31,8 +31,6 @@ class ClientController extends Controller
             'fName' => 'required|max:115',
             'lName' => 'required|max:115',
             'contactNo' => 'required|max:10|min:10|regex:/^07\d{8}$/',
-            'gender' => 'required',
-            'date' => 'required',
             'email' => 'required',
             'password' => 'required|min:6',
 
@@ -47,10 +45,6 @@ class ClientController extends Controller
             'contactNo.max' => 'Contact No must be include 10 numbers.',
             'contactNo.min' => 'Contact No must be include 10 numbers.',
             'contactNo.regex' => 'Enter a valid phone number.',
-
-            'gender.required' => 'Gender should be provided!',
-
-            'date.required' => 'DOB should be provided!',
 
             'email.required' => 'Email should be provided!',
 
@@ -76,8 +70,6 @@ class ClientController extends Controller
         $saveUser->first_name = strtoupper($request['fName']);
         $saveUser->last_name = strtoupper($request['lName']);
         $saveUser->contact_number = $request['contactNo'];
-        $saveUser->gender = $request['gender'];
-        $saveUser->dob = $request['date'];
         $saveUser->email=strtolower($request['email']);
         $saveUser->password = $advanceEncryption->encrypt();
         $saveUser->status = 1;
@@ -92,8 +84,6 @@ class ClientController extends Controller
         $saveClient->first_name = strtoupper($request['fName']);
         $saveClient->last_name = strtoupper($request['lName']);
         $saveClient->contact_number = $request['contactNo'];
-        $saveClient->gender = $request['gender'];
-        $saveClient->dob = $request['date'];
         $saveClient->master_user_idmaster_user =$saveUser->idmaster_user;
 
         $saveClient->save();
@@ -117,8 +107,6 @@ class ClientController extends Controller
             'fName' => 'required|max:115',
             'lName' => 'required|max:115',
             'contactNo' => 'required|max:10|min:10',
-            'gender' => 'required',
-            'dob' => 'required',
             'email' => 'required',
             'password' => 'required|min:6',
 
@@ -134,10 +122,6 @@ class ClientController extends Controller
             'contactNo.required' => 'Contact No should be provided!',
             'contactNo.max' => 'Contact No must be include 10 numbers.',
             'contactNo.min' => 'Contact No must be include 10 numbers.',
-
-            'gender.required' => 'Gender should be provided!',
-
-            'dob.required' => 'DOB should be provided!',
 
             'email.required' => 'Email should be provided!',
 
@@ -163,8 +147,6 @@ class ClientController extends Controller
         $saveUser->first_name = strtoupper($request['fName']);
         $saveUser->last_name = strtoupper($request['lName']);
         $saveUser->contact_number = $request['contactNo'];
-        $saveUser->gender = $request['gender'];
-        $saveUser->dob = $request['dob'];
         $saveUser->email=strtolower($request['email']);
         $saveUser->password = $advanceEncryption->encrypt();
         $saveUser->status = 1;
@@ -179,8 +161,6 @@ class ClientController extends Controller
         $saveClient->first_name = strtoupper($request['fName']);
         $saveClient->last_name = strtoupper($request['lName']);
         $saveClient->contact_number = $request['contactNo'];
-        $saveClient->gender = $request['gender'];
-        $saveClient->dob = $request['dob'];
         $saveClient->master_user_idmaster_user =$saveUser->idmaster_user;
 
         $saveClient->save();
@@ -207,8 +187,6 @@ class ClientController extends Controller
         $lastName = $request['lastName'];
         $contactNo = $request['contactNo'];
         $email = $request['email'];
-        $dob = $request['dob'];
-        $gender = $request['gender']; // Add this line to get gender from request
 
         //Validation
         $validator = \Validator::make($request->all(), [
@@ -216,9 +194,7 @@ class ClientController extends Controller
             'firstName' => 'required|max:115',
             'lastName' => 'required|max:115',
             'contactNo' => 'required|max:10|min:10',
-            'dob' => 'required',
-            'email' => 'required|email', // Add email validation
-            'gender' => 'required', // Add gender validation
+            'email' => 'required|email',
 
         ], [
             'firstName.required' => 'First Name should be provided!',
@@ -231,12 +207,8 @@ class ClientController extends Controller
             'contactNo.max' => 'Contact No must be include 10 numbers.',
             'contactNo.min' => 'Contact No must be include 10 numbers.',
 
-            'dob.required' => 'DOB should be provided!',
-
             'email.required' => 'Email should be provided!',
             'email.email' => 'Please provide a valid email address!',
-            
-            'gender.required' => 'Gender should be provided!',
 
         ]);
 
@@ -253,9 +225,7 @@ class ClientController extends Controller
         $updateUser->first_name=strtoupper($firstName);
         $updateUser->last_name=strtoupper($lastName);
         $updateUser->contact_number=$contactNo;
-        $updateUser->dob=$dob;
         $updateUser->email=strtolower($email);
-        $updateUser->gender=$gender;
         $updateUser->save();
 
         $updateClient = Client::where('master_user_idmaster_user',$hiddenUserId)->first();
@@ -267,8 +237,6 @@ class ClientController extends Controller
         $updateClient->first_name=strtoupper($firstName);
         $updateClient->last_name=strtoupper($lastName);
         $updateClient->contact_number=$contactNo;
-        $updateClient->dob=$dob;
-        $updateClient->gender=$gender;
         $updateClient->save();
 
         return response()->json(['success'=>'Client Updated']);

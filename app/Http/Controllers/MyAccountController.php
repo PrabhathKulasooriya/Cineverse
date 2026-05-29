@@ -37,10 +37,9 @@ class MyAccountController extends Controller
 
             'fName' => 'required|max:115',
             'lName' => 'required|max:115',
-            'dob' => 'required',
             'contactNo' => 'required|min:10|max:10',
-            'email' => 'required|email', // Add email validation
-            'my-input-id' => 'required', // Add gender validation
+            'email' => 'required|email',
+
 
         ], [
             'fName.required' => 'First Name should be provided!',
@@ -53,12 +52,9 @@ class MyAccountController extends Controller
             'contactNo.max' => 'Contact No must be at most 10 numbers.',
             'contactNo.min' => 'Contact No must be at least 10 numbers.',
 
-            'dob.required' => 'DOB should be provided!',
-
             'email.required' => 'Email should be provided!',
             'email.email' => 'Please provide a valid email address!',
 
-            'my-input-id.required' => 'Gender should be provided!',
 
         ]);
         
@@ -75,10 +71,8 @@ class MyAccountController extends Controller
 
         $updateUser->first_name = strtoupper($request['fName']);
         $updateUser->last_name = strtoupper($request['lName']);
-        $updateUser->dob = $request['dob'];
         $updateUser->contact_number = $request['contactNo'];
         $updateUser->email = strtolower($request['email']); 
-        $updateUser->gender = $request['my-input-id'];
         $updateUser->save();
 
         
@@ -88,8 +82,6 @@ class MyAccountController extends Controller
             $updateClient->first_name = strtoupper($request['fName']);
             $updateClient->last_name = strtoupper($request['lName']);
             $updateClient->contact_number = $request['contactNo'];
-            $updateClient->dob = $request['dob'];
-            $updateClient->gender = $request['my-input-id'];
             $updateClient->save();
         }
 

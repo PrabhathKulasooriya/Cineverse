@@ -70,7 +70,6 @@
                                     <th>NAME</th>
                                     <th>EMAIL</th>
                                     <th>CONTACT NUMBER</th>
-                                    <th>GENDER</th>
                                     <th>STATUS</th>
                                     <th>OPTIONS</th>
                                 </tr>
@@ -85,7 +84,6 @@
                                                 <td>{{$userClient->first_name}} {{$userClient->last_name}}</td>
                                                 <td>{{$userClient->email}}</td>
                                                 <td>{{$userClient->contact_number}}</td>
-                                                <td>{{$userClient->gender}}</td>
 
                                                 <!--Status Start-->
                                                 @if($userClient->status == 1)
@@ -125,8 +123,6 @@
                                                                 data-lname="{{ $userClient->last_name }}"
                                                                 data-email="{{ $userClient->email }}"
                                                                 data-contactno="{{ $userClient->contact_number }}"
-                                                                data-gender="{{ $userClient->gender }}"
-                                                                data-dob="{{ $userClient->dob }}"
                                                                 id="viewClientID"
                                                                 data-target="#viewClientModal">
                                                             <i class="fa fa-eye"></i>
@@ -140,8 +136,6 @@
                                                                 data-lname="{{ $userClient->last_name }}"
                                                                 data-email="{{ $userClient->email }}"
                                                                 data-contactno="{{ $userClient->contact_number }}"
-                                                                data-gender="{{ $userClient->gender }}"
-                                                                data-dob="{{ $userClient->dob }}"
                                                                 id="updateClientID"
                                                                 data-target="#updateClientModal">
                                                             <i class="fa fa-edit"></i>
@@ -202,22 +196,6 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Gender<span style="color: red">*</span></label>
-                    <select class="form-control" name="gender" id="gender" required>
-                        <option value="">Select Gender</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                    </select>
-                    <small class="text-danger" id="genderError"></small>
-                </div>
-
-                <div class="form-group">
-                    <label>Date of Birth<span style="color: red">*</span></label>
-                    <input type="date" class="form-control" id="dob" name="dob" placeholder="Date of Birth" min= "1900-01-01" max="<?= date('Y-m-d') ?>" >
-                    <small class="text-danger" id="dobError"></small>
-                </div>
-
-                <div class="form-group">
                     <label>Password<span style="color: red">*</span></label>
                     <input type="password" class="form-control" id="password" name="password" placeholder="Enter Password">
                     <small class="text-danger" id="passwordError"></small>
@@ -273,19 +251,6 @@
                         </div>
                     </div>
 
-                    <div class="form-group row">
-                        <label class="col-sm-4 col-form-label">Gender</label>
-                        <div class="col-sm-8">
-                            <input type="text" class="form-control" id="viewGender" readonly>
-                        </div>
-                    </div>
-
-                    <div class="form-group row">
-                        <label class="col-sm-4 col-form-label">DOB</label>
-                        <div class="col-sm-8">
-                            <input type="text" class="form-control" id="viewDob" readonly>
-                        </div>
-                    </div>
 
                     <div class="form-group row">
                         <div class="col-sm-12">
@@ -339,22 +304,7 @@
                     <span class="text-danger" id="updateContactNoError"></span>
                 </div>
 
-                <div class="form-group">
-                    <label>Gender<span style="color: red">*</span></label>
-                    <select class="form-control" name="updateGender" id="updateGender" required>
-                        <option value="">Select Gender</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                    </select>
-                    <small class="text-danger" id="updateGenderError"></small>
-                </div>
-
-                <div class="form-group">
-                    <label>Date of Birth<span style="color: red">*</span></label>
-                    <input type="date" class="form-control" name="updateDob" id="updateDob" 
-                           required placeholder="DOB" min= "1900-01-01" max="<?= date('Y-m-d') ?>"/>
-                    <span class="text-danger" id="updateDobError"></span>
-                </div>
+                
 
                 <div class="form-group">
                     <button type="button" class="btn btn-primary float-right" onclick="updateClient()">
@@ -454,15 +404,11 @@
         $("#fNameError").html('');
         $("#lNameError").html('');
         $("#contactNoError").html('');
-        $("#genderError").html('');
-        $("#dobError").html('');
         $("#emailError").html('');
         $("#passwordError").html('');
 
         var fName = $("#fName").val();
         var lName = $("#lName").val();
-        var gender = $("#gender").val();
-        var dob = $("#dob").val();
         var contactNo = $("#contactNo").val();
         var email = $("#email").val();
         var password = $("#password").val();
@@ -470,8 +416,6 @@
         $.post('saveClientByAdmin',{
             fName: fName,
             lName: lName,
-            gender: gender,
-            dob: dob,
             contactNo: contactNo,
             email: email,
             password: password
@@ -485,12 +429,6 @@
                 }
                 if(data.errors.contactNo) {
                     document.getElementById('contactNoError').innerHTML = data.errors.contactNo[0];
-                }
-                if(data.errors.gender) {
-                    document.getElementById('genderError').innerHTML = data.errors.gender[0];
-                }
-                if(data.errors.dob) {
-                    document.getElementById('dobError').innerHTML = data.errors.dob[0];
                 }
                 if(data.errors.email) {
                     document.getElementById('emailError').innerHTML = data.errors.email[0];
@@ -532,15 +470,11 @@
         var firstName = $(this).data("fname");
         var lastName = $(this).data("lname");
         var contactNo = $(this).data("contactno");
-        var gender = $(this).data("gender");
-        var dob = $(this).data("dob");
         var email = $(this).data("email");
 
         $("#viewFname").val(firstName);
         $("#viewLname").val(lastName);
         $("#viewContactNo").val(contactNo);
-        $("#viewGender").val(gender);
-        $("#viewDob").val(dob);
         $("#viewEmail").val(email);
     });
 
@@ -550,8 +484,6 @@
         var firstName = $(this).data("fname");
         var lastName = $(this).data("lname");
         var contactNo = $(this).data("contactno");
-        var gender = $(this).data("gender");
-        var dob = $(this).data("dob");
         var email = $(this).data("email");
 
         $("#hiddenUserId").val(userId);
@@ -559,8 +491,7 @@
         $("#updateLname").val(lastName);
         $("#updateEmail").val(email);
         $("#updateContactNo").val(contactNo);
-        $("#updateGender").val(gender);
-        $("#updateDob").val(dob);
+
     });
 
     function updateClient() {
@@ -568,8 +499,6 @@
         $('#updateFnameError').html('');
         $("#updateLnameError").html('');
         $("#updateContactNoError").html('');
-        $("#updateGenderError").html('');
-        $("#updateDobError").html('');
         $("#updateEmailError").html('');
 
         var hiddenUserId = $("#hiddenUserId").val();
@@ -577,8 +506,6 @@
         var lastName = $("#updateLname").val();
         var email = $("#updateEmail").val();
         var contactNo = $("#updateContactNo").val();
-        var gender = $("#updateGender").val();
-        var dob = $("#updateDob").val();
 
         // Basic client-side validation
         if (!hiddenUserId) {
@@ -592,8 +519,6 @@
             lastName: lastName,
             email: email,
             contactNo: contactNo,
-            gender: gender,
-            dob: dob
         }, function (data) {
             if (data.errors != null) {
                 if(data.errors.firstName) {
@@ -607,12 +532,6 @@
                 }
                 if(data.errors.contactNo) {
                     document.getElementById('updateContactNoError').innerHTML = data.errors.contactNo[0];
-                }
-                if(data.errors.gender) {
-                    document.getElementById('updateGenderError').innerHTML = data.errors.gender[0];
-                }
-                if(data.errors.dob) {
-                    document.getElementById('updateDobError').innerHTML = data.errors.dob[0];
                 }
                 if(data.errors.general) {
                     alert(data.errors.general[0]);
@@ -658,8 +577,6 @@
         $("#fNameError").html('');
         $("#lNameError").html('');
         $("#contactNoError").html('');
-        $("#genderError").html('');
-        $("#dobError").html('');
         $("#emailError").html('');
         $("#passwordError").html('');
 
@@ -667,8 +584,6 @@
         $('#updateFnameError').html('');
         $("#updateLnameError").html('');
         $("#updateContactNoError").html('');
-        $("#updateGenderError").html('');
-        $("#updateDobError").html('');
         $("#updateEmailError").html('');
 
         // Clear input values

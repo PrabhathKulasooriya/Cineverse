@@ -20,8 +20,8 @@ class SliderController extends Controller
     }
 
     // Save Slider Image***************************************************************************************************
-    public function store(Request $request)
- {
+    public function store(Request $request){
+
     $validator = Validator::make($request->all(), [
         'movie_id' => 'required|exists:movies,movie_id',
         'image' => 'required|file|mimes:jpeg,png,jpg,gif,svg|max:8192',
@@ -55,8 +55,7 @@ class SliderController extends Controller
     $saveSlider->save();
 
     return redirect()->route('movieSlider')->with('success', 'Poster saved successfully!');
-}
-
+    }
     // Save Slider Image End******************************************************************************************
 
 
