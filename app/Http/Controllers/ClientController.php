@@ -7,6 +7,7 @@ use App\User;
 use App\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Auth\Events\Registered;
 
 class ClientController extends Controller
 
@@ -88,7 +89,7 @@ class ClientController extends Controller
 
         $saveClient->save();
 
-        session()->flash('success', 'Account Created Successfully!');
+        session()->flash('success', 'Account Created Successfully! You have to verify your account when you login for the first time.');
         return response()->json(['success' => 'Client saved successfully.']);
     }
 //Save Client by Sign Up End
@@ -167,7 +168,10 @@ class ClientController extends Controller
 
 
 
-        return response()->json(['success' => 'Client Saved Successfully.']);
+        $saveUser->sendEmailVerificationNotification();
+
+        session()->flash('success', 'Account Created Successfully! You have to verify your account when you login for the first time.');
+        return response()->json(['success' => 'Client saved successfully.']);
 
     }
     //Save Client by Admin End
@@ -242,8 +246,6 @@ class ClientController extends Controller
         return response()->json(['success'=>'Client Updated']);
     }
     //Update Client End
-
-
 
 
 }

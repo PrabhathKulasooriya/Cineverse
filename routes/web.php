@@ -4,7 +4,10 @@ use App\Client;
 
 Auth::routes();
 
-
+// Manually define the email verification routes
+Route::get('email/verify', 'Auth\VerificationController@show')->name('verification.notice');
+Route::get('email/verify/{id}', 'Auth\VerificationController@verify')->name('verification.verify');
+Route::get('email/resend', 'Auth\VerificationController@resend')->name('verification.resend');
 
 
 //Client Interface
@@ -59,129 +62,130 @@ Route::group(['middleware' => 'auth', 'prefix' => ''], function () {
     //Log Out
     Route::get('/logout', 'SecurityController@logoutNow')->name('logout');
 
+    Route::group(['middleware' => ['auth', 'verified']], function () {
 
-    //Status Change
-    Route::post('/activateDeactivate', 'StatusController@activateDeactivate')->name('activateDeactivate');
+        //Status Change
+        Route::post('/activateDeactivate', 'StatusController@activateDeactivate')->name('activateDeactivate');
 
-    //My Account
-    Route::get('/myAccount', 'MyAccountController@index')->name('myAccount');
-    Route::post('/getUserDetails', 'MyAccountController@getUserDetails')->name('getUserDetails');
-    Route::post('/updateUserDetails', 'MyAccountController@updateUserDetails')->name('updateUserDetails');
-    Route::post('/changePassword', 'MyAccountController@changePassword')->name('changePassword');
+        //My Account
+        Route::get('/myAccount', 'MyAccountController@index')->name('myAccount');
+        Route::post('/getUserDetails', 'MyAccountController@getUserDetails')->name('getUserDetails');
+        Route::post('/updateUserDetails', 'MyAccountController@updateUserDetails')->name('updateUserDetails');
+        Route::post('/changePassword', 'MyAccountController@changePassword')->name('changePassword');
 
-    //Ticket and Payments
-    Route::post('/verifyTicket', 'TicketController@verifyTicket')->name('verifyTicket');
-    Route::get('/ticketVerification', 'TicketController@ticketVerification')->name('ticketVerification');
-    Route::post('/cancelPayment', 'PaymentController@cancelPayment')->name('cancelPayment');
+        //Ticket and Payments
+        Route::post('/verifyTicket', 'TicketController@verifyTicket')->name('verifyTicket');
+        Route::get('/ticketVerification', 'TicketController@ticketVerification')->name('ticketVerification');
+        Route::post('/cancelPayment', 'PaymentController@cancelPayment')->name('cancelPayment');
 
-    Route::post('/payPending','ClientDataController@payment')->name('payPending');  
+        Route::post('/payPending','ClientDataController@payment')->name('payPending');  
 
-    //Routes accessible to Admin, Management Employees, and Counter Employees***************************************************************************
-    Route::group(['middleware' => 'role:1,2,3'], function () {
+        //Routes accessible to Admin, Management Employees, and Counter Employees***************************************************************************
+        Route::group(['middleware' => 'role:1,2,3'], function () {
 
-        //Dashboard
-        Route::get('/dashboard', 'DashboardController@dashboardIndex')->name('dashboard');
+            //Dashboard
+            Route::get('/dashboard', 'DashboardController@dashboardIndex')->name('dashboard');
 
-        //Upcoming Shows
-        Route::get('/shows','ShowsController@index')->name('shows');
+            //Upcoming Shows
+            Route::get('/shows','ShowsController@index')->name('shows');
 
-        //Movies
-        Route::get('/movies', 'MoviesController@index')->name('movies');
+            //Movies
+            Route::get('/movies', 'MoviesController@index')->name('movies');
 
-        //Bookings
-        Route::get('/pendingPayments', 'PaymentController@pendingPayments')->name('pendingPayments');
-        Route::get('/findBooking', 'TicketController@findBooking')->name('findBooking');
-        Route::post('/findBooking', 'TicketController@findBookingcheck')->name('findBookingCheck');
+            //Bookings
+            Route::get('/pendingPayments', 'PaymentController@pendingPayments')->name('pendingPayments');
+            Route::get('/findBooking', 'TicketController@findBooking')->name('findBooking');
+            Route::post('/findBooking', 'TicketController@findBookingcheck')->name('findBookingCheck');
 
-        //Client Management In Admin
-        Route::get('/clientManagement', 'ClientController@index')->name('clientManagement');
-        Route::post('/saveClientByAdmin', 'ClientController@saveClientByAdmin')->name('saveClientByAdmin');
-        Route::post('/updateClient', 'ClientController@updateClient')->name('updateClient');
+            //Client Management In Admin
+            Route::get('/clientManagement', 'ClientController@index')->name('clientManagement');
+            Route::post('/saveClientByAdmin', 'ClientController@saveClientByAdmin')->name('saveClientByAdmin');
+            Route::post('/updateClient', 'ClientController@updateClient')->name('updateClient');
+            
+        });
+
+
+
+
+        //Routes accessible to Admin*************************************************************************************************************************
+        Route::group(['middleware' => 'role:1'], function () {
         
-    });
+            //User Management In Admin
+            Route::get('/employeeManagement', 'EmployeeController@index')->name('employeeManagement');
+            Route::post('/saveEmployee', 'EmployeeController@saveUser')->name('saveEmployee');
+            Route::post('/updateEmployee', 'EmployeeController@updateUser')->name('updateEmployee');
 
+            //ShowTimes
+            Route::get('/showtimes', 'ShowtimesController@index')->name('showtimes');
+            Route::post('/saveShowtime', 'ShowtimesController@saveShowtime')->name('saveShowtime');
+            Route::put('/updateShowtime', 'ShowtimesController@updateShowtime')->name('updateShowtime');
+            Route::delete('/destroyShowtime/{id}', 'ShowtimesController@destroyShowtime')->name('destroyShowtime');
 
+            //Ticket Prices
+            Route::get('/ticketSettings', 'TicketController@ticketPrices')->name('ticketPrices');
+            Route::put('/updateTicketPrice', 'TicketController@updateTicketPrice')->name('updateTicketPrice');
 
+            //Screened Movies
+            Route::get('/screenedMovies', 'MoviesController@screenedMovies')->name('screenedMovies');
+            Route::put('/activateScreenMovie', 'MoviesController@activateScreenMovie')->name('activateScreenMovie');
 
-    //Routes accessible to Admin*************************************************************************************************************************
-    Route::group(['middleware' => 'role:1'], function () {
-    
-        //User Management In Admin
-        Route::get('/employeeManagement', 'EmployeeController@index')->name('employeeManagement');
-        Route::post('/saveEmployee', 'EmployeeController@saveUser')->name('saveEmployee');
-        Route::post('/updateEmployee', 'EmployeeController@updateUser')->name('updateEmployee');
+            //Screened Shows
+            Route::get('/screenedShows','ShowsController@screened')->name('screenedShows');
 
-        //ShowTimes
-        Route::get('/showtimes', 'ShowtimesController@index')->name('showtimes');
-        Route::post('/saveShowtime', 'ShowtimesController@saveShowtime')->name('saveShowtime');
-        Route::put('/updateShowtime', 'ShowtimesController@updateShowtime')->name('updateShowtime');
-        Route::delete('/destroyShowtime/{id}', 'ShowtimesController@destroyShowtime')->name('destroyShowtime');
+            //Reports
+            Route::get('/revenueReport', 'ReportController@revenueReport')->name('revenueReport');
+            Route::get('/clientReport', 'ReportController@clientReport')->name('clientReport');
 
-        //Ticket Prices
-        Route::get('/ticketSettings', 'TicketController@ticketPrices')->name('ticketPrices');
-        Route::put('/updateTicketPrice', 'TicketController@updateTicketPrice')->name('updateTicketPrice');
+        });
 
-        //Screened Movies
-        Route::get('/screenedMovies', 'MoviesController@screenedMovies')->name('screenedMovies');
-        Route::put('/activateScreenMovie', 'MoviesController@activateScreenMovie')->name('activateScreenMovie');
+        //Routes accessible to Admin and Management Employees***********************************************************************************
+        Route::group(['middleware' => 'role:1,2,'], function () {
 
-        //Screened Shows
-        Route::get('/screenedShows','ShowsController@screened')->name('screenedShows');
+            //Movies
+            Route::post('/movies', 'MoviesController@store')->name('saveMovie');
+            Route::put('/movies', 'MoviesController@update')->name('updateMovie');
+            Route::delete('/destroyMovie','MoviesController@destroy')->name('destroyMovie');
+            
 
-        //Reports
-        Route::get('/revenueReport', 'ReportController@revenueReport')->name('revenueReport');
-        Route::get('/clientReport', 'ReportController@clientReport')->name('clientReport');
+            //Movie Slider
+            Route::get('/movieSlider', 'SliderController@index')->name('movieSlider');
+            Route::post('/movieSlider', 'SliderController@store')->name('saveSliderImage');
+            Route::put('/movieSlider/{id}', 'SliderController@update')->name('updateSliderImage');
+            Route::delete('/movieSlider/{id}', 'SliderController@destroy')->name('destroySliderImage');
 
-    });
+            //Shows
+            Route::post('/getAvailableShowtimes', 'ShowsController@getAvailableShowtimes')->name('getAvailableShowtimes');
+            Route::post('/shows','ShowsController@store')->name('saveShow');
+            Route::post('/updateShow','ShowsController@update')->name('updateShow');
+            Route::post('/destroyShow','ShowsController@destroy')->name('destroyShow');
+            
 
-    //Routes accessible to Admin and Management Employees***********************************************************************************
-    Route::group(['middleware' => 'role:1,2,'], function () {
-
-        //Movies
-        Route::post('/movies', 'MoviesController@store')->name('saveMovie');
-        Route::put('/movies', 'MoviesController@update')->name('updateMovie');
-        Route::delete('/destroyMovie','MoviesController@destroy')->name('destroyMovie');
         
+        });
 
-        //Movie Slider
-        Route::get('/movieSlider', 'SliderController@index')->name('movieSlider');
-        Route::post('/movieSlider', 'SliderController@store')->name('saveSliderImage');
-        Route::put('/movieSlider/{id}', 'SliderController@update')->name('updateSliderImage');
-        Route::delete('/movieSlider/{id}', 'SliderController@destroy')->name('destroySliderImage');
 
-        //Shows
-        Route::post('/getAvailableShowtimes', 'ShowsController@getAvailableShowtimes')->name('getAvailableShowtimes');
-        Route::post('/shows','ShowsController@store')->name('saveShow');
-        Route::post('/updateShow','ShowsController@update')->name('updateShow');
-        Route::post('/destroyShow','ShowsController@destroy')->name('destroyShow');
+        //Routes accessible to Admin and Ticket Counter Employees***********************************************************************************
+
+        Route::group(['middleware' => 'role:1,3'], function () {
+
+            //Ticket Verification
+            
+
+
+        });
+
         
+        //Routes accessible only user
+        Route::group(['middleware' => 'role:4'], function () {
 
-    
-    });
+        Route::get('/upcomingBookings', 'ClientDataController@upcomingBookings')->name('upcomingBookings');
+        Route::get('/pastBookings', 'ClientDataController@pastBookings')->name('pastBookings');
+        Route::get('/customerPendingPayments', 'ClientDataController@pendingPayments')->name('customerPendingPayments');
 
-
-    //Routes accessible to Admin and Ticket Counter Employees***********************************************************************************
-
-    Route::group(['middleware' => 'role:1,3'], function () {
-
-        //Ticket Verification
-        
+        });
 
 
     });
-
-    
-    //Routes accessible only user
-    Route::group(['middleware' => 'role:4'], function () {
-
-    Route::get('/upcomingBookings', 'ClientDataController@upcomingBookings')->name('upcomingBookings');
-    Route::get('/pastBookings', 'ClientDataController@pastBookings')->name('pastBookings');
-    Route::get('/customerPendingPayments', 'ClientDataController@pendingPayments')->name('customerPendingPayments');
-
-    });
-
-
-    
 
 });
 

@@ -30,9 +30,19 @@ class SecurityController extends Controller
         if ($user==true){
             $userData=User::where('email', $request->get('email'))->where('password',$advanceEncryption->encrypt())->first();
 
-            if ($userData->status==1){
-                $redirectTo = session()->get('url.intended', '/');
+            if ($userData->status == 1) {
+                $userData = $userData->fresh(); 
+
+               
+                if (!$userData->hasVerifiedEmail()) {
+                    Auth::login($userData);
+                    $userData->sendEmailVerificationNotification();
+                    
+                    return redirect()->route('verification.notice');
+                }
+
                 Auth::login($userData);
+                $redirectTo = session()->get('url.intended', '/');
                 return redirect($redirectTo);
             }
 
