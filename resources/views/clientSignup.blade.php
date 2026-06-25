@@ -104,7 +104,7 @@
 <script src="{{ URL::asset('assets/js/jquery.notify.min.js') }}"></script>
 
 <script>
-    // ✅ Toggle for Password
+    // Toggle for Password
     document.getElementById("togglePassword").addEventListener("click", function () {
         var input = document.getElementById("password");
         if (input.type === "password") {
@@ -116,7 +116,7 @@
         }
     });
 
-    // ✅ Toggle for Confirm Password (separate id)
+    // Toggle for Confirm Password (separate id)
     document.getElementById("toggleConfirmPassword").addEventListener("click", function () {
         var input = document.getElementById("confirmPassword");
         if (input.type === "password") {

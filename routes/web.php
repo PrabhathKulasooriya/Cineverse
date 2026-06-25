@@ -12,7 +12,6 @@ Route::get('/', 'ClientInterfaceController@index')->name('home');
 
 
 
-
 Route::get('/signin','SecurityController@showLoginPage' )->middleware('guest')->name('signin');
 
 
