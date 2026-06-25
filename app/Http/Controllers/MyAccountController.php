@@ -8,6 +8,7 @@ use App\User;
 use App\Client;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class MyAccountController extends Controller
 {
@@ -97,48 +98,36 @@ class MyAccountController extends Controller
 
 //Change Password Start
 
-    public function changePassword(Request $request) {
+   public function changePassword(Request $request) 
+{
+    $validator = \Validator::make($request->all(), [
+        'currentPassword' => 'required',
+        'newPassword' => 'required|min:6|same:confirmPassword', // Added validation
+        'confirmPassword' => 'required',
+    ], [
+        'currentPassword.required' => 'Current Password should be provided!',
+        'newPassword.required' => 'New Password should be provided!',
+        'newPassword.same' => 'New Password and Confirm Password must match!',
+        'confirmPassword.required' => 'Confirm Password should be provided!',
+    ]);
 
-
-            $validator = \Validator::make($request->all(), [
-
-                'currentPassword' => 'required',
-                'newPassword' => 'required',
-                'confirmPassword' => 'required',
-
-            ], [
-
-                'currentPassword.required' => 'Current Password should be provided!',
-
-                'newPassword.required' => 'New Password should be provided!',
-
-                'confirmPassword.required' => 'Confirm Password should be provided!',
-
-
-            ]);
-            if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()]);
-            }
-
-
-            $advanceEncryption=(new  \App\MyResources\AdvanceEncryption($request->get('newPassword'),"Nova6566",256));
-
-        $changePassword=User::find(Auth::user()->idmaster_user);
-
-        $currentPassword = (new  \App\MyResources\AdvanceEncryption($request->get('currentPassword'),"Nova6566",256));
-
-
-        if($changePassword->password != $currentPassword->encrypt()){
-            return response()->json(['errors' => ['currentPassword' => ['Current Password is not correct!']]]);
-        }else{
-
-            $changePassword->password= $advanceEncryption->encrypt();
-
-            $changePassword->save();
-
-            return response()->json(['success'=>'Saved']);
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()]);
     }
+
+    $user = Auth::user();
+
+    // 1. Verify the current password using Hash::check
+    if (!Hash::check($request['currentPassword'], $user->password)) {
+        return response()->json(['errors' => ['currentPassword' => ['Current Password is not correct!']]]);
     }
+
+    // 2. Hash and save the new password using Hash::make
+    $user->password = Hash::make($request['newPassword']);
+    $user->save();
+
+    return response()->json(['success' => 'Password updated successfully!']);
+}
 //Change Password End
 
 

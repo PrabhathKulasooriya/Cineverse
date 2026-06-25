@@ -11,6 +11,7 @@
         <!-- App Icons -->
         <link rel="shortcut icon" href="assets/images/favicon.ico">
         <link href="{{ URL::asset('assets/images/favicon.ico')}}">
+        <link rel="icon" href="{{asset('favicon.ico')}}" type="image/x-icon">
 
         <!-- App title -->
         <title>Cineverse Cinema</title>

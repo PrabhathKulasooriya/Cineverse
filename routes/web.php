@@ -4,7 +4,7 @@ use App\Client;
 
 Auth::routes();
 
-// Manually define the email verification routes
+//email verification routes
 Route::get('email/verify', 'Auth\VerificationController@show')->name('verification.notice');
 Route::get('email/verify/{id}', 'Auth\VerificationController@verify')->name('verification.verify');
 Route::get('email/resend', 'Auth\VerificationController@resend')->name('verification.resend');
@@ -14,13 +14,9 @@ Route::get('email/resend', 'Auth\VerificationController@resend')->name('verifica
 Route::get('/', 'ClientInterfaceController@index')->name('home');
 
 
-
-Route::get('/signin','SecurityController@showLoginPage' )->middleware('guest')->name('signin');
-
-
 //Login
+Route::get('/signin','SecurityController@showLoginPage' )->middleware('guest')->name('signin');
 Route::post('/signin', 'SecurityController@login')->name('login');
-
 
 
 //Client Sign Up

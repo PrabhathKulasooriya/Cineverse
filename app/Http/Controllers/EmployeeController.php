@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\User;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Hash;
 class EmployeeController extends Controller
 {
     public function index()
@@ -45,14 +45,13 @@ class EmployeeController extends Controller
             return response()->json(['errors' => $validator->errors()]);
         }
 
-        $advanceEncryption = (new \App\MyResources\AdvanceEncryption($request['password'], "Nova6566", 256));
 
         $saveUser = new User();
         $saveUser->first_name            = strtoupper($request['fName']);
         $saveUser->last_name             = strtoupper($request['lName']);
         $saveUser->contact_number        = $request['contactNo'];
         $saveUser->email                 = strtolower($request['email']);
-        $saveUser->password              = $advanceEncryption->encrypt();
+        $saveUser->password              = Hash::make($request['password']);
         $saveUser->status                = 1;
         $saveUser->user_role_iduser_role = $request['userType'];
         $saveUser->save();

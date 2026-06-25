@@ -1,37 +1,103 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify Your Email - Cineverse</title>
-    <style>
-        body { font-family: sans-serif; background-color: #f4f4f4; padding: 50px; text-align: center; }
-        .card { background: #fff; padding: 30px; border-radius: 8px; max-width: 500px; margin: 0 auto; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        .success-msg { color: #155724; background-color: #d4edda; padding: 10px; border-radius: 4px; margin-bottom: 20px; }
-        button { background: none; border: none; color: #007bff; text-decoration: underline; cursor: pointer; font-size: 16px; padding: 0; }
-    </style>
-</head>
-<body>
+@extends('customer_include.main')
 
-    <div class="card">
-        <h2>Verify Your Email Address</h2>
+@section('pageSpecificStyles')
+<link rel="stylesheet" href="{{ asset('css/verifyPage.css') }}">
+@endsection
 
-        @if (session('resent'))
-            <div class="success-msg">
-                A fresh verification link has been sent to your email address.
+@section('pageSpecificContent')
+<div class="verify-page-main">
+    <div class="verify-container">
+
+        <div class="verify-header">
+            <div class="verify-logo">Cine<span>verse</span></div>
+            <p class="verify-tagline">Your cinema, your world</p>
+        </div>
+
+        <div class="verify-body">
+
+            <div class="verify-filmstrip">
+                <div class="verify-hole active"></div>
+                <div class="verify-hole"></div>
+                <div class="verify-hole active"></div>
+                <div class="verify-hole"></div>
+                <div class="verify-hole active"></div>
+                <div class="verify-hole"></div>
+                <div class="verify-hole active"></div>
             </div>
-        @endif
 
-        <p>Before proceeding, please check your email for a verification link.</p>
-        <p>If you did not receive the email,</p>
-        
-       <a href="{{ route('verification.resend') }}" style="color: #007bff; text-decoration: underline; cursor: pointer; font-size: 16px;">
-            click here to request another link
-        </a>.
-        
-        <br><br>
-        <a href="{{ route('logout') }}" style="color: #dc3545; text-decoration: none;">Log Out</a>
+            <div class="verify-icon-ring">
+                <i class="fa fa-envelope" style="font-size:26px; color:#b22222;"></i>
+            </div>
+
+            <h2 class="verify-title">Verify Your Email Address</h2>
+            <p class="verify-desc">
+                We sent a verification link to your inbox.<br>
+                Click it to activate your account and start booking.
+            </p>
+
+            <hr class="verify-divider">
+
+            @if (session('resent'))
+                <div class="verify-resent-alert">
+                    <i class="fa fa-check-circle"></i>
+                    A fresh verification link has been sent to your email address.
+                </div>
+            @endif
+
+            <p class="verify-resend-label">Didn't receive the email?</p>
+
+            <form method="GET" action="{{ route('verification.resend') }}">
+                @csrf
+                <button class="btn-verify-resend" id="resendBtn" type="submit" disabled>
+                    <i class="fa fa-refresh"></i>
+                    Resend Link
+                </button>
+            </form>
+
+            <div class="verify-countdown" id="countdownText">
+                You can resend in <strong><span id="countdownNum">60</span>s</strong>
+            </div>
+
+            <div class="verify-sent-msg" id="sentMsg">
+                <i class="fa fa-check-circle"></i>
+                Verification email sent!
+            </div>
+
+        </div>
+
+        <div class="verify-footer">
+            <p class="mb-1">Please check your spam folder if you don't see the email</p>
+            <p class="mb-2">Contact us : info@cineverse.com &nbsp;|&nbsp; 0115123456</p>
+
+            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
+                @csrf
+            </form>
+            <a class="verify-logout" href="#"
+               onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                <i class="fa fa-sign-out"></i>
+                Log Out
+            </a>
+        </div>
+
     </div>
+</div>
+@endsection
 
-</body>
-</html>
+@section('pageSpecificScript')
+<script>
+    let seconds = 60;
+    const btn = document.getElementById('resendBtn');
+    const countdownText = document.getElementById('countdownText');
+    const countdownNum = document.getElementById('countdownNum');
+
+    const timer = setInterval(() => {
+        seconds--;
+        countdownNum.textContent = seconds;
+        if (seconds <= 0) {
+            clearInterval(timer);
+            btn.disabled = false;
+            countdownText.textContent = '';
+        }
+    }, 1000);
+</script>
+@endsection

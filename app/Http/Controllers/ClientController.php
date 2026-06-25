@@ -6,8 +6,8 @@ namespace App\Http\Controllers;
 use App\User;
 use App\Client;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Auth\Events\Registered;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class ClientController extends Controller
 
@@ -64,21 +64,17 @@ class ClientController extends Controller
         }
 
 
-        $advanceEncryption = (new  \App\MyResources\AdvanceEncryption($request['password'],"Nova6566", 256));
-
         $saveUser = new User();
 
         $saveUser->first_name = strtoupper($request['fName']);
         $saveUser->last_name = strtoupper($request['lName']);
         $saveUser->contact_number = $request['contactNo'];
         $saveUser->email=strtolower($request['email']);
-        $saveUser->password = $advanceEncryption->encrypt();
+        $saveUser->password = Hash::make($request['password']);
         $saveUser->status = 1;
         $saveUser->user_role_iduser_role = 4;
 
         $saveUser->save();
-
-
 
         $saveClient=new Client();
 
@@ -89,13 +85,12 @@ class ClientController extends Controller
 
         $saveClient->save();
 
-        session()->flash('success', 'Account Created Successfully! You have to verify your account when you login for the first time.');
-        return response()->json(['success' => 'Client saved successfully.']);
+        Auth::login($saveUser);
+        $saveUser->sendEmailVerificationNotification();
+
+        return response()->json(['success' => 'Client saved successfully.', 'redirect' => route('verification.notice')]);
     }
 //Save Client by Sign Up End
-
-
-
 
 
 
@@ -141,15 +136,13 @@ class ClientController extends Controller
         }
 
 
-        $advanceEncryption = (new  \App\MyResources\AdvanceEncryption($request['password'],"Nova6566", 256));
-
         $saveUser = new User();
 
         $saveUser->first_name = strtoupper($request['fName']);
         $saveUser->last_name = strtoupper($request['lName']);
         $saveUser->contact_number = $request['contactNo'];
         $saveUser->email=strtolower($request['email']);
-        $saveUser->password = $advanceEncryption->encrypt();
+        $saveUser->password = Hash::make($request['password']);
         $saveUser->status = 1;
         $saveUser->user_role_iduser_role = 4;
 

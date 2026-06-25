@@ -196,7 +196,7 @@
                         message: data.success,
                     });
                     setTimeout(function () {
-                        window.location.href = "signin";
+                        window.location.href = data.redirect ;
                     }, 200);
                 }
             }
