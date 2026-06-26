@@ -6,7 +6,7 @@
 <script src="{{ \Illuminate\Support\Facades\URL::asset('user_assets/js/jquery.inview.min.js')}}"></script>
 <script src="{{ \Illuminate\Support\Facades\URL::asset('user_assets/js/form.js')}}"></script>
 <script src="{{ \Illuminate\Support\Facades\URL::asset('user_assets/js/custom.js')}}"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 
 
 
