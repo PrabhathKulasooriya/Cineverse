@@ -160,7 +160,7 @@
                     <li class="menu-title">Snacks</li>
 
                     <li>
-                            <a href="manageSnacks" class="waves-effect">
+                            <a href="snacks" class="waves-effect">
                                 <i class="fa fa-cutlery" aria-hidden="true"></i>
                                 <span>Manage Snacks</span>
                             </a>

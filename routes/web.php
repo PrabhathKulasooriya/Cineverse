@@ -153,7 +153,11 @@ Route::group(['middleware' => 'auth', 'prefix' => ''], function () {
             Route::post('/destroyShow','ShowsController@destroy')->name('destroyShow');
             
             //Snacks
-            Route::get('/manageSnacks', 'SnackController@index')->name('manageSnacks');
+            Route::get('/snacks','SnacksController@index')->name('snacks');
+            Route::post('/snacks/save','SnacksController@store')->name('saveSnack');
+            Route::put('/snacks/update','SnacksController@update')->name('updateSnack');
+            Route::delete('/snacks/{snack_id}', 'SnacksController@destroy')->name('destroySnack');
+            Route::post('/snacks/toggle','SnacksController@toggleAvailable')->name('toggleSnackAvailable');
         
         });
 
