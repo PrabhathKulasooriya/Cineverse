@@ -85,7 +85,7 @@ class BookingController extends Controller
         $conflictSeats = array_intersect($selectedSeatsId, $bookedSeatIds);
 
         if(!empty($conflictSeats)){
-            return redirect()->back()->with('error', 'Selected seats are already booked. Please select another seat.');
+            return redirect()->back()->with('error', 'Selected seats are already booked. Please select another seats.');
         }
 
         // Get customer data
@@ -145,6 +145,7 @@ class BookingController extends Controller
                 'movieId' => $request->movieId,
                 'showId' => $request->showId,
                 'booking_id' => $bookingId,
+                'created_at' => now()->toIso8601String(),
             ];
             session(['manual_booking_data' => $bookingData]);
 
@@ -223,7 +224,7 @@ class BookingController extends Controller
     private function cleanupExpiredBookings(){
         try {
 
-            $cutoffTime = now()->subMinutes(20);
+            $cutoffTime = now()->subMinutes(15);
             
             $expiredBookings = Bookings::where('payment_status', 'PENDING')
                 ->where('created_at', '<', $cutoffTime)

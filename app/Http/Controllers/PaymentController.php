@@ -52,7 +52,7 @@ class PaymentController extends Controller
     {
         try {
             $expiredBookings = Bookings::where('payment_status', 'PENDING')
-                ->where('created_at', '<', now()->subMinutes(20))
+                ->where('created_at', '<', now()->subMinutes(15))
                 ->get();
 
             foreach ($expiredBookings as $booking) {

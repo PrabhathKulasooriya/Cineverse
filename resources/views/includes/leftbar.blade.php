@@ -153,6 +153,20 @@
 
                     @endif
 
+                    {{-- Snacks --}}
+                     @if(\Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==1 || 
+                    \Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==2 )
+
+                    <li class="menu-title">Snacks</li>
+
+                    <li>
+                            <a href="manageSnacks" class="waves-effect">
+                                <i class="fa fa-cutlery" aria-hidden="true"></i>
+                                <span>Manage Snacks</span>
+                            </a>
+                        </li>
+
+                    @endif
 
                     {{-- MASTER FILES --}}
 

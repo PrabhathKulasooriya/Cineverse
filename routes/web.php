@@ -33,7 +33,6 @@ Route::post('/confirmSeatSelection', 'BookingController@confirmSeatSelection')->
 Route::get('/paymentPage', 'PaymentController@paymentPage')->name('paymentpage');
 Route::post('/manualPayment', 'PaymentController@manualPayment')->name('manualPayment');
 
-Route::post('/stripePayment', 'PaymentController@stripePayment')->name('stripePayment');
 Route::get('/success', 'PaymentController@success')->name('success');
 Route::get('/cancel', 'PaymentController@cancel')->name('cancel');
 Route::get('/cleanup-expired-bookings', ['PaymentController@cleanupExpiredBookings'])->name('cleanup.expired');
@@ -42,8 +41,6 @@ Route::get('/ticketpage', 'BookingController@ticketPage')->name('ticketpage');
 Route::post('/sendTicketEmail', 'TicketController@sendTicketEmail')->name('sendTicketEmail');
 Route::get('/downloadTicket/{booking_id}', 'TicketController@downloadTicket')->name('downloadTicket');
 Route::get('/printTicket/{booking_id}', 'TicketController@printTicket')->name('printTicket');
-
-Route::post('/stripePayment2', 'BookingController@stripePayment2')->name('stripePayment2');
 
 
 //Search Movies
@@ -155,7 +152,8 @@ Route::group(['middleware' => 'auth', 'prefix' => ''], function () {
             Route::post('/updateShow','ShowsController@update')->name('updateShow');
             Route::post('/destroyShow','ShowsController@destroy')->name('destroyShow');
             
-
+            //Snacks
+            Route::get('/manageSnacks', 'SnackController@index')->name('manageSnacks');
         
         });
 
