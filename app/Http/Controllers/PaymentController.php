@@ -13,7 +13,6 @@ use App\BookedSeats;
 use App\Bookings;
 use App\Payments;
 use App\Snack;
-use App\SnackVariant;  
 use App\BookingSnack;
 use Exception;
 
@@ -99,10 +98,8 @@ class PaymentController extends Controller
 
         $secondsRemaining = (int) \Carbon\Carbon::now()->diffInSeconds($expiresAt, false);
 
-        $snacks = Snack::with(['variants' => function($q) {
-            $q->where('available', 1);
-        }])->where('available', 1)->get();
-
+        $snacks = Snack::orderBy('name')->get()->groupBy('name');
+        
         return view('bookings.paymentPage', compact('bookingData', 'snacks', 'secondsRemaining'));
     }
 

@@ -8,12 +8,12 @@
 
 <div class="payment-main">
 
-    {{-- ── LEFT PANEL: Movie Info + Snacks ── --}}
+   {{-- payment-left --}}
     <div class="payment-left glass-panel">
 
-        {{-- Top Row: Movie Details & Timer --}}
+       
         <div class="movie-header-row">
-            {{-- Movie Details --}}
+            
             <div class="movie-summary">
                 <img src="{{ URL::asset('movieImages/' . ($bookingData['movie_image'] ?? '')) }}"
                      alt="movie" class="movie-summary-img">
@@ -24,7 +24,7 @@
                 </div>
             </div>
 
-            {{-- Countdown --}}
+            
             <div class="countdown-banner" id="countdownBanner">
                 <i class="fa fa-clock-o"></i>
                 <div class="countdown-text">
@@ -36,43 +36,100 @@
 
         <div class="section-divider"></div>
 
-        {{-- Snack Selection --}}
+        
         <div class="snack-section">
-            <h6 class="snack-header">
-                <i class="fa fa-shopping-basket"></i> Add Snacks <small>(optional)</small>
-            </h6>
+    <h6 class="snack-header">
+        <i class="fa fa-shopping-basket"></i> Add Snacks <small>(optional)</small>
+    </h6>
 
-            <div class="snack-grid">
-                @forelse($snacks as $snack)
-                <div class="snack-card">
-                    <img src="{{ URL::asset('snackImages/' . $snack->image) }}"
-                         alt="{{ $snack->name }}" class="snack-image">
-                    
-                    <div class="snack-details-wrapper">
-                        <div class="snack-name">{{ $snack->name }}</div>
-                        <div class="snack-variants">
-                            @foreach($snack->variants as $variant)
-                            <div class="variant-row">
-                                <span class="size-badge">{{ $variant->size }}</span>
-                                <span class="variant-price">Rs.{{ number_format($variant->price, 2) }}</span>
-                                <div class="qty-control">
-                                    <button type="button" class="qty-btn qty-minus" data-id="v{{ $variant->idsnack_variants }}"> − </button>
-                                    <span class="qty-display" id="qty_v{{ $variant->idsnack_variants }}">0</span>
-                                    <button type="button" class="qty-btn qty-plus"
-                                            data-id="v{{ $variant->idsnack_variants }}"
-                                            data-price="{{ $variant->price }}"
-                                            data-name="{{ $snack->name }} ({{ $variant->size }})"> + </button>
-                                </div>
-                            </div>
-                            @endforeach
-                        </div>
+    <div class="snack-grid">
+
+        @forelse($snacks as $snackName => $snackGroup)
+
+            <div class="snack-card">
+
+                <img src="{{ URL::asset('snackImages/' . $snackGroup->first()->image) }}"
+                     alt="{{ $snackName }}"
+                     class="snack-image">
+
+                <div class="snack-details-wrapper">
+
+                    <div class="snack-name">
+                        {{ $snackName }}
                     </div>
+
+                    <div class="snack-variants">
+
+                        @foreach($snackGroup as $snackRow)
+
+                            <div class="variant-row {{ $snackRow->available ? '' : 'disabled-variant' }}">
+
+                                <span class="size-badge">
+                                    {{ $snackRow->size }}
+                                </span>
+
+                                <span class="variant-price">
+                                    Rs. {{ number_format($snackRow->price,2) }}
+                                </span>
+
+                                <div class="qty-control">
+
+                                    @if($snackRow->available)
+
+                                        <button
+                                            type="button"
+                                            class="qty-btn qty-minus"
+                                            data-id="v{{ $snackRow->idsnacks }}">
+                                            −
+                                        </button>
+
+                                        <span
+                                            class="qty-display"
+                                            id="qty_v{{ $snackRow->idsnacks }}">
+                                            0
+                                        </span>
+
+                                        <button
+                                            type="button"
+                                            class="qty-btn qty-plus"
+                                            data-id="v{{ $snackRow->idsnacks }}"
+                                            data-price="{{ $snackRow->price }}"
+                                            data-name="{{ $snackName }} ({{ $snackRow->size }})">
+                                            +
+                                        </button>
+
+                                    @else
+
+                                        <span class="text-danger small">
+                                            Sold Out
+                                        </span>
+
+                                    @endif
+
+                                </div>
+
+                            </div>
+
+                        @endforeach
+
+                    </div>
+
                 </div>
-                @empty
-                <p style="color:#aaa; font-size:13px; text-align:center;">No snacks available.</p>
-                @endforelse
+
             </div>
-        </div>
+
+        @empty
+
+            <div class="text-center w-100">
+                <p style="color:#999;">
+                    No snacks available.
+                </p>
+            </div>
+
+        @endforelse
+
+    </div>
+</div>
 
     </div>{{-- end payment-left --}}
 
