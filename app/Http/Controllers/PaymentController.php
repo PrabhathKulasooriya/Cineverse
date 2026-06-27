@@ -58,7 +58,7 @@ class PaymentController extends Controller
     {
         try {
             $expiredBookings = Bookings::where('payment_status', 'PENDING')
-                ->where('created_at', '<', now()->subMinutes(15))
+                ->where('created_at', '<', now()->subMinutes(env('BOOKING_EXPIRATION_MINUTES', 15)))
                 ->get();
 
             foreach ($expiredBookings as $booking) {
@@ -87,11 +87,11 @@ class PaymentController extends Controller
 
         // Check expiry
         $bookedAt   = \Carbon\Carbon::parse($bookingData['booked_at']);
-        $expiresAt  = $bookedAt->copy()->addMinutes(15);
+        $expiresAt  = $bookedAt->copy()->addMinutes(env('BOOKING_EXPIRATION_MINUTES', 15)); 
 
         if (\Carbon\Carbon::now()->greaterThanOrEqualTo($expiresAt)) {
-            \App\BookedSeats::where('bookings_booking_id', $bookingData['booking_id'])->delete();
-            $expiredBooking = \App\Bookings::find($bookingData['booking_id']);
+            BookedSeats::where('bookings_booking_id', $bookingData['booking_id'])->delete();
+            $expiredBooking = Bookings::find($bookingData['booking_id']);
             if ($expiredBooking) $expiredBooking->delete();
             session()->forget('manual_booking_data');
             return redirect()->route('home')->with('error', 'Your seat hold expired. Please book again.');
@@ -113,7 +113,7 @@ class PaymentController extends Controller
             return response()->json(['expired' => true, 'seconds' => 0]);
         }
         $bookedAt  = \Carbon\Carbon::parse($bookingData['booked_at']);
-        $expiresAt = $bookedAt->copy()->addMinutes(15);
+        $expiresAt = $bookedAt->copy()->addMinutes(env('BOOKING_EXPIRATION_MINUTES', 15));
         $seconds   = (int) \Carbon\Carbon::now()->diffInSeconds($expiresAt, false);
         return response()->json(['expired' => $seconds <= 0, 'seconds' => max(0, $seconds)]);
     }

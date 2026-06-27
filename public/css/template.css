@@ -33,6 +33,7 @@ body {
   -font-smoothing: antialiased;
   -webkit-text-size-adjust: 100%;
 }
+
 body {
   font: 16px/1.6 "Raleway", Arial, Helvetica, sans-serif;
   color: #fff;
@@ -41,11 +42,11 @@ body {
   background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
 }
-img {
-  border: 0;
-  max-width: 100%;
-}
+
+
 html {
   -ms-overflow-style: scrollbar;
 }

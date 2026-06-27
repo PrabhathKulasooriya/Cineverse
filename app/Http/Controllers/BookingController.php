@@ -238,7 +238,7 @@ class BookingController extends Controller
     private function cleanupExpiredBookings(){
         try {
 
-            $cutoffTime = now()->subMinutes(15);
+            $cutoffTime = now()->subMinutes(env('BOOKING_EXPIRATION_MINUTES', 15));
             
             $expiredBookings = Bookings::where('payment_status', 'PENDING')
                 ->where('created_at', '<', $cutoffTime)

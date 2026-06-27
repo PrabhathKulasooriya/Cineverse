@@ -9,66 +9,77 @@
 <div class="payment-main">
 
     {{-- ── LEFT PANEL: Movie Info + Snacks ── --}}
-    <div class="payment-left">
+    <div class="payment-left glass-panel">
 
-        {{-- Movie Details --}}
-        <div class="movie-summary">
-            <img src="{{ URL::asset('movieImages/' . ($bookingData['movie_image'] ?? '')) }}"
-                 alt="movie" class="movie-summary-img">
-            <div class="movie-summary-info">
-                <h5>{{ $bookingData['movie_name'] ?? '' }}</h5>
-                <p><i class="fa fa-calendar"></i> {{ \Carbon\Carbon::parse($bookingData['show_date'] ?? '')->format('d-m-Y') }}</p>
-                <p><i class="fa fa-clock-o"></i> {{ \Carbon\Carbon::parse($bookingData['show_time'] ?? '')->format('h:i A') }}</p>
+        {{-- Top Row: Movie Details & Timer --}}
+        <div class="movie-header-row">
+            {{-- Movie Details --}}
+            <div class="movie-summary">
+                <img src="{{ URL::asset('movieImages/' . ($bookingData['movie_image'] ?? '')) }}"
+                     alt="movie" class="movie-summary-img">
+                <div class="movie-summary-info">
+                    <h5>{{ $bookingData['movie_name'] ?? '' }}</h5>
+                    <p><i class="fa fa-calendar"></i> {{ \Carbon\Carbon::parse($bookingData['show_date'] ?? '')->format('d-m-Y') }}</p>
+                    <p><i class="fa fa-clock-o"></i> {{ \Carbon\Carbon::parse($bookingData['show_time'] ?? '')->format('h:i A') }}</p>
+                </div>
+            </div>
+
+            {{-- Countdown --}}
+            <div class="countdown-banner" id="countdownBanner">
+                <i class="fa fa-clock-o"></i>
+                <div class="countdown-text">
+                    <span>Seat hold expires in: <strong class="countdown-time" id="countdown">15:00</strong></span>
+                    <small class="countdown-subtext">Complete payment before time runs out!</small>
+                </div>
             </div>
         </div>
 
-        {{-- Countdown --}}
-        <div class="countdown-banner" id="countdownBanner">
-            <i class="fa fa-clock-o"></i>
-            Seat hold expires in: <span class="countdown-time" id="countdown">15:00</span>
-            <small>Complete payment before time runs out!</small>
-        </div>
+        <div class="section-divider"></div>
 
         {{-- Snack Selection --}}
         <div class="snack-section">
-            <h6><i class="fa fa-shopping-basket"></i> Add Snacks <small>(optional)</small></h6>
+            <h6 class="snack-header">
+                <i class="fa fa-shopping-basket"></i> Add Snacks <small>(optional)</small>
+            </h6>
 
             <div class="snack-grid">
                 @forelse($snacks as $snack)
                 <div class="snack-card">
                     <img src="{{ URL::asset('snackImages/' . $snack->image) }}"
                          alt="{{ $snack->name }}" class="snack-image">
-                    <div class="snack-name">{{ $snack->name }}</div>
-                    <div class="snack-variants">
-                        @foreach($snack->variants as $variant)
-                        <div class="variant-row">
-                            <span class="size-badge">{{ $variant->size }}</span>
-                            <span class="variant-price">Rs.{{ number_format($variant->price, 2) }}</span>
-                            <div class="qty-control">
-                                <button type="button" class="qty-btn qty-minus"
-                                        data-id="v{{ $variant->idsnack_variants }}">−</button>
-                                <span class="qty-display"
-                                      id="qty_v{{ $variant->idsnack_variants }}">0</span>
-                                <button type="button" class="qty-btn qty-plus"
-                                        data-id="v{{ $variant->idsnack_variants }}"
-                                        data-price="{{ $variant->price }}"
-                                        data-name="{{ $snack->name }} ({{ $variant->size }})">+</button>
+                    
+                    <div class="snack-details-wrapper">
+                        <div class="snack-name">{{ $snack->name }}</div>
+                        <div class="snack-variants">
+                            @foreach($snack->variants as $variant)
+                            <div class="variant-row">
+                                <span class="size-badge">{{ $variant->size }}</span>
+                                <span class="variant-price">Rs.{{ number_format($variant->price, 2) }}</span>
+                                <div class="qty-control">
+                                    <button type="button" class="qty-btn qty-minus" data-id="v{{ $variant->idsnack_variants }}"> − </button>
+                                    <span class="qty-display" id="qty_v{{ $variant->idsnack_variants }}">0</span>
+                                    <button type="button" class="qty-btn qty-plus"
+                                            data-id="v{{ $variant->idsnack_variants }}"
+                                            data-price="{{ $variant->price }}"
+                                            data-name="{{ $snack->name }} ({{ $variant->size }})"> + </button>
+                                </div>
                             </div>
+                            @endforeach
                         </div>
-                        @endforeach
                     </div>
                 </div>
                 @empty
-                <p style="color:#aaa; font-size:13px;">No snacks available.</p>
+                <p style="color:#aaa; font-size:13px; text-align:center;">No snacks available.</p>
                 @endforelse
             </div>
         </div>
 
-    </div>
+    </div>{{-- end payment-left --}}
 
-    {{-- ── RIGHT PANEL: Payment ── --}}
-    <div class="payment-right">
-
+    {{-- ── RIGHT PANEL: Payment Form ── --}}
+    <div class="payment-right ">
+        <div class="payment-right-inner glass-panel">
+        {{-- Payment Methods Header --}}
         <div class="header payement-methods-header">
             @if(Auth::check() && Auth::user()->user_role_iduser_role == 3)
                 <button class="toggle-method-btn active" id="cashTab">Cash</button>
@@ -89,166 +100,157 @@
             </div>
         @endif
 
-        {{-- Hidden snack inputs injected here before form submit --}}
         <div id="snackInputsContainer"></div>
 
         @if(Auth::check() && (Auth::user()->user_role_iduser_role == 3 || Auth::user()->user_role_iduser_role == 1))
-        {{-- Cash Payment --}}
+        {{-- Cash Payment Form --}}
         <div class="payment-container" id="cashSection" style="display: block;">
             <div class="payment-header">
-                <h5>Counter Checkout</h5>
+                <h5>COUNTER CHECKOUT</h5>
             </div>
-            <div class="payment-content">
-                <form id="cashPayForm" method="POST" action="{{ route('manualPayment') }}" class="payment-form">
-                    @csrf
-                    <input type="hidden" name="bookingId" value="{{ $bookingData['booking_id'] }}">
-                    <input type="hidden" name="paymentMethod" value="CASH">
-                    <div id="cashSnackInputs"></div>
+            
+            <form id="cashPayForm" method="POST" action="{{ route('manualPayment') }}" class="payment-form">
+                @csrf
+                <input type="hidden" name="bookingId" value="{{ $bookingData['booking_id'] }}">
+                <input type="hidden" name="paymentMethod" value="CASH">
+                <div id="cashSnackInputs"></div>
 
-                    <div class="form-element">
-                        <span class="child">
-                            <label>Name <span class="required">*</span></label>
-                            <input type="text" id="cashName" name="name" placeholder="enter your name">
-                            <small class="text-danger" id="cashNameError"></small>
-                        </span>
-                    </div>
-                    <div class="form-element">
-                        <span class="child">
-                            <label>Email Address <span class="required">*</span></label>
-                            <input type="email" id="cashEmail" name="email" placeholder="your@email.com"
-                                   oninput="this.value = this.value.toLowerCase();">
-                            <small class="text-danger" id="cashEmailError"></small>
-                        </span>
-                    </div>
+                <div class="form-element">
+                    <span class="child">
+                        <label>Name <span class="required">*</span></label>
+                        <input type="text" id="cashName" name="name" placeholder="enter your name">
+                    </span>
+                    <small class="text-danger error-msg" id="cashNameError"></small>
+                </div>
+                
+                <div class="form-element">
+                    <span class="child">
+                        <label>Email <span class="required">*</span></label>
+                        <input type="email" id="cashEmail" name="email" placeholder="your@email.com" oninput="this.value = this.value.toLowerCase();">
+                    </span>
+                    <small class="text-danger error-msg" id="cashEmailError"></small>
+                </div>
 
-                    {{-- Order Summary --}}
-                    <div class="order-summary">
-                        <div class="summary-row">
-                            <span>Tickets</span>
-                            <span>Rs. {{ $bookingData['amount'] }}</span>
-                        </div>
-                        <div class="summary-row" id="cashSnackSummaryRow" style="display:none;">
-                            <span>Snacks</span>
-                            <span id="cashSnackTotalDisplay">Rs. 0.00</span>
-                        </div>
-                        <div class="summary-row summary-total">
-                            <strong>Total</strong>
-                            <strong id="cashGrandTotal">Rs. {{ $bookingData['amount'] }}</strong>
-                        </div>
+                <div class="order-summary">
+                    <div class="summary-row">
+                        <span>Tickets</span>
+                        <span>Rs. {{ $bookingData['amount'] }}</span>
                     </div>
+                    <div class="summary-row" id="cashSnackSummaryRow" style="display:none;">
+                        <span>Snacks</span>
+                        <span id="cashSnackTotalDisplay">Rs. 0.00</span>
+                    </div>
+                    <div class="summary-row summary-total">
+                        <strong>Total</strong>
+                        <strong id="cashGrandTotal">Rs. {{ $bookingData['amount'] }}</strong>
+                    </div>
+                </div>
 
-                    <div class="btn-container">
-                        <button type="button" class="pay-button btn-pay" id="cashPayButton">
-                            <i class="fa fa-money" aria-hidden="true"></i> Pay
+                <div class="btn-container">
+                    <button type="button" class="pay-button btn-pay" id="cashPayButton">
+                        <i class="fa fa-money" aria-hidden="true"></i> Pay
+                    </button>
+                    <a href="{{ route('cancel') }}" class="cancel-link">
+                        <button type="button" class="pay-button btn-cancel">
+                            <i class="fa fa-trash-o" aria-hidden="true"></i> Cancel Booking
                         </button>
-                        <a href="{{ route('cancel') }}">
-                            <button type="button" class="pay-button btn-cancel">
-                                <i class="fa fa-trash-o" aria-hidden="true"></i> Cancel Booking
-                            </button>
-                        </a>
-                    </div>
-                </form>
-            </div>
+                    </a>
+                </div>
+            </form>
         </div>
         @endif
 
         @if(!Auth::check() || Auth::user()->user_role_iduser_role != 3)
-        {{-- Card Payment --}}
-        <div class="payment-container" id="cardSection"
-             style="display: {{ (Auth::check() && Auth::user()->user_role_iduser_role == 1) ? 'none' : 'block' }};">
+        {{-- Card Payment Form --}}
+        <div class="payment-container" id="cardSection" style="display: {{ (Auth::check() && Auth::user()->user_role_iduser_role == 1) ? 'none' : 'block' }};">
             <div class="payment-header">
-                <h5>Card Payment</h5>
+                <h5>CARD PAYMENT</h5>
                 <span class="card-elements">
-                    <img src="assets/images/logo/visa.png" height="50" alt="visa">
-                    <img src="assets/images/logo/mastercard.png" height="50" alt="mastercard">
-                    <img src="assets/images/logo/amex.png" height="50" alt="amex">
+                    <img src="assets/images/logo/visa.png" height="30" alt="visa">
+                    <img src="assets/images/logo/mastercard.png" height="30" alt="mastercard">
+                    <img src="assets/images/logo/amex.png" height="30" alt="amex">
                 </span>
             </div>
-            <div class="payment-content">
-                <form action="{{ route('manualPayment') }}" method="POST" class="payment-form" id="paymentForm">
-                    @csrf
-                    <input type="hidden" name="paymentMethod" value="CARD">
-                    <input type="hidden" id="bookingId" name="bookingId" value="{{ $bookingData['booking_id'] }}">
-                    <div id="cardSnackInputs"></div>
 
-                    <div class="form-element">
+            <form action="{{ route('manualPayment') }}" method="POST" class="payment-form" id="paymentForm">
+                @csrf
+                <input type="hidden" name="paymentMethod" value="CARD">
+                <input type="hidden" id="bookingId" name="bookingId" value="{{ $bookingData['booking_id'] }}">
+                <div id="cardSnackInputs"></div>
+
+                <div class="form-element">
+                    <span class="child">
+                        <label>Card Number <span class="required">*</span></label>
+                        <input type="text" id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                    </span>
+                    <small class="text-danger error-msg" id="cardNumberError"></small>
+                </div>
+
+                <div class="exp-cvv-row">
+                    <div class="form-element form-element-expire">
                         <span class="child">
-                            <label>Card Number <span class="required">*</span></label>
-                            <input type="text" id="cardNumber" name="cardNumber"
-                                   placeholder="1234 5678 9012 3456" maxlength="19">
-                            <small class="text-danger" id="cardNumberError"></small>
+                            <label>Expire Date <span class="required">*</span></label>
+                            <input type="text" id="expireDate" name="expireDate" placeholder="MM/YY" maxlength="5">
                         </span>
+                        <small class="text-danger error-msg" id="expireDateError"></small>
                     </div>
-
-                    <div class="exp-cvv-row">
-                        <div class="form-element form-element-expire">
-                            <span class="child">
-                                <label>Expire Date <span class="required">*</span></label>
-                                <input type="text" id="expireDate" name="expireDate"
-                                       placeholder="MM/YY" maxlength="5">
-                                <small class="text-danger" id="expireDateError"></small>
-                            </span>
-                        </div>
-                        <div class="form-element form-element-cvv">
-                            <span class="child child-cvv">
-                                <label>CVV <span class="required">*</span></label>
-                                <input type="text" id="cvv" name="cvv" placeholder="123" maxlength="4">
-                                <small class="text-danger" id="cvvError"></small>
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="form-element">
-                        <span class="child">
-                            <label>Name <span class="required">*</span></label>
-                            <input type="text" id="name" name="name" placeholder="enter your name"
-                                @if(Auth::check())
-                                    value="{{ Auth::user()->first_name }} {{ Auth::user()->last_name }}"
-                                @endif>
-                            <small class="text-danger" id="nameError"></small>
+                    <div class="form-element form-element-cvv">
+                        <span class="child child-cvv">
+                            <label>CVV <span class="required">*</span></label>
+                            <input type="text" id="cvv" name="cvv" placeholder="123" maxlength="4">
                         </span>
+                        <small class="text-danger error-msg" id="cvvError"></small>
                     </div>
-                    <div class="form-element">
-                        <span class="child">
-                            <label>Email Address <span class="required">*</span></label>
-                            <input type="email" id="email" name="email" placeholder="your@email.com"
-                                @if(Auth::check()) value="{{ Auth::user()->email }}" @endif
-                                oninput="this.value = this.value.toLowerCase();">
-                            <small class="text-danger" id="emailError"></small>
-                        </span>
-                    </div>
+                </div>
 
-                    {{-- Order Summary --}}
-                    <div class="order-summary">
-                        <div class="summary-row">
-                            <span>Tickets</span>
-                            <span>Rs. {{ $bookingData['amount'] }}</span>
-                        </div>
-                        <div class="summary-row" id="cardSnackSummaryRow" style="display:none;">
-                            <span>Snacks</span>
-                            <span id="cardSnackTotalDisplay">Rs. 0.00</span>
-                        </div>
-                        <div class="summary-row summary-total">
-                            <strong>Total</strong>
-                            <strong id="cardGrandTotal">Rs. {{ $bookingData['amount'] }}</strong>
-                        </div>
-                    </div>
+                <div class="form-element">
+                    <span class="child">
+                        <label>Name <span class="required">*</span></label>
+                        <input type="text" id="name" name="name" placeholder="enter your name"
+                            @if(Auth::check()) value="{{ Auth::user()->first_name }} {{ Auth::user()->last_name }}" @endif>
+                    </span>
+                    <small class="text-danger error-msg" id="nameError"></small>
+                </div>
+                
+                <div class="form-element">
+                    <span class="child">
+                        <label>Email Address <span class="required">*</span></label>
+                        <input type="email" id="email" name="email" placeholder="your@email.com"
+                            @if(Auth::check()) value="{{ Auth::user()->email }}" @endif
+                            oninput="this.value = this.value.toLowerCase();">
+                    </span>
+                    <small class="text-danger error-msg" id="emailError"></small>
+                </div>
 
-                    <div class="btn-container">
-                        <button type="button" class="pay-button btn-pay" id="payButton">
-                            <i class="fa fa-credit-card-alt" aria-hidden="true"></i> Pay Now
+                <div class="order-summary">
+                    <div class="summary-row">
+                        <span>Tickets</span>
+                        <span>Rs. {{ $bookingData['amount'] }}</span>
+                    </div>
+                    <div class="summary-row" id="cardSnackSummaryRow" style="display:none;">
+                        <span>Snacks</span>
+                        <span id="cardSnackTotalDisplay">Rs. 0.00</span>
+                    </div>
+                    <div class="summary-row summary-total">
+                        <strong>Total</strong>
+                        <strong id="cardGrandTotal">Rs. {{ $bookingData['amount'] }}</strong>
+                    </div>
+                </div>
+
+                <div class="btn-container">
+                    <button type="button" class="pay-button btn-pay" id="payButton">
+                        <i class="fa fa-credit-card-alt" aria-hidden="true"></i> Pay Now
+                    </button>
+                    <a href="{{ route('cancel') }}" class="cancel-link">
+                        <button type="button" class="pay-button btn-cancel">
+                            <i class="fa fa-trash-o" aria-hidden="true"></i> Cancel Booking
                         </button>
-                        <a href="{{ route('cancel') }}">
-                            <button type="button" class="pay-button btn-cancel">
-                                <i class="fa fa-trash-o" aria-hidden="true"></i> Cancel Booking
-                            </button>
-                        </a>
-                    </div>
-                </form>
-            </div>
+                    </a>
+                </div>
+            </form>
         </div>
         @endif
-
+        </div>
     </div>{{-- end payment-right --}}
 
 </div>{{-- end payment-main --}}
@@ -256,8 +258,8 @@
 @endsection
 
 @section('pageSpecificScript')
+<!-- Keep your original javascript logic here, it remains unchanged! -->
 <script>
-
 // ── Countdown ────────────────────────────────────────────────────────────────
 let secondsLeft = {{ $secondsRemaining }};
 let timerInterval;
@@ -349,7 +351,6 @@ function updateOrderSummary() {
 
     const grandTotal = ticketAmount + snackTotal;
 
-    // Update card form summary
     const cardSnackRow = document.getElementById('cardSnackSummaryRow');
     if (cardSnackRow) {
         cardSnackRow.style.display = snackTotal > 0 ? 'flex' : 'none';
@@ -357,7 +358,6 @@ function updateOrderSummary() {
         document.getElementById('cardGrandTotal').textContent = 'Rs. ' + grandTotal.toFixed(2);
     }
 
-    // Update cash form summary
     const cashSnackRow = document.getElementById('cashSnackSummaryRow');
     if (cashSnackRow) {
         cashSnackRow.style.display = snackTotal > 0 ? 'flex' : 'none';
@@ -366,17 +366,14 @@ function updateOrderSummary() {
     }
 }
 
-// Inject snack hidden inputs into a form before submit
 function injectSnackInputs(containerId) {
     const container = document.getElementById(containerId);
     container.innerHTML = '';
-
     let snackTotal = 0;
 
     for (const [id, item] of Object.entries(selectedSnacks)) {
         if (item.qty <= 0) continue;
         snackTotal += item.price * item.qty;
-
         const variantId = id.replace('v', '');
         const input = document.createElement('input');
         input.type  = 'hidden';
@@ -385,7 +382,6 @@ function injectSnackInputs(containerId) {
         container.appendChild(input);
     }
 
-    // Add grand total as hidden input
     const totalInput = document.createElement('input');
     totalInput.type  = 'hidden';
     totalInput.name  = 'grandTotal';
@@ -459,7 +455,7 @@ document.getElementById('payButton')?.addEventListener('click', function(e) {
         }
     }
     if (cvv.length < 3 || cvv.length > 4) {
-        document.getElementById('cvvError').innerText = "Enter a valid CVV (3 or 4 digits).";
+        document.getElementById('cvvError').innerText = "Enter a valid CVV.";
         hasError = true;
     }
     if (!name) {
@@ -530,7 +526,6 @@ cashTab?.addEventListener('click', () => {
     document.getElementById('emailError').innerText = "";
 });
 
-// ── Init ─────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', startTimer);
 </script>
 @endsection

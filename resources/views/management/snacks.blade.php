@@ -28,6 +28,24 @@
 
 <div class="page-content-wrapper">
     <div class="container-fluid">
+
+                    @if(session('success'))
+                        <div class="alert alert-success text-center position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
+                            <i class="fa fa-check-circle"></i> {{ session('success') }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    @endif
+
+                    @if(session('error'))
+                        <div class="alert alert-danger text-center position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
+                            <i class="fa fa-exclamation-circle"></i> {{ session('error') }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    @endif
         <div class="col-lg-12">
             <div class="card m-b-20">
                 <div class="card-body">
@@ -44,16 +62,7 @@
                         @endif
                     </div>
 
-                    @if(session('success'))
-                        <div class="alert alert-success text-center">
-                            <i class="fa fa-check-circle"></i> {{ session('success') }}
-                        </div>
-                    @endif
-                    @if(session('error'))
-                        <div class="alert alert-danger text-center">
-                            <i class="fa fa-exclamation-circle"></i> {{ session('error') }}
-                        </div>
-                    @endif
+                    
 
                     <br/>
 
@@ -231,6 +240,16 @@
 <script src="{{ URL::asset('assets/plugins/datatables/dataTables.bootstrap4.min.js')}}"></script>
 <script src="{{ URL::asset('assets/plugins/sweet-alert2/sweetalert2.min.js')}}"></script>
 <script src="{{ URL::asset('assets/js/jquery.notify.min.js')}}"></script>
+
+<script>
+    $(document).ready(function() {
+        setTimeout(function() {
+            $(".alert").fadeOut("slow", function() {
+                $(this).remove();
+            });
+        }, 3000); 
+    });
+</script>
 
 <script>
 $(document).ready(function () {

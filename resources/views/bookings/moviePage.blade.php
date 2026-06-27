@@ -158,6 +158,16 @@
 @section('pageSpecificScript')
 
 <script>
+    $(document).ready(function() {
+        setTimeout(function() {
+            $(".alert").fadeOut("slow", function() {
+                $(this).remove();
+            });
+        }, 3000); 
+    });
+</script>
+
+<script>
 
 document.querySelector('#movie-trailer-link').addEventListener('click', function(event) {
     event.preventDefault(); 

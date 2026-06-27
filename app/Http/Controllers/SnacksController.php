@@ -14,7 +14,7 @@ class SnacksController extends Controller
     public function index()
     {
         $snacks = Snack::with('variants')->get();
-        return view('snacks.snacks', compact('snacks'), ['title' => 'Manage Snacks']);
+        return view('management.snacks', compact('snacks'), ['title' => 'Manage Snacks']);
     }
 
     // Save snack
@@ -106,21 +106,38 @@ class SnacksController extends Controller
         $snack->name = strtoupper($request->name);
         $snack->save();
 
-        // Delete old variants and re-save
-        SnackVariant::where('snacks_idsnacks', $snack->idsnacks)->delete();
+        $submittedSizes = array_map(function($size) {
+            return strtoupper($size['size_label']);
+        }, $request->sizes);
+
+        SnackVariant::where('snacks_idsnacks', $snack->idsnacks)
+            ->whereNotIn('size', $submittedSizes)
+            ->update(['available' => 0]); 
 
         foreach ($request->sizes as $size) {
-            $variant = new SnackVariant();
-            $variant->snacks_idsnacks = $snack->idsnacks;
-            $variant->size            = strtoupper($size['size_label']);
-            $variant->price           = $size['price'];
-            $variant->available       = 1;
-            $variant->save();
+            $sizeLabel = strtoupper($size['size_label']);
+            
+           
+            $variant = SnackVariant::where('snacks_idsnacks', $snack->idsnacks)
+                                   ->where('size', $sizeLabel)
+                                   ->first();
+
+            if ($variant) {
+                $variant->price = $size['price'];
+                $variant->available = 1;
+                $variant->save();
+            } else {
+                $newVariant = new SnackVariant();
+                $newVariant->snacks_idsnacks = $snack->idsnacks;
+                $newVariant->size = $sizeLabel;
+                $newVariant->price = $size['price'];
+                $newVariant->available = 1;
+                $newVariant->save();
+            }
         }
 
         return redirect()->route('snacks')->with('success', 'Snack updated successfully!');
     }
-
     // Delete snack
     public function destroy(Request $request)
     {

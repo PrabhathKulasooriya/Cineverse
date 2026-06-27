@@ -7,23 +7,23 @@
 @section('pageSpecificContent')
     <div class="ticket-page-main">
         
-        @if(session('success'))
-                <div class="alert alert-success text-center ticket-success-container alert-dismissible" id="ticket-success-container">
-                    <i class="fa fa-check-circle" aria-hidden="true"></i> {{ session('success') }}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-            @endif
-        
-        @if(session('error'))
-                 <div class="alert alert-danger alert-dismissible text-center ticket-success-container " role="alert">
-                     <i class="fa fa-exclamation-circle"></i> {{ session('error') }}
-                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                         <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-        @endif
+                    @if(session('success'))
+                        <div class="alert alert-success text-center position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
+                            <i class="fa fa-check-circle"></i> {{ session('success') }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    @endif
+
+                    @if(session('error'))
+                        <div class="alert alert-danger text-center position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
+                            <i class="fa fa-exclamation-circle"></i> {{ session('error') }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    @endif
       
 
         @if(isset($booking))
@@ -167,5 +167,13 @@
 @endsection
 
 @section('pageSpecificScript')
-
+    <script>
+        $(document).ready(function() {
+            setTimeout(function() {
+                $(".alert").fadeOut("slow", function() {
+                    $(this).remove();
+                });
+            }, 3000); 
+        });
+    </script>
 @endsection
