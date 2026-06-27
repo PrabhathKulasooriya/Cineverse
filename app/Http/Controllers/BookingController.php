@@ -10,6 +10,9 @@ use App\Seats;
 use App\SeatType;
 use App\BookedSeats;
 use App\Bookings;
+use App\Snack;
+use App\SnackVariant;
+use App\BookingSnack;
 use Exception;
 use App\Mail\TicketMail;
 use Illuminate\Support\Facades\Mail;
@@ -138,14 +141,20 @@ class BookingController extends Controller
                 $saveSeats->save();
             }
 
-            // Save booking data to session 
+            $movie = Movies::find($request->movieId);
+            $show  = Shows::find($request->showId);
+
             $bookingData = [
-                'amount' => $request->totalAmount,
+                'amount'          => $request->totalAmount,
                 'selectedSeatsId' => $selectedSeatsId,
-                'movieId' => $request->movieId,
-                'showId' => $request->showId,
-                'booking_id' => $bookingId,
-                'created_at' => now()->toIso8601String(),
+                'movieId'         => $request->movieId,
+                'showId'          => $request->showId,
+                'booking_id'      => $bookingId,
+                'booked_at'       => now()->toIso8601String(),
+                'movie_name'      => $movie->name,
+                'movie_image'     => $movie->image,
+                'show_date'       => $show->date,
+                'show_time'       => $show->time,
             ];
             session(['manual_booking_data' => $bookingData]);
 
@@ -176,6 +185,11 @@ class BookingController extends Controller
                 ->orderBy('seat_id', 'asc')
                 ->get();
         $booking['seats'] = $seats;
+
+        $bookingSnacks = BookingSnack::where('booking_id', $booking['booking_id'])
+                        ->with('variant.snack')
+                        ->get();
+        $booking['booking_snacks'] = $bookingSnacks;
 
         $qr = QrCode::create($booking['booking_id']);
         $writer = new PngWriter();

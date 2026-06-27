@@ -42,6 +42,8 @@ Route::post('/sendTicketEmail', 'TicketController@sendTicketEmail')->name('sendT
 Route::get('/downloadTicket/{booking_id}', 'TicketController@downloadTicket')->name('downloadTicket');
 Route::get('/printTicket/{booking_id}', 'TicketController@printTicket')->name('printTicket');
 
+Route::get('/booking/time-remaining', 'PaymentController@timeRemaining')->name('timeRemaining');
+
 
 //Search Movies
 Route::get('/search', 'MoviesController@search')->name('search');

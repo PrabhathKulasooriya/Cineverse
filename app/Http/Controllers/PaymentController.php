@@ -12,6 +12,9 @@ use App\Shows;
 use App\BookedSeats;
 use App\Bookings;
 use App\Payments;
+use App\Snack;
+use App\SnackVariant;  
+use App\BookingSnack;
 use Exception;
 
 class PaymentController extends Controller
@@ -37,8 +40,11 @@ class PaymentController extends Controller
         }
 
         if ($booking->payment_status == 'PAID') {
+
             return redirect()->back()->with('error', 'Booking already paid.');
+
         } else if ($booking->payment_status == 'PENDING') {
+
             BookedSeats::where('bookings_booking_id', $bookingId)->delete();
             $booking->delete();
             session()->forget('manual_booking_data');
@@ -74,7 +80,42 @@ class PaymentController extends Controller
     public function paymentPage()
     {
         $bookingData = session('manual_booking_data');
-        return view('bookings.paymentPage', compact('bookingData'));
+
+        if (!$bookingData) {
+            return redirect()->route('home')->with('error', 'No active booking found.');
+        }
+
+        // Check expiry
+        $bookedAt   = \Carbon\Carbon::parse($bookingData['booked_at']);
+        $expiresAt  = $bookedAt->copy()->addMinutes(15);
+
+        if (\Carbon\Carbon::now()->greaterThanOrEqualTo($expiresAt)) {
+            \App\BookedSeats::where('bookings_booking_id', $bookingData['booking_id'])->delete();
+            $expiredBooking = \App\Bookings::find($bookingData['booking_id']);
+            if ($expiredBooking) $expiredBooking->delete();
+            session()->forget('manual_booking_data');
+            return redirect()->route('home')->with('error', 'Your seat hold expired. Please book again.');
+        }
+
+        $secondsRemaining = (int) \Carbon\Carbon::now()->diffInSeconds($expiresAt, false);
+
+        $snacks = Snack::with(['variants' => function($q) {
+            $q->where('available', 1);
+        }])->where('available', 1)->get();
+
+        return view('bookings.paymentPage', compact('bookingData', 'snacks', 'secondsRemaining'));
+    }
+
+    public function timeRemaining()
+    {
+        $bookingData = session('manual_booking_data');
+        if (!$bookingData) {
+            return response()->json(['expired' => true, 'seconds' => 0]);
+        }
+        $bookedAt  = \Carbon\Carbon::parse($bookingData['booked_at']);
+        $expiresAt = $bookedAt->copy()->addMinutes(15);
+        $seconds   = (int) \Carbon\Carbon::now()->diffInSeconds($expiresAt, false);
+        return response()->json(['expired' => $seconds <= 0, 'seconds' => max(0, $seconds)]);
     }
 
     public function manualPayment(Request $request)
@@ -168,7 +209,28 @@ class PaymentController extends Controller
     
         try {
             $bookingData = session('manual_booking_data');
+            $grandTotal = $request->has('grandTotal') ? (float) $request->input('grandTotal') : (float) $bookingData['amount'];
 
+            // Save snacks to booking_snacks table
+            if ($request->has('snacks')) {
+                foreach ($request->input('snacks') as $variantId => $qty) {
+                    $qty = (int) $qty;
+                    if ($qty <= 0) continue;
+
+                    $variant = SnackVariant::find($variantId);
+                    if (!$variant) continue;
+
+                    $bookingSnack = new BookingSnack();
+                    $bookingSnack->booking_id        = $bookingData['booking_id'];
+                    $bookingSnack->idsnack_variants  = $variantId;
+                    $bookingSnack->quantity          = $qty;
+                    $bookingSnack->price             = $variant->price;
+                    $bookingSnack->save();
+                }
+            }
+            
+            $bookingData['grandTotal'] = $grandTotal;
+            $bookingData['snack_amount'] = ($grandTotal-$bookingData['amount']);
             $bookingData['payment_status'] = 'PAID';
             $bookingData['customer_email'] = $request->email;
             $bookingData['customer_name'] = strtoupper($request->name);
@@ -195,10 +257,10 @@ class PaymentController extends Controller
             $payment = new Payments();
             $payment->bookings_booking_id = $bookingData['booking_id'];
             $payment->email = $request->email;
-            $payment->amount = $bookingData['amount'];
+            $payment->amount = $grandTotal;
             $payment->method = strtoupper($paymentMethod);
             $payment->save();
-            
+
             session(['completed_booking' => $bookingData]);
             session()->forget('manual_booking_data');
             

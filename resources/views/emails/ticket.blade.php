@@ -5,7 +5,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: auto
+            margin: auto;
         }
         .ticket-container {
             background: #fff;
@@ -71,6 +71,67 @@
             font-size: 12px;
             font-weight: bold;
         }
+
+        /* Snack styles */
+        .snack-list {
+            display: table-cell;
+            width: 70%;
+            vertical-align: top;
+            text-align: right;
+        }
+        .snack-item {
+            margin-bottom: 4px;
+            font-size: 13px;
+            color: #333;
+        }
+        .snack-item-name {
+            color: #555;
+        }
+        .snack-item-price {
+            font-weight: bold;
+            color: #B22222;
+        }
+        .snack-divider {
+            border: none;
+            border-top: 1px dashed #ccc;
+            margin: 8px auto;
+            width: 90%;
+        }
+        .amount-breakdown {
+            width: 90%;
+            margin: 0 auto 10px;
+        }
+        .amount-line {
+            display: table;
+            table-layout: fixed;
+            width: 100%;
+            margin-bottom: 4px;
+        }
+        .amount-line-label {
+            display: table-cell;
+            width: 60%;
+            text-align: left;
+            font-size: 13px;
+            color: #555;
+        }
+        .amount-line-value {
+            display: table-cell;
+            width: 40%;
+            text-align: right;
+            font-size: 13px;
+            color: #333;
+        }
+        .grand-total-label {
+            font-weight: bold;
+            font-size: 15px;
+            color: #333;
+        }
+        .grand-total-value {
+            font-weight: bold;
+            font-size: 15px;
+            color: #B22222;
+        }
+
         .qr-code-container {
             text-align: center;
             margin: 10px 0;
@@ -100,11 +161,10 @@
             margin: 5px 0;
             text-align: center;
         }
-        .ticket-amount{
+        .ticket-amount {
             font-size: 20px;
             font-weight: bold;
         }
-        
     </style>
 </head>
 <body>
@@ -117,46 +177,96 @@
         <div class="ticket-body">
             <div class="ticket-row">
                 <span class="ticket-label">Booking ID:</span>
-                <span class="ticket-value">BK{{$booking['booking_id']}}</span>
+                <span class="ticket-value">BK{{ $booking['booking_id'] }}</span>
             </div>
             <div class="ticket-row">
                 <span class="ticket-label">Customer:</span>
-                <span class="ticket-value">{{$booking['customer_name']}}</span>
+                <span class="ticket-value">{{ $booking['customer_name'] }}</span>
             </div>
             <div class="ticket-row">
                 <span class="ticket-label">Movie:</span>
-                <span class="ticket-value">{{$booking['movie_name']}}</span>
+                <span class="ticket-value">{{ $booking['movie_name'] }}</span>
             </div>
             <div class="ticket-row">
                 <span class="ticket-label">Date:</span>
-                <span class="ticket-value">{{Carbon\Carbon::parse($booking['show_date'])->format('d-m-Y')}}</span>
+                <span class="ticket-value">{{ Carbon\Carbon::parse($booking['show_date'])->format('d-m-Y') }}</span>
             </div>
             <div class="ticket-row">
                 <span class="ticket-label">Show Time:</span>
-                <span class="ticket-value">{{Carbon\Carbon::parse($booking['show_time'])->format('h:i A')}}</span>
+                <span class="ticket-value">{{ Carbon\Carbon::parse($booking['show_time'])->format('h:i A') }}</span>
             </div>
             <div class="ticket-row">
                 <span class="ticket-label">Seats:</span>
                 <div class="seats-container">
-                    @foreach ($seats as $seat )
-                        <span class="seat-badge">{{$seat->row}}{{ $seat->number }}</span>
+                    @foreach($seats as $seat)
+                        <span class="seat-badge">{{ $seat->row }}{{ $seat->number }}</span>
                     @endforeach
                 </div>
             </div>
+
+            {{-- Snacks section --}}
+            @if(isset($booking['booking_snacks']) && count($booking['booking_snacks']) > 0)
+            <div class="ticket-row">
+                <span class="ticket-label">Snacks:</span>
+                <div class="snack-list">
+                    @foreach($booking['booking_snacks'] as $item)
+                    <div class="snack-item">
+                        <span class="snack-item-name">
+                            {{ $item->variant->snack->name }}
+                            @if(strtoupper($item->variant->size) !== 'REGULAR')
+                                ({{ $item->variant->size }})
+                            @endif
+                            x{{ $item->quantity }}
+                        </span>
+                        &nbsp;
+                        <span class="snack-item-price">
+                            Rs. {{ number_format($item->price * $item->quantity, 2) }}
+                        </span>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
             <div class="ticket-row">
                 <span class="ticket-label">Status:</span>
                 <span class="ticket-value">{{ $booking['payment_status'] }}</span>
             </div>
+
+            {{-- Amount breakdown if snacks exist --}}
+            @if(isset($booking['booking_snacks']) && count($booking['booking_snacks']) > 0)
+            <hr class="snack-divider">
+            <div class="amount-breakdown">
+                <div class="amount-line">
+                    <span class="amount-line-label">Tickets</span>
+                    <span class="amount-line-value">LKR {{ number_format($booking['amount'], 2) }}</span>
+                </div>
+                <div class="amount-line">
+                    <span class="amount-line-label">Snacks</span>
+                    <span class="amount-line-value">
+                        LKR {{ number_format(($booking['grandTotal'] ?? $booking['amount']) - $booking['amount'], 2) }}
+                    </span>
+                </div>
+                <div class="amount-line">
+                    <span class="amount-line-label grand-total-label">Total Paid</span>
+                    <span class="amount-line-value grand-total-value">
+                        LKR {{ number_format($booking['grandTotal'] ?? $booking['amount'], 2) }}
+                    </span>
+                </div>
+            </div>
+            @else
             <div class="ticket-row">
-                <span class="ticket-label">Total :</span>
+                <span class="ticket-label">Total:</span>
                 <span class="ticket-value ticket-amount">LKR {{ number_format($booking['amount'], 2) }}</span>
             </div>
+            @endif
+
         </div>
 
         @if(isset($qrCode))
-            <div class="qr-code-container" >
-                <img src="data:image/png;base64,{{ $qrCode }}" alt="QR Code" >
-            </div>
+        <div class="qr-code-container">
+            <img src="data:image/png;base64,{{ $qrCode }}" alt="QR Code">
+        </div>
         @endif
 
         <div class="ticket-footer">

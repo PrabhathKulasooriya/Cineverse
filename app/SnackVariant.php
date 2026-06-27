@@ -12,4 +12,5 @@ class SnackVariant extends Model
     {
         return $this->belongsTo(Snack::class, 'snacks_idsnacks', 'idsnacks');
     }
+    
 }

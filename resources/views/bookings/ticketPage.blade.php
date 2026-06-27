@@ -73,15 +73,54 @@
                     </div>
                 </div>
 
+                @if(isset($booking['booking_snacks']) && $booking['booking_snacks']->count() > 0)
+                <div class="ticket-row">
+                    <span class="ticket-label">Snacks</span>
+                    <div class="snack-order-list">
+                        @foreach($booking['booking_snacks'] as $item)
+                        <div class="snack-order-item">
+                            <span class="snack-order-name">
+                                {{ $item->variant->snack->name }}
+                                @if($item->variant->size !== 'REGULAR')
+                                    ({{ $item->variant->size }})
+                                @endif
+                            </span>
+                            <span class="snack-order-qty">x{{ $item->quantity }}</span>
+                            <span class="snack-order-price">Rs. {{ number_format($item->price * $item->quantity, 2) }}</span>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
                 <div class="ticket-row">
                     <span class="ticket-label">Payment Status</span>
                     <span class="ticket-status">{{$booking['payment_status']}}</span>
                 </div>
 
+                @if(isset($booking['booking_snacks']) && $booking['booking_snacks']->count() > 0)
+                <div class="ticket-row ticket-amounts-row">
+                    <div class="amounts-breakdown">
+                        <div class="amount-line">
+                            <span class="ticket-label">Tickets</span>
+                            <span class="ticket-value">LKR {{ number_format($booking['amount'], 2) }}</span>
+                        </div>
+                        <div class="amount-line">
+                            <span class="ticket-label">Snacks</span>
+                            <span class="ticket-value">LKR {{ number_format($booking['grandTotal'] - $booking['amount'], 2) }}</span>
+                        </div>
+                        <div class="amount-line grand-total-line">
+                            <span class="ticket-label">Total Amount</span>
+                            <span class="ticket-value ticket-amount">LKR {{ number_format($booking['grandTotal'], 2) }}</span>
+                        </div>
+                    </div>
+                </div>
+                @else
                 <div class="ticket-row">
                     <span class="ticket-label">Total Amount</span>
                     <span class="ticket-value ticket-amount">LKR {{ number_format($booking['amount'], 2) }}</span>
                 </div>
+                @endif
 
                 <div class="text-center">
 

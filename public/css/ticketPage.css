@@ -10,6 +10,71 @@
         overflow: hidden;
     }
 
+    /* Snack order list on ticket */
+    .snack-order-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        text-align: right;
+    }
+
+    .snack-order-item {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: flex-end;
+        font-size: 13px;
+        color: #e2e8f0;
+    }
+
+    .snack-order-name {
+        color: #cbd5e1;
+    }
+
+    .snack-order-qty {
+        background: #3d3d3d;
+        color: #a78bfa;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .snack-order-price {
+        color: #00d4aa;
+        font-weight: 600;
+        min-width: 80px;
+        text-align: right;
+    }
+
+    /* Amount breakdown */
+    .ticket-amounts-row {
+        display: block !important;
+    }
+
+    .amounts-breakdown {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .amount-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 4px 0;
+    }
+
+    .grand-total-line {
+        border-top: 1px dashed #555;
+        padding-top: 10px;
+        margin-top: 4px;
+    }
+
+    .grand-total-line .ticket-label {
+        color: #00d4aa;
+    }
     .ticket-success-container{
         position: absolute;
         top: 50px;
