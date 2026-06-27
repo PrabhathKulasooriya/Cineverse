@@ -227,10 +227,6 @@
 
 
 
-
-
-
-
 <!-- Add Movie Modal Start-->
 <div class="modal fade" id="addMovieModal" tabindex="-1"
      role="dialog"
@@ -561,8 +557,8 @@
                                  $('#updateMovieError').html('');
 
 
-                                $(this).find('input').val(''); // Clear all inputs inside Add Movie Modal
-                                $(this).find('.text-danger').html(''); // Clear error messages if any
+                                $(this).find('input').val(''); 
+                                $(this).find('.text-danger').html(''); 
 
     });
 

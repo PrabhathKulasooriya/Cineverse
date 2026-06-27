@@ -4,163 +4,133 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Snack;
-use App\SnackVariant;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
 
 class SnacksController extends Controller
 {
-    // Get all snacks
+    // ==========================================
+    // GET ALL SNACKS (Grouped for Display)
+    // ==========================================
     public function index()
     {
-        $snacks = Snack::with('variants')->get();
+        $snacks = Snack::orderBy('name')->get()->groupBy('name');   
         return view('management.snacks', compact('snacks'), ['title' => 'Manage Snacks']);
     }
 
-    // Save snack
+    // ==========================================
+    // SAVE SNACK
+    // ==========================================
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name'    => 'required|string|max:100',
-            'image'   => 'required|file|mimes:jpeg,png,jpg,gif,svg|max:4096',
-            'sizes'   => 'required|array|min:1',
-            'sizes.*.size_label' => 'required|string|max:20',
-            'sizes.*.price'      => 'required|numeric|min:0',
-        ], [
-            'name.required'             => 'Snack name is required.',
-            'image.required'            => 'Image is required.',
-            'image.mimes'               => 'Image must be jpeg, png, jpg, gif or svg.',
-            'image.max'                 => 'Image must not exceed 4MB.',
-            'sizes.required'            => 'At least one size/price is required.',
-            'sizes.*.size_label.required' => 'Size label is required.',
-            'sizes.*.price.required'    => 'Price is required.',
-            'sizes.*.price.numeric'     => 'Price must be a number.',
+        $request->validate([
+            'name'     => 'required|string|max:100',
+            'image'    => 'required|file|mimes:jpeg,png,jpg,gif,svg|max:4096',
+            'sizes'    => 'required|array|min:1',
+            'sizes.*'  => 'required|string|max:20',
+            'prices'   => 'required|array|min:1',
+            'prices.*' => 'required|numeric|min:0',
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput()
-                ->with('error', $validator->errors()->first());
-        }
-
-        // Handle image upload
         $filename = null;
         if ($request->hasFile('image')) {
             $filename = time() . '.' . $request->file('image')->extension();
             $request->image->move(public_path('snackImages'), $filename);
         }
 
-        // Save snack
-        $snack = new Snack();
-        $snack->name      = strtoupper($request->name);
-        $snack->image     = $filename;
-        $snack->available = 1;
-        $snack->save();
+        $name = strtoupper($request->name);
 
-        // Save variants
-        foreach ($request->sizes as $size) {
-            $variant = new SnackVariant();
-            $variant->snacks_idsnacks = $snack->idsnacks;
-            $variant->size            = strtoupper($size['size_label']);
-            $variant->price           = $size['price'];
-            $variant->available       = 1;
-            $variant->save();
+        // Loop through the arrays and create a row for each size
+        for ($i = 0; $i < count($request->sizes); $i++) {
+            $snack = new Snack();
+            $snack->name      = $name;
+            $snack->image     = $filename;
+            $snack->size      = strtoupper($request->sizes[$i]);
+            $snack->price     = $request->prices[$i];
+            $snack->available = 1;
+            $snack->save();
         }
 
         return redirect()->route('snacks')->with('success', 'Snack saved successfully!');
     }
 
-    // Update snack
+    // ==========================================
+    // UPDATE SNACK
+    // ==========================================
     public function update(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'snack_id' => 'required|integer',
+        $request->validate([
+            'old_name' => 'required|string',
             'name'     => 'required|string|max:100',
             'image'    => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:4096',
+            'ids'      => 'nullable|array',
             'sizes'    => 'required|array|min:1',
-            'sizes.*.size_label' => 'required|string|max:20',
-            'sizes.*.price'      => 'required|numeric|min:0',
+            'sizes.*'  => 'required|string|max:20',
+            'prices'   => 'required|array|min:1',
+            'prices.*' => 'required|numeric|min:0',
         ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput()
-                ->with('error', $validator->errors()->first());
-        }
+        $oldName = strtoupper($request->old_name);
+        $newName = strtoupper($request->name);
+        
+        $existingSnacks = Snack::where('name', $oldName)->get();
+        if ($existingSnacks->isEmpty()) return redirect()->back()->with('error', 'Snack not found.');
 
-        $snack = Snack::find($request->snack_id);
-
-        // Handle image
+        
+        $filename = $existingSnacks->first()->image;
         if ($request->hasFile('image')) {
-            $oldImage = public_path('snackImages/' . $snack->image);
-            if (File::exists($oldImage)) {
-                File::delete($oldImage);
-            }
+            $oldImagePath = public_path('snackImages/' . $filename);
+            if (File::exists($oldImagePath)) File::delete($oldImagePath);
+            
             $filename = time() . '.' . $request->file('image')->extension();
             $request->image->move(public_path('snackImages'), $filename);
-            $snack->image = $filename;
         }
 
-        $snack->name = strtoupper($request->name);
-        $snack->save();
+        //Delete removed sizes (Filter removes empty values from new added rows)
+        $submittedIds = array_filter($request->ids ?? []);
+        Snack::where('name', $oldName)->whereNotIn('idsnacks', $submittedIds)->delete();
 
-        $submittedSizes = array_map(function($size) {
-            return strtoupper($size['size_label']);
-        }, $request->sizes);
+        for ($i = 0; $i < count($request->sizes); $i++) {
+            $id = $request->ids[$i] ?? null;
 
-        SnackVariant::where('snacks_idsnacks', $snack->idsnacks)
-            ->whereNotIn('size', $submittedSizes)
-            ->update(['available' => 0]); 
-
-        foreach ($request->sizes as $size) {
-            $sizeLabel = strtoupper($size['size_label']);
-            
-           
-            $variant = SnackVariant::where('snacks_idsnacks', $snack->idsnacks)
-                                   ->where('size', $sizeLabel)
-                                   ->first();
-
-            if ($variant) {
-                $variant->price = $size['price'];
-                $variant->available = 1;
-                $variant->save();
+            if ($id) {
+                $snack = Snack::find($id);
+                if ($snack) {
+                    $snack->name  = $newName;
+                    $snack->size  = strtoupper($request->sizes[$i]);
+                    $snack->price = $request->prices[$i];
+                    $snack->image = $filename;
+                    $snack->save();
+                }
             } else {
-                $newVariant = new SnackVariant();
-                $newVariant->snacks_idsnacks = $snack->idsnacks;
-                $newVariant->size = $sizeLabel;
-                $newVariant->price = $size['price'];
-                $newVariant->available = 1;
-                $newVariant->save();
+                $newSnack = new Snack();
+                $newSnack->name      = $newName;
+                $newSnack->size      = strtoupper($request->sizes[$i]);
+                $newSnack->price     = $request->prices[$i];
+                $newSnack->image     = $filename;
+                $newSnack->available = 1;
+                $newSnack->save();
             }
         }
 
         return redirect()->route('snacks')->with('success', 'Snack updated successfully!');
     }
-    // Delete snack
+
+    // DELETE SNACK GROUP
     public function destroy(Request $request)
     {
-        $snack = Snack::find($request->snack_id);
+        $snacks = Snack::where('name', $request->snack_name)->get();
+        if ($snacks->isEmpty()) return redirect()->route('snacks')->with('error', 'Snack not found.');
 
-        if (!$snack) {
-            return redirect()->route('snacks')->with('error', 'Snack not found.');
-        }
+        $imagePath = public_path('snackImages/' . $snacks->first()->image);
+        if (File::exists($imagePath)) File::delete($imagePath);
 
-        // Delete image file
-        $imagePath = public_path('snackImages/' . $snack->image);
-        if (File::exists($imagePath)) {
-            File::delete($imagePath);
-        }
-
-        // Delete variants then snack
-        SnackVariant::where('snacks_idsnacks', $snack->idsnacks)->delete();
-        $snack->delete();
-
+        Snack::where('name', $request->snack_name)->delete();
         return redirect()->route('snacks')->with('success', 'Snack deleted successfully!');
     }
 
-    // Toggle available status (reuses your existing activateDeactivate pattern)
+
+    // TOGGLE AVAILABLE (Individual Size)
     public function toggleAvailable(Request $request)
     {
         $snack = Snack::find($request->id);

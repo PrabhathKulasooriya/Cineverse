@@ -8,8 +8,8 @@ class Snack extends Model
     protected $table = 'snacks';
     protected $primaryKey = 'idsnacks';
 
-    public function variants()
+    public function bookingSnacks()
     {
-        return $this->hasMany(SnackVariant::class, 'snacks_idsnacks', 'idsnacks');
+        return $this->hasMany(BookingSnack::class, 'snacks_idsnacks', 'idsnacks');
     }
 }

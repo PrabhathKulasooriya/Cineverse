@@ -8,8 +8,8 @@ class BookingSnack extends Model
     protected $table = 'booking_snacks';
     protected $primaryKey = 'idbooking_snacks';
     
-    public function variant()
+    public function snack()
     {
-        return $this->belongsTo(SnackVariant::class, 'idsnack_variants', 'idsnack_variants');
+        return $this->belongsTo(Snack::class, 'snacks_idsnacks', 'idsnacks');
     }
 }
