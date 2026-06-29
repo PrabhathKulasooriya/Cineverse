@@ -22,7 +22,6 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsTo(UserRole::class, 'user_role_iduser_role');
     }
 
-    // 2. Add this override method
     public function sendEmailVerificationNotification()
     {
         $url = URL::temporarySignedRoute(

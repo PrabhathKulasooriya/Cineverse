@@ -36,12 +36,7 @@
             </div>
         @endif
 
-        @if(session('error'))
-            <div class="alert alert-danger text-center position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
-                <i class="fa fa-exclamation-circle"></i> {{ session('error') }}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            </div>
-        @endif
+        c
 
         <div class="col-lg-12">
             <div class="card m-b-20">

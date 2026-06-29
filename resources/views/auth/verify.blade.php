@@ -69,14 +69,12 @@
             <p class="mb-1">Please check your spam folder if you don't see the email</p>
             <p class="mb-2">Contact us : info@cineverse.com &nbsp;|&nbsp; 0115123456</p>
 
-            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
+            <form action="{{ route('logout') }}" method="POST">
                 @csrf
+                <button type="submit" class="verify-logout">
+                    <i class="fa fa-sign-out"></i> Log Out
+                </button>
             </form>
-            <a class="verify-logout" href="#"
-               onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                <i class="fa fa-sign-out"></i>
-                Log Out
-            </a>
         </div>
 
     </div>
@@ -84,6 +82,7 @@
 @endsection
 
 @section('pageSpecificScript')
+
 <script>
     let seconds = 60;
     const btn = document.getElementById('resendBtn');
