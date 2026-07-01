@@ -23,21 +23,21 @@
                     </div>
                 @endif           
 
-                @if(\Session::has('error'))
+                @if(session('error'))
                     <div class="alert alert-danger alert-dismissible ">
                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
-                        <p>{{ \Session::get('error') }}</p>
+                        <p>{{ session('error') }}</p>
                     </div>
                 @endif
 
-                @if(\Session::has('warning'))
+                @if(session('warning'))
                     <div class="alert alert-warning alert-dismissible ">
                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
-                        <p>{{ \Session::get('warning') }}</p>
+                        <p>{{ session('warning') }}</p>
                     </div>
                 @endif
 
@@ -55,13 +55,13 @@
                    
 
 
-                <form class="form-horizontal m-t-30" action="{{ route('login') }}" method="POST">
+                <form class="form-horizontal m-t-30" action="{{ route('login') }}" method="POST" id="createUser">
 
                     <div class="form-group">
                         <label for="email">Email</label>
                         <input type="email" class="form-control" id="email" name="email"
                                placeholder="Enter email" oninput="this.value = this.value.toLowerCase();">
-                        <small class="text-danger">{{ $errors->first('email') }}</small>
+                        <small class="text-danger" id="emailError">{{ $errors->first('email') }}</small>
                     </div>
 
                     <div class="form-group">
@@ -72,7 +72,7 @@
                             <i class="fa fa-eye" aria-hidden="true"></i>
                         </button>
                         </div>
-                        <small class="text-danger">{{ $errors->first('password') }}</small>
+                        <small class="text-danger" id="passwordError">{{ $errors->first('password') }}</small>
                     </div>
                     <input type="hidden" name="_token" value="{{ Session::token() }}">
 
@@ -106,6 +106,16 @@
 </div>
 
 <script>
+    $(document).ready(function () {
+        $.ajaxSetup({
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
+        });
+    });
+
+    $(document).on("wheel", "input[type=number]", function (e) {
+        $(this).blur();
+    });
+
     document.getElementById("togglePassword").addEventListener("click", function () {
         var passwordInput = document.getElementById("password");
         if (passwordInput.type === "password") {
@@ -116,6 +126,58 @@
             this.innerHTML = '<i class="fa fa-eye" aria-hidden="true"></i>';
         }
     });
+
+    //form submission
+    $('#createUser').on('submit', function (e) {
+        e.preventDefault();
+
+        $('#emailError').html('');
+        $('#passwordError').html('');
+
+        var email = $('#email').val();
+        var password = $('#password').val();
+
+        if(!email){
+            $('#emailError').html('Email is required.');
+            return;
+        }
+
+        var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(email)) {
+            $('#emailError').html('Please enter a valid email address.');
+            return;
+        }
+
+        if(!password){
+            $('#passwordError').html('Password is required.');
+            return;
+        }
+        
+        alert('Form submitted successfully!'); 
+        // $.ajax({
+        //     url:'{{ route("login") }}',
+        //     type:'POST',
+        //     data: $(this).serialize(),
+        //     success: function(data){
+        //         if(data.errors){
+        //             if(data.errors.email) $('#emailError').html(data.errors.email[0]);
+        //             if(data.errors.password) $('#passwordError').html(data.errors.password[0]);
+        //         }
+
+        //         if(data.success){
+        //             notify({
+        //                 type: "success",
+        //                 title: 'Login Success',
+        //                 autoHide: true,
+        //                 delay: 300,
+        //                 position: { x: "right", y: "top" },
+        //                 message: data.success,
+        //             })
+        //         }
+        //     }
+        // })
+    
+    })
 </script>
 
 

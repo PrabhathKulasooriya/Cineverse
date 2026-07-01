@@ -158,7 +158,6 @@
         $("#passwordError").html('');
         $("#confirmPasswordError").html('');
 
-        // ✅ Client-side confirm password check before sending to server
         var password        = $("#password").val();
         var confirmPassword = $("#confirmPassword").val();
 
@@ -175,7 +174,7 @@
         $.ajax({
             url: '{{ route("saveClient") }}',
             type: 'POST',
-            data: $(this).serialize(), // confirmPassword has no name, so it's never sent
+            data: $(this).serialize(),
             success: function (data) {
 
                 if (data.errors) {
