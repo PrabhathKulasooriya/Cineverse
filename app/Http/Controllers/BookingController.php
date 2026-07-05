@@ -30,13 +30,18 @@ class BookingController extends Controller
     //Movie and Seat Selection ****************************************************************************************************
     public function index($movie_id)
     {
-        $shows = Shows::where('movies_movie_id', $movie_id)
-                ->whereRaw("STR_TO_DATE(CONCAT(date, ' ', time), '%Y-%m-%d %H:%i:%s') >= ?", [now()->subHours(1)])
-                ->get();
-
         $movie = Movies::find($movie_id);
 
         if(!$movie){
+            return redirect()->route('home');
+        }
+
+        $bookingCutOff = now()->addMinutes(env('BOOKING_CUTOFF_MINUTES', 30));
+        $shows = Shows::where('movies_movie_id', $movie_id)
+                ->whereRaw("STR_TO_DATE(CONCAT(date, ' ', time), '%Y-%m-%d %H:%i:%s') >= ?", [$bookingCutOff])
+                ->get();
+
+        if($shows->isEmpty()){
             return redirect()->route('home');
         }
         
@@ -117,7 +122,7 @@ class BookingController extends Controller
                 $timeComponent
             );
 
-            // Save booking with PAID status
+           
             $saveBooking = new Bookings();
             $saveBooking->booking_id = $bookingId;
             $saveBooking->shows_show_id = $showId;

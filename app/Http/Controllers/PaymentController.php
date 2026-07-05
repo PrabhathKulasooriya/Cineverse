@@ -221,7 +221,7 @@ class PaymentController extends Controller
                     $bookingSnack->booking_id        = $bookingData['booking_id'];
                     $bookingSnack->idsnack_variants  = $variantId;
                     $bookingSnack->quantity          = $qty;
-                    $bookingSnack->price             = $variant->price;
+                    $bookingSnack->price             = $variant->price;  
                     $bookingSnack->save();
                 }
             }

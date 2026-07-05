@@ -11,14 +11,16 @@ class ClientInterfaceController extends controller
 
 public function index(){
 
+    $bookingCutOff = now()->addMinutes(env('BOOKING_CUTOFF_MINUTES', 30));
+
     $movies = Movies::where('status', 1)
             ->where('screening_status', 1)
-            ->whereHas('shows', function ($query) {
+            ->whereHas('shows', function ($query) use ($bookingCutOff) {
             $query->whereNotNull('date')
               ->whereNotNull('time')
               ->whereRaw(
                   "STR_TO_DATE(CONCAT(date, ' ', time), '%Y-%m-%d %H:%i:%s') >= ?",
-                  [now()]
+                  [$bookingCutOff]
               );
     })
     ->get()
