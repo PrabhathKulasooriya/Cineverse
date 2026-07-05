@@ -11,7 +11,7 @@ class ClientInterfaceController extends controller
 
 public function index(){
 
-    $bookingCutOff = now()->addMinutes(env('BOOKING_CUTOFF_MINUTES', 30));
+    $bookingCutOff = now()->addMinutes(env('BOOKING_CUTOFF_MINUTES', 15));
 
     $movies = Movies::where('status', 1)
             ->where('screening_status', 1)

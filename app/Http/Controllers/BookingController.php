@@ -36,7 +36,7 @@ class BookingController extends Controller
             return redirect()->route('home');
         }
 
-        $bookingCutOff = now()->addMinutes(env('BOOKING_CUTOFF_MINUTES', 30));
+        $bookingCutOff = now()->addMinutes(env('BOOKING_CUTOFF_MINUTES', 15));
         $shows = Shows::where('movies_movie_id', $movie_id)
                 ->whereRaw("STR_TO_DATE(CONCAT(date, ' ', time), '%Y-%m-%d %H:%i:%s') >= ?", [$bookingCutOff])
                 ->get();
@@ -240,27 +240,42 @@ class BookingController extends Controller
    
 
     //Cleanup Expired bookings*************************************************************************
-    private function cleanupExpiredBookings(){
+    private function cleanupExpiredBookings()
+    {
         try {
 
-            $cutoffTime = now()->subMinutes(env('BOOKING_EXPIRATION_MINUTES', 15));
-            
-            $expiredBookings = Bookings::where('payment_status', 'PENDING')
-                ->where('created_at', '<', $cutoffTime)
-                ->get();
-    
-            foreach ($expiredBookings as $booking) {
-                
-                BookedSeats::where('bookings_booking_id', $booking->booking_id)->delete();
-                $booking->delete();
-                \Log::info('Cleaned up expired booking: ' . $booking->booking_id);
+            $possibleCleanups = Bookings::where('payment_status', 'PENDING')->get();
+
+            foreach ($possibleCleanups as $booking) {
+
+                $show = Shows::find($booking->shows_show_id);
+                if (!$show) {
+                    continue;
+                }
+
+                $bookingTime = \Carbon\Carbon::parse($booking->created_at);
+                $showDateTime = \Carbon\Carbon::parse($show->date . ' ' . $show->time);
+                $minutesUntilShow = $showDateTime->diffInMinutes(now(), false);
+
+                if($minutesUntilShow <= env('BOOKING_LAST_MINUTE_WINDOW', 60)) {
+                    $expireMinutes = env('BOOKING_EXPIRATION_MINUTES_SHORT', 5);
+                } else {
+                    $expireMinutes = env('BOOKING_EXPIRATION_MINUTES', 15);
+                }
+
+                $cutoffTime = now()->subMinutes($expireMinutes);
+
+                if ($bookingTime->lessThan($cutoffTime)) {
+                    BookedSeats::where('bookings_booking_id', $booking->booking_id)->delete();
+                    $booking->delete();
+                    Log::info('Cleaned up expired booking: ' . $booking->booking_id);
+                }
             }
-            
-            if ($expiredBookings->count() > 0) {
-                \Log::info('Cleanup completed: ' . $expiredBookings->count() . ' expired bookings removed');
-            }
-        } catch (\Exception $e) {
-            \Log::error('Error cleaning up expired bookings: ' . $e->getMessage());
+
+            return response()->json(['message' => 'Expired bookings cleaned up successfully']);
+        } catch (Exception $e) {
+            Log::error('Error cleaning up expired bookings: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to cleanup expired bookings'], 500);
         }
     }
 

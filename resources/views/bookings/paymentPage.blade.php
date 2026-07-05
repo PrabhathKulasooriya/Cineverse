@@ -33,7 +33,7 @@
             <div class="countdown-banner" id="countdownBanner">
                 <i class="fa fa-clock-o"></i>
                 <div class="countdown-text">
-                    <span>Seat hold expires in: <strong class="countdown-time" id="countdown">15:00</strong></span>
+                    <span>Seat hold expires in: <strong class="countdown-time" id="countdown">{{ $formattedTimeLeft }}</strong></span>
                     <small class="countdown-subtext">Complete payment before time runs out!</small>
                 </div>
             </div>

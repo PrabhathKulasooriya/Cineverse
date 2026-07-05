@@ -56,14 +56,33 @@ class PaymentController extends Controller
     public function cleanupExpiredBookings()
     {
         try {
-            $expiredBookings = Bookings::where('payment_status', 'PENDING')
-                ->where('created_at', '<', now()->subMinutes(env('BOOKING_EXPIRATION_MINUTES', 15)))
-                ->get();
 
-            foreach ($expiredBookings as $booking) {
-                BookedSeats::where('bookings_booking_id', $booking->booking_id)->delete();
-                $booking->delete();
-                Log::info('Cleaned up expired booking: ' . $booking->booking_id);
+            $possibleCleanups = Bookings::where('payment_status', 'PENDING')->get();
+
+            foreach ($possibleCleanups as $booking) {
+
+                $show = Shows::find($booking->shows_show_id);
+                if (!$show) {
+                    continue;
+                }
+                
+                $bookingTime = \Carbon\Carbon::parse($booking->created_at);
+                $showDateTime = \Carbon\Carbon::parse($show->date . ' ' . $show->time);
+                $minutesUntilShow = $showDateTime->diffInMinutes(now(), false);
+
+                if($minutesUntilShow <= env('BOOKING_LAST_MINUTE_WINDOW', 60)) {
+                    $expireMinutes = env('BOOKING_EXPIRATION_MINUTES_SHORT', 5);
+                } else {
+                    $expireMinutes = env('BOOKING_EXPIRATION_MINUTES', 15);
+                }
+
+                $cutoffTime = now()->subMinutes($expireMinutes);
+
+                if ($bookingTime->lessThan($cutoffTime)) {
+                    BookedSeats::where('bookings_booking_id', $booking->booking_id)->delete();
+                    $booking->delete();
+                    Log::info('Cleaned up expired booking: ' . $booking->booking_id);
+                }
             }
 
             return response()->json(['message' => 'Expired bookings cleaned up successfully']);
@@ -84,9 +103,18 @@ class PaymentController extends Controller
             return redirect()->route('home')->with('error', 'No active booking found.');
         }
 
+        $showDateTime = \Carbon\Carbon::parse($bookingData['show_date'] . ' ' . $bookingData['show_time']);
+        $minutesUntilShow = now()->diffInMinutes($showDateTime, false);
+
+        if($minutesUntilShow <= env('BOOKING_LAST_MINUTE_WINDOW', 60)) {
+           $expireMinutes = env('BOOKING_EXPIRATION_MINUTES_SHORT', 5);
+        } else {
+            $expireMinutes = env('BOOKING_EXPIRATION_MINUTES', 15);
+        }
+
         // Check expiry
         $bookedAt   = \Carbon\Carbon::parse($bookingData['booked_at']);
-        $expiresAt  = $bookedAt->copy()->addMinutes(env('BOOKING_EXPIRATION_MINUTES', 15)); 
+        $expiresAt  = $bookedAt->copy()->addMinutes($expireMinutes); 
 
         if (\Carbon\Carbon::now()->greaterThanOrEqualTo($expiresAt)) {
             BookedSeats::where('bookings_booking_id', $bookingData['booking_id'])->delete();
@@ -97,10 +125,13 @@ class PaymentController extends Controller
         }
 
         $secondsRemaining = (int) \Carbon\Carbon::now()->diffInSeconds($expiresAt, false);
+        $minutes = floor($secondsRemaining / 60);
+        $seconds = $secondsRemaining % 60;
+        $formattedTimeLeft = sprintf('%02d:%02d', $minutes, $seconds);
 
         $snacks = Snack::orderBy('name')->get()->groupBy('name');
         
-        return view('bookings.paymentPage', compact('bookingData', 'snacks', 'secondsRemaining'));
+        return view('bookings.paymentPage', compact('bookingData', 'snacks', 'secondsRemaining', 'formattedTimeLeft'));
     }
 
     public function timeRemaining()
@@ -109,8 +140,17 @@ class PaymentController extends Controller
         if (!$bookingData) {
             return response()->json(['expired' => true, 'seconds' => 0]);
         }
+
+        $showDateTime = \Carbon\Carbon::parse($bookingData['show_date'] . ' ' . $bookingData['show_time']);
+        $minutesUntilShow = now()->diffInMinutes($showDateTime, false);
+
+        if($minutesUntilShow <= env('BOOKING_LAST_MINUTE_WINDOW', 60)) {
+           $expireMinutes = env('BOOKING_EXPIRATION_MINUTES_SHORT', 5);
+        } else {
+            $expireMinutes = env('BOOKING_EXPIRATION_MINUTES', 15);
+        }
         $bookedAt  = \Carbon\Carbon::parse($bookingData['booked_at']);
-        $expiresAt = $bookedAt->copy()->addMinutes(env('BOOKING_EXPIRATION_MINUTES', 15));
+        $expiresAt = $bookedAt->copy()->addMinutes($expireMinutes);
         $seconds   = (int) \Carbon\Carbon::now()->diffInSeconds($expiresAt, false);
         return response()->json(['expired' => $seconds <= 0, 'seconds' => max(0, $seconds)]);
     }
