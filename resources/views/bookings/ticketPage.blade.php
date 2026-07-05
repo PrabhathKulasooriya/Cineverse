@@ -80,9 +80,9 @@
                         @foreach($booking['booking_snacks'] as $item)
                         <div class="snack-order-item">
                             <span class="snack-order-name">
-                                {{ $item->variant->snack->name }}
-                                @if($item->variant->size !== 'REGULAR')
-                                    ({{ $item->variant->size }})
+                                {{ $item->snack->name }}
+                                @if($item->snack->size !== 'REGULAR')
+                                    ({{ $item->snack->size }})
                                 @endif
                             </span>
                             <span class="snack-order-qty">x{{ $item->quantity }}</span>

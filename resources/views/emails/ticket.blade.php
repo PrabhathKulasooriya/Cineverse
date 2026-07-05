@@ -212,9 +212,9 @@
                     @foreach($booking['booking_snacks'] as $item)
                     <div class="snack-item">
                         <span class="snack-item-name">
-                            {{ $item->variant->snack->name }}
-                            @if(strtoupper($item->variant->size) !== 'REGULAR')
-                                ({{ $item->variant->size }})
+                            {{ $item->snack->name }}
+                            @if(strtoupper($item->snack->size) !== 'REGULAR')
+                                ({{ $item->snack->size }})
                             @endif
                             x{{ $item->quantity }}
                         </span>

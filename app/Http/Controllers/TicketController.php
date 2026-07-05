@@ -164,57 +164,60 @@ class TicketController extends Controller
 
     //Send Ticket via Email******************************************************************************
     public function sendTicketEmail(Request $request){
-    $booking_id = $request->booking_id;
+        $booking_id = $request->booking_id;
 
-    if(!$booking_id){
-        return redirect()->back()->with('error', 'Booking ID is required');
+        if(!$booking_id){
+            return redirect()->back()->with('error', 'Booking ID is required');
+        }
+
+        $booking = Bookings::where('booking_id', $booking_id)->first();
+        if (!$booking) {
+            return redirect()->back()->with('error', 'Booking not found');
+        }
+
+        $movie = Movies::find($booking->movies_movie_id);
+        $show = Shows::find($booking->shows_show_id);
+
+        if (!$movie || !$show) {
+            return redirect()->back()->with('error', 'Movie or show not found');
+        }
+
+        $seat_ids = BookedSeats::where('bookings_booking_id', $booking_id)->get();
+        $seats = Seats::whereIn('seat_id', $seat_ids->pluck('seats_seat_id')->toArray())->get();
+
+        $bookingSnacks = BookingSnack::where('booking_id', $booking_id)
+                        ->with('snack')
+                        ->get();
+        $snackTotal = $bookingSnacks->sum(function ($item) {
+            return $item->price * $item->quantity;
+        });
+
+        $booking['movie_name'] = $movie->name;
+        $booking['show_time']  = $show->time;
+        $booking['show_date']  = $show->date;
+
+        $qr = QrCode::create($booking['booking_id']);
+        $writer = new PngWriter();
+        $result = $writer->write($qr);
+        $qrCodePngBase64 = base64_encode($result->getString());
+
+        $email = $booking->email;
+        if (!$email) {
+            return redirect()->back()->with('error', 'No email address associated with this booking');
+        }
+
+        $bookingArray = $booking->toArray();
+        $bookingArray['booking_snacks'] = $bookingSnacks;
+        $bookingArray['grandTotal'] = $booking->amount + $snackTotal;
+
+        Mail::to($email)->send(new TicketMail($bookingArray, $seats, $qrCodePngBase64, 'PNG'));
+
+        return redirect()->route('ticketVerification')->with([
+            'success' => 'Ticket successfully sent to ' . $email . '!',
+            'booking' => $bookingArray,
+            'seats'   => $seats
+        ]);
     }
-
-    $booking = Bookings::where('booking_id', $booking_id)->first();
-    if (!$booking) {
-        return redirect()->back()->with('error', 'Booking not found');
-    }
-
-    $movie = Movies::find($booking->movies_movie_id);
-    $show = Shows::find($booking->shows_show_id);
-
-    if (!$movie || !$show) {
-        return redirect()->back()->with('error', 'Movie or show not found');
-    }
-
-    $seat_ids = BookedSeats::where('bookings_booking_id', $booking_id)->get();
-    $seats = Seats::whereIn('seat_id', $seat_ids->pluck('seats_seat_id')->toArray())->get();
-
-    // Fetch snacks for this booking
-    $bookingSnacks = BookingSnack::where('booking_id', $booking_id)
-                    ->with('variant.snack')
-                    ->get();
-
-    $booking['movie_name'] = $movie->name;
-    $booking['show_time']  = $show->time;
-    $booking['show_date']  = $show->date;
-
-    $qr = QrCode::create($booking['booking_id']);
-    $writer = new PngWriter();
-    $result = $writer->write($qr);
-    $qrCodePngBase64 = base64_encode($result->getString());
-
-    $email = $booking->email;
-    if (!$email) {
-        return redirect()->back()->with('error', 'No email address associated with this booking');
-    }
-
-    $bookingArray = $booking->toArray();
-    $bookingArray['booking_snacks'] = $bookingSnacks;
-
-    Mail::to($email)->send(new TicketMail($bookingArray, $seats, $qrCodePngBase64, 'PNG'));
-
-    return redirect()->route('ticketVerification')->with([
-        'success' => 'Ticket successfully sent to ' . $email . '!',
-        'booking' => $bookingArray,
-        'seats'   => $seats
-    ]);
-}
 
     public function downloadTicket($booking_id){
         if(!$booking_id){
@@ -237,7 +240,14 @@ class TicketController extends Controller
 
             $seat_ids = BookedSeats::where('bookings_booking_id', $booking_id)->get();
             $seats = Seats::whereIn('seat_id', $seat_ids->pluck('seats_seat_id')->toArray())->get();
-            
+
+            $bookingSnacks = BookingSnack::where('booking_id', $booking_id)
+                            ->with('snack')
+                            ->get();
+            $snackTotal = $bookingSnacks->sum(function ($item) {
+                return $item->price * $item->quantity;
+            });
+
             $booking['movie_name'] = $movie->name;
             $booking['show_time'] = $show->time;
             $booking['show_date'] = $show->date;
@@ -247,15 +257,18 @@ class TicketController extends Controller
             $result = $writer->write($qr);
             $qrCodePngBase64 = base64_encode($result->getString());
 
-            $ticketMail = new TicketMail($booking->toArray(), $seats, $qrCodePngBase64, 'PNG');
+            $bookingArray = $booking->toArray();
+            $bookingArray['booking_snacks'] = $bookingSnacks;
+            $bookingArray['grandTotal'] = $booking->amount + $snackTotal;
+
+            $ticketMail = new TicketMail($bookingArray, $seats, $qrCodePngBase64, 'PNG');
             $mailContent = $ticketMail->render();
             $pdf = PDF::loadHTML($mailContent);
-            $pdf->setPaper('A5', 'portrait');
+            $pdf->setPaper('A4', 'portrait');
             return $pdf->download('ticket.pdf');
             } catch (\Exception $e) {
                 session()->flash('error', 'An error occurred while downloading the ticket!');
                 return back();
-
             }
     }
 
@@ -280,7 +293,14 @@ class TicketController extends Controller
 
             $seat_ids = BookedSeats::where('bookings_booking_id', $booking_id)->get();
             $seats = Seats::whereIn('seat_id', $seat_ids->pluck('seats_seat_id')->toArray())->get();
-            
+
+            $bookingSnacks = BookingSnack::where('booking_id', $booking_id)
+                        ->with('snack')
+                        ->get();
+            $snackTotal = $bookingSnacks->sum(function ($item) {
+                return $item->price * $item->quantity;
+            });
+
             $booking['movie_name'] = $movie->name;
             $booking['show_time'] = $show->time;
             $booking['show_date'] = $show->date;
@@ -290,15 +310,18 @@ class TicketController extends Controller
             $result = $writer->write($qr);
             $qrCodePngBase64 = base64_encode($result->getString());
 
-            $ticketMail = new TicketMail($booking->toArray(), $seats, $qrCodePngBase64, 'PNG');
+            $bookingArray = $booking->toArray();
+            $bookingArray['booking_snacks'] = $bookingSnacks;
+            $bookingArray['grandTotal'] = $booking->amount + $snackTotal;
+
+            $ticketMail = new TicketMail($bookingArray, $seats, $qrCodePngBase64, 'PNG');
             $mailContent = $ticketMail->render();
             $pdf = PDF::loadHTML($mailContent);
-            $pdf->setPaper('A5', 'portrait');
+            $pdf->setPaper('A4', 'portrait');
             return $pdf->stream('ticket.pdf');
             } catch (\Exception $e) {
                 session()->flash('error', 'An error occurred while downloading the ticket!');
                 return back();
-
             }
     }
     

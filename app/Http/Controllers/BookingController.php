@@ -11,7 +11,6 @@ use App\SeatType;
 use App\BookedSeats;
 use App\Bookings;
 use App\Snack;
-use App\SnackVariant;
 use App\BookingSnack;
 use Exception;
 use App\Mail\TicketMail;
@@ -192,7 +191,7 @@ class BookingController extends Controller
         $booking['seats'] = $seats;
 
         $bookingSnacks = BookingSnack::where('booking_id', $booking['booking_id'])
-                        ->with('variant.snack')
+                        ->with('snack')
                         ->get();
         $booking['booking_snacks'] = $bookingSnacks;
 

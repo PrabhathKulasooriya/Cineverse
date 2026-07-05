@@ -250,18 +250,18 @@ class PaymentController extends Controller
 
             // Save snacks to booking_snacks table
             if ($request->has('snacks')) {
-                foreach ($request->input('snacks') as $variantId => $qty) {
+                foreach ($request->input('snacks') as $snackId => $qty) {
                     $qty = (int) $qty;
                     if ($qty <= 0) continue;
 
-                    $variant = SnackVariant::find($variantId);
-                    if (!$variant) continue;
+                    $snack = Snack::find($snackId);
+                    if (!$snack) continue;
 
                     $bookingSnack = new BookingSnack();
-                    $bookingSnack->booking_id        = $bookingData['booking_id'];
-                    $bookingSnack->idsnack_variants  = $variantId;
-                    $bookingSnack->quantity          = $qty;
-                    $bookingSnack->price             = $variant->price;  
+                    $bookingSnack->booking_id = $bookingData['booking_id'];
+                    $bookingSnack->snacks_idsnacks   = $snack->idsnacks;
+                    $bookingSnack->quantity   = $qty;
+                    $bookingSnack->price      = $snack->price;
                     $bookingSnack->save();
                 }
             }

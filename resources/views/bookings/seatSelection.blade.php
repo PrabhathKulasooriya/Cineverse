@@ -18,6 +18,13 @@
 
     <div class="seatselection-main">
 
+        @if(session('error'))
+            <div class="alert alert-danger text-center position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
+                <i class="fa fa-exclamation-circle"></i> {{ session('error') }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+        @endif
+
     <div class="seatSelection-details" >
          
         <h1>{{$movie->name}}</h1>
@@ -115,15 +122,6 @@
     
             <div class="selected-seats">
 
-                @if(session('error'))
-                    <div class="alert alert-danger alert-dismissible text-center floating-alert" role="alert">
-                        <i class="fa fa-exclamation-circle"></i> {{ session('error') }}
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                @endif
-
                 <!-- Form for seat selection submission -->
                 <form id="seatSelectionForm" action="{{ route('confirmSeatSelection') }}" method="POST" class="d-none">
                     @csrf
@@ -154,121 +152,106 @@
 @section('pageSpecificScript')
 
 <script>
-    const standardPrice = {{ $standard_price }};
-    const primePrice = {{ $prime_price }};
-    const selectedSeats = [];
-    let totalAmount = 0;
+    var standardPrice = {{ $standard_price }};
+    var primePrice = {{ $prime_price }};
+    var maxSeats = 12;
+
+    @if(Auth::check() && (Auth::user()->user_role_iduser_role == 1 || Auth::user()->user_role_iduser_role == 2 || Auth::user()->user_role_iduser_role == 3))
+        var isEmployee = true;
+    @else
+        var isEmployee = false;
+    @endif
 
     document.addEventListener('DOMContentLoaded', function () {
-        const seatButtons = document.querySelectorAll('.btn-seat');
-        const selectedSeatsList = document.getElementById('selectedSeatsList');
-        const totalAmountEl = document.getElementById('totalAmount');
+        var seatButtons = document.querySelectorAll('.btn-seat');
+        var selectedSeatsList = document.getElementById('selectedSeatsList');
+        var totalAmountEl = document.getElementById('totalAmount');
+        var confirmBtn = document.getElementById('confirmSelectionBtn');
+        var form = document.getElementById('seatSelectionForm');
 
-        function updateSelectedSeatsList() {
+        // Rebuilds the seat list and total based on whichever seats are currently selected
+        function updateSummary() {
+            var selected = document.querySelectorAll('.btn-seat.tempSelected');
+            var total = 0;
             selectedSeatsList.innerHTML = '';
-            let total = 0;
 
-            // Sort seats by row (alphabetically) and number (numerically)
-                const sortedSeats = selectedSeats.slice().sort((a, b) => {
-                    if (a.row === b.row) {
-                        return a.number - b.number;
-                    }
-                    return a.row.localeCompare(b.row);
-                });
-
-                sortedSeats.forEach(seat => {
-                const div = document.createElement('div');
-                div.textContent = `${seat.row}${seat.number}`;
+            selected.forEach(function (seat) {
+                var div = document.createElement('div');
+                div.textContent = seat.getAttribute('data-row') + seat.getAttribute('data-number');
                 selectedSeatsList.appendChild(div);
 
-                if (seat.type === '2') {
-                    total += primePrice;
-                } else if(seat.type === '1'){ 
-                    total += standardPrice;
-                }
+                total += (seat.getAttribute('data-seatType') === '2') ? primePrice : standardPrice;
             });
 
             totalAmountEl.textContent = total;
-            totalAmount = total;
         }
 
-        seatButtons.forEach(button => {
+        seatButtons.forEach(function (button) {
             button.addEventListener('click', function () {
-                const seatId = this.getAttribute('data-seat-id');
-                const seatRow = this.getAttribute('data-row');
-                const seatNumber = this.getAttribute('data-number');
-                const seatType = this.getAttribute('data-seatType');
+                var alreadySelected = button.classList.contains('tempSelected');
+                var selectedCount = document.querySelectorAll('.btn-seat.tempSelected').length;
 
-                const index = selectedSeats.findIndex(seat => seat.id === seatId);
-
-                if (this.classList.contains('tempSelected')) {
-                    this.classList.remove('tempSelected');
-                    if (index !== -1) {
-                        selectedSeats.splice(index, 1);
-                    }
-                } else {
-                    this.classList.add('tempSelected');
-                    selectedSeats.push({
-                        id: seatId,
-                        row: seatRow,
-                        number: seatNumber,
-                        type: seatType,
+                if (!alreadySelected && !isEmployee && selectedCount >= maxSeats) {
+                    swal.fire({
+                        title: 'Seat Selection Limit Reached!',
+                        text: 'You can select a maximum of ' + maxSeats + ' seats. Please deselect some seats to select new ones.',
+                        icon: 'warning',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#3085d6'
                     });
+                    return;
                 }
 
-                updateSelectedSeatsList();
+                button.classList.toggle('tempSelected');
+                updateSummary();
             });
         });
 
-        // Form submission handling
-        const confirmSelectionBtn = document.getElementById('confirmSelectionBtn');
-        const seatSelectionForm = document.getElementById('seatSelectionForm');
+        // Confirms selection and submits the booking form
+        confirmBtn.addEventListener('click', function () {
+            var selected = document.querySelectorAll('.btn-seat.tempSelected');
 
-        confirmSelectionBtn.addEventListener('click', function () {
-
-                // Validation 
-                if (selectedSeats.length === 0) {
-                   Swal.fire({
-                      title: 'No Seats Selected!',
-                      text: 'Please select at least one seat to proceed with your booking.',
-                      icon: 'warning',
-                      confirmButtonText: 'OK',
-                      confirmButtonColor: '#3085d6'
-                  });
-                   return;
-             }
-
-            // Confirmation dialog before proceeding
-            const seatsList = selectedSeats.slice().sort((a, b) => {if (a.row === b.row) {return a.number - b.number;}
-                                return a.row.localeCompare(b.row);})
-                                .map(seat => `${seat.row}${seat.number}`).join(', ');
-    
+            if (selected.length === 0) {
                 Swal.fire({
-                  title: 'Confirm Seat Selection',
-                  html: `
-                      <p><strong>Selected Seats:</strong> ${seatsList}</p>
-                      <p><strong>Total Amount:</strong> Rs. ${totalAmount}</p>
-                      <p>Do you want to proceed to payment?</p>
-                  `,
-                  icon: 'question',
-                  showCancelButton: true,
-                  confirmButtonText: 'Yes, proceed to payment',
-                  cancelButtonText: 'Cancel',
-                  confirmButtonColor: '#28a745',
-                  cancelButtonColor: '#dc3545',
-                  reverseButtons: true
-                  }).then((result) => {
+                    title: 'No Seats Selected!',
+                    text: 'Please select at least one seat to proceed with your booking.',
+                    icon: 'warning',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#3085d6'
+                });
+                return;
+            }
 
-                  if (result.isConfirmed) {
-                    
-                      const selectedSeatsId = selectedSeats.map(seat => seat.id);
-                      document.getElementById('hiddenTotalAmount').value = totalAmount;
-                      document.getElementById('hiddenSelectedSeatsId').value = JSON.stringify(selectedSeatsId);
+            var seatIds = [];
+            var seatNames = [];
+            var total = 0;
 
-                      seatSelectionForm.submit();
-                   } 
-             });
+            selected.forEach(function (seat) {
+                seatIds.push(seat.getAttribute('data-seat-id'));
+                seatNames.push(seat.getAttribute('data-row') + seat.getAttribute('data-number'));
+                total += (seat.getAttribute('data-seatType') === '2') ? primePrice : standardPrice;
             });
+
+            Swal.fire({
+                title: 'Confirm Seat Selection',
+                html: '<p><strong>Selected Seats:</strong> ' + seatNames.join(', ') + '</p>' +
+                      '<p><strong>Total Amount:</strong> Rs. ' + total + '</p>' +
+                      '<p>Do you want to proceed to payment?</p>',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, proceed to payment',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#dc3545',
+                reverseButtons: true
+            }).then(function (result) {
+                if (result.isConfirmed) {
+                    document.getElementById('hiddenTotalAmount').value = total;
+                    document.getElementById('hiddenSelectedSeatsId').value = JSON.stringify(seatIds);
+                    form.submit();
+                }
+            });
+        });
     });
 </script>
 
