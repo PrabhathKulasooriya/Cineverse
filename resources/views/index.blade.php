@@ -20,6 +20,13 @@
             <div class="section animated-row home-section" data-section="slide01">
                 <div class="section-inner section-slider">
 
+                    @if(session('success'))
+                        <div class="alert alert-success text-center position-absolute fade show" style="top:90px; right: 20px; z-index: 1050; min-width: 350px;">
+                            <i class="fa fa-check-circle"></i> {{ session('success') }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        </div>
+                     @endif 
+
                     <div class="slider-container2">
                     @foreach($imageSlider as $image)
                         <a href="{{ route('bookmovie', ['movie_id' => $image->movies_movie_id]) }}">
@@ -185,6 +192,8 @@
 
 {{-- Slider Scripts --}}
 <script>
+
+setTimeout(() => $(".alert").fadeOut("slow", function() { $(this).remove(); }), 3000);
     
 window.addEventListener('load', function () {
     const sliderContainer = document.querySelector('.slider-container');

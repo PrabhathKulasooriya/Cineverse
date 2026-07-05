@@ -55,14 +55,13 @@ class ClientController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' =>$validator->errors()]);
+            return back()->with('errors', $validator->errors())->withInput();
         }
 
         $existingUser = User::where('email', $request['email'])->first();
         if ($existingUser) {
-            return response()->json(['errors' => ['email'=> ['Email already exists!']]]);
+            return back()->with('error', 'Email already exists!')->withInput();
         }
-
 
         $saveUser = new User();
 
@@ -88,7 +87,7 @@ class ClientController extends Controller
         Auth::login($saveUser);
         $saveUser->sendEmailVerificationNotification();
 
-        return response()->json(['success' => 'Client saved successfully.', 'redirect' => route('verification.notice')]);
+        return redirect()->route('verification.notice')->with('success', 'Registration Successful!');
     }
 //Save Client by Sign Up End
 
@@ -148,8 +147,6 @@ class ClientController extends Controller
 
         $saveUser->save();
 
-
-
         $saveClient=new Client();
 
         $saveClient->first_name = strtoupper($request['fName']);
@@ -158,8 +155,6 @@ class ClientController extends Controller
         $saveClient->master_user_idmaster_user =$saveUser->idmaster_user;
 
         $saveClient->save();
-
-
 
         $saveUser->sendEmailVerificationNotification();
 

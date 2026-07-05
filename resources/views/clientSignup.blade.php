@@ -10,7 +10,33 @@
 
 <div class="wrapper-page signup-page">
 
+                @if(session('success'))
+                        <div class="alert alert-success text-center position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
+                            <i class="fa fa-check-circle"></i> {{ session('success') }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        </div>
+                @endif          
+
+                @if(session('error'))
+                    <div class="alert alert-danger alert-dismissible position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <p>{{ session('error') }}</p>
+                    </div>
+                @endif
+
+                @if(session('warning'))
+                    <div class="alert alert-warning alert-dismissible position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <p>{{ session('warning') }}</p>
+                    </div>
+                @endif
+
     <div class="card signup-card" style="background-color: rgba(245, 245, 245, 0.8);">
+        
         <div class="card-body">
             <div class="closebutton-container">
             <a href="{{route('home')}}"><i class='fa fa-times fa-2x close-button' aria-hidden="true"></i></a>
@@ -18,7 +44,7 @@
             <div class="p-3">
                 <h4 class="header-text m-b-5 text-center">Sign Up</h4>
 
-                <form class="form-horizontal m-t-30" enctype="multipart/form-data" id="saveUser">
+                <form class="form-horizontal m-t-30" enctype="multipart/form-data" id="saveUser" action="{{ route('saveClient') }}" method="POST">
                     {{csrf_field()}}
 
                     <div class="row justify-content-center">
@@ -104,6 +130,15 @@
 <script src="{{ URL::asset('assets/js/jquery.notify.min.js') }}"></script>
 
 <script>
+
+    setTimeout(() => $(".alert").fadeOut("slow", function() { $(this).remove(); }), 5000);
+
+    $(document).ready(function () {
+        $.ajaxSetup({
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
+        });
+    });
+
     // Toggle for Password
     document.getElementById("togglePassword").addEventListener("click", function () {
         var input = document.getElementById("password");
@@ -134,21 +169,17 @@
         if (value.length > 10) value = value.substring(0, 10);
         e.target.value = value;
     });
-</script>
 
-<script type="text/javascript">
-    $(document).ready(function () {
-        $.ajaxSetup({
-            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') }
-        });
-    });
+    
 
     $(document).on("wheel", "input[type=number]", function (e) {
         $(this).blur();
     });
 
-    $("#saveUser").on("submit", function (event) {
-        event.preventDefault();
+    setTimeout(() => $(".alert").fadeOut("slow", function() { $(this).remove(); }), 3000);
+
+    $("#saveUser").on("submit", function (e) {
+        e.preventDefault();
 
         // Clear all errors
         $("#fNameError").html('');
@@ -160,48 +191,59 @@
 
         var password        = $("#password").val();
         var confirmPassword = $("#confirmPassword").val();
+        var fName           = $("#fName").val();
+        var lName           = $("#lName").val();
+        var contactNo       = $("#contactNo").val();
+        var email           = $("#email").val();
+
+        if (fName === '') {
+            $("#fNameError").html('First name is required.');
+            return; 
+        }
+
+        if (lName === '') {
+            $("#lNameError").html('Last name is required.');
+            return; 
+        }
+
+        if (!contactNo) {
+            $('#contactNoError').html('Contact No is required.');
+            hasError = true;
+        } else {
+            var phonePattern = /^07\d{8}$/;
+            if (!phonePattern.test(contactNo)) {
+                $('#contactNoError').html('Enter a valid 10-digit phone number (e.g., 07XXXXXXXX).');
+                hasError = true;
+            }
+        }
+
+        if (email === '') {
+            $("#emailError").html('Email is required.');
+            return; 
+        }
+
+        var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(email)) {
+            $('#emailError').html('Please enter a valid email address.');
+            return;
+        }
+
+        if (password === '') {
+            $("#passwordError").html('Password is required.');
+            return; 
+        }
 
         if (confirmPassword === '') {
             $("#confirmPasswordError").html('Please confirm your password.');
-            return; // stop here
+            return; 
         }
 
         if (password !== confirmPassword) {
             $("#confirmPasswordError").html('Passwords do not match!');
-            return; // stop here
+            return; 
         }
 
-        $.ajax({
-            url: '{{ route("saveClient") }}',
-            type: 'POST',
-            data: $(this).serialize(),
-            success: function (data) {
-
-                if (data.errors) {
-                    if (data.errors.fName)     $("#fNameError").html(data.errors.fName[0]);
-                    if (data.errors.lName)     $("#lNameError").html(data.errors.lName[0]);
-                    if (data.errors.contactNo) $("#contactNoError").html(data.errors.contactNo[0]);
-                    if (data.errors.email)     $("#emailError").html(data.errors.email[0]);
-                    if (data.errors.password)  $("#passwordError").html(data.errors.password[0]);
-                }
-
-                if (data.success) {
-                    notify({
-                        type: "success",
-                        title: 'Registration Success',
-                        autoHide: true,
-                        delay: 300,
-                        position: { x: "right", y: "top" },
-                        message: data.success,
-                    });
-                    setTimeout(function () {
-                        window.location.href = data.redirect ;
-                    }, 200);
-                }
-            }
-        });
+        this.submit();
     });
-</script>
-
 </script>
 

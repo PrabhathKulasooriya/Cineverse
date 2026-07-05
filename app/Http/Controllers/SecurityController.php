@@ -37,8 +37,7 @@ class SecurityController extends Controller
                 return redirect()->route('verification.notice');
             }
 
-            // Redirect to intended URL or default to root
-            return redirect()->intended('/');
+            return redirect()->intended('/')->with('success', 'Login Successful!');
         }
 
         

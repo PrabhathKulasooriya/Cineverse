@@ -15,16 +15,14 @@
 <div class="wrapper-page signin-page" >
 
                  @if(session('success'))
-                    <div class="alert alert-success text-center ticket-success-container alert-dismissible" id="ticket-success-container">
-                        <i class="fa fa-check-circle" aria-hidden="true"></i> {{ session('success') }}
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                @endif           
+                        <div class="alert alert-success text-center position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
+                            <i class="fa fa-check-circle"></i> {{ session('success') }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        </div>
+                @endif          
 
                 @if(session('error'))
-                    <div class="alert alert-danger alert-dismissible ">
+                    <div class="alert alert-danger alert-dismissible position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -33,7 +31,7 @@
                 @endif
 
                 @if(session('warning'))
-                    <div class="alert alert-warning alert-dismissible ">
+                    <div class="alert alert-warning alert-dismissible position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -116,6 +114,8 @@
         $(this).blur();
     });
 
+    setTimeout(() => $(".alert").fadeOut("slow", function() { $(this).remove(); }), 3000);
+
     document.getElementById("togglePassword").addEventListener("click", function () {
         var passwordInput = document.getElementById("password");
         if (passwordInput.type === "password") {
@@ -153,30 +153,7 @@
             return;
         }
         
-        alert('Form submitted successfully!'); 
-        // $.ajax({
-        //     url:'{{ route("login") }}',
-        //     type:'POST',
-        //     data: $(this).serialize(),
-        //     success: function(data){
-        //         if(data.errors){
-        //             if(data.errors.email) $('#emailError').html(data.errors.email[0]);
-        //             if(data.errors.password) $('#passwordError').html(data.errors.password[0]);
-        //         }
-
-        //         if(data.success){
-        //             notify({
-        //                 type: "success",
-        //                 title: 'Login Success',
-        //                 autoHide: true,
-        //                 delay: 300,
-        //                 position: { x: "right", y: "top" },
-        //                 message: data.success,
-        //             })
-        //         }
-        //     }
-        // })
-    
+        this.submit();
     })
 </script>
 

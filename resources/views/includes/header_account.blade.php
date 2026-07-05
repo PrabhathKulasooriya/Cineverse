@@ -7,6 +7,7 @@
         <meta content="Admin Dashboard" name="description" />
         <meta content="Themesbrand" name="author" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <!-- App Icons -->
         <link rel="shortcut icon" href="assets/images/favicon.ico">
@@ -20,6 +21,8 @@
         <link href="{{ URL::asset('assets/css/bootstrap.min.css')}}" rel="stylesheet" type="text/css">
         <link href="{{ URL::asset('assets/css/icons.css')}}" rel="stylesheet" type="text/css">
         <link rel="stylesheet" href="{{ asset('css/styles.css') }}">
+
+        <script src="{{ URL::asset('assets/js/jquery.min.js')}}"></script>
         
 
     </head>
