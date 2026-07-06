@@ -291,7 +291,7 @@
                         <input type="hidden" id="hiddenBookingId" name="booking_id">
 
                         <div class="form-group text-center">
-                            <label>Available Entries: <span id="availableEntriesLabel">0</span></label>
+                            <label class="snack-order-price">Available Entries: <span id="availableEntriesLabel">0</span></label>
 
                             <div class="input-group w-50 mx-auto d-flex justify-content-center align-items-center">
                                 <div class="input-group-append">
@@ -353,7 +353,9 @@
                                      data-booking-snack-id="{{ $item->idbooking_snacks }}"
                                      data-max="{{ $remaining }}">
 
-                                    <span>{{ $label }} - Remaining: {{ $remaining }}</span>
+                                    <span>{{ $label }}  </span> - 
+                                    <span class="ticket-label">Received: {{ $item->received_quantity }}</span> - 
+                                    <span class="snack-order-price">Remaining: {{ $remaining }}</span>
 
                                     <div class="input-group" style="width: 150px;">
                                         <div class="input-group-append">
@@ -529,7 +531,7 @@
 
             if (qrResult) {
                 handleSuccessfulScan(qrResult.data);
-                return; // stop the loop, we found something
+                return; 
             }
         }
 
@@ -537,14 +539,13 @@
     }
 
     function handleSuccessfulScan(scannedText) {
-        // Pull out only the digits, in case the QR contains "BK123456789" or similar
+
         var bookingId = scannedText.replace(/\D/g, '');
 
         qrScanStatus.textContent = 'QR code detected! Loading ticket...';
 
         stopScanning();
 
-        // Fill the existing input and submit the existing form
         document.getElementById('bookingId').value = bookingId;
         document.getElementById('ticketVerificationForm').submit();
     }
