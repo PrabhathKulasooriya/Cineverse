@@ -46,7 +46,8 @@
 <div class="page-content-wrapper">
     <div class="container-fluid">
         <div class="row ticketpage-alert-container">
-            @if(session('success'))
+
+                    @if(session('success'))
                         <div class="alert alert-success text-center position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
                             <i class="fa fa-check-circle"></i> {{ session('success') }}
                             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -66,27 +67,39 @@
         </div>        
 
         @if(auth()->user()->user_role_iduser_role == 1 || auth()->user()->user_role_iduser_role == 2 || auth()->user()->user_role_iduser_role == 3)
-            
-        <form action="{{ route('verifyTicket') }}" method="post" id="ticketVerificationForm">
+
+            <div class="qr-scanner-section  text-right">
+                <button type="button" class="btn btn-ticket-page" id="startScanBtn">
+                    <i class="fa fa-camera"></i> Scan QR Code
+                </button>
+
+                <button type="button" class="btn btn-secondary" id="stopScanBtn" style="display:none;">
+                    Stop Scanning
+                </button>
+
+                <div id="qrScannerContainer" style="display:none;" class="mt-2">
+                    <video id="qrVideo" style="width: 100%; max-width: 400px;"></video>
+                    <canvas id="qrCanvas" style="display:none;"></canvas>
+                    <p class="text-muted mt-1" id="qrScanStatus">Point the qr code at the camera</p>
+                </div>
+            </div>
+            <form action="{{ route('verifyTicket') }}" method="post" id="ticketVerificationForm" style="display:none;">
                 <div class="ticket-verification-input" id='ticketVerificationInput'>
                     <div>
-                    <span>BK
-                        {{csrf_field()}}
-                        <input type="number" name="bookingId" id="bookingId" placeholder="123456789" >
-                    </span>
-                        <button class="btn-verify" id="verifyBtn">Verify</button>
+                        <span>BK
+                            {{csrf_field()}}
+                            <input type="number" name="bookingId" id="bookingId" placeholder="123456789" >
+                        </span>
+                        <button type="submit" class="btn-verify" id="verifyBtn">Verify</button>
                     </div>
-
                 </div>
             </form>
+
         @endif
 
         @if(isset($booking))
         <div class="ticket-verification-page-main">
-        
-            
     
-           
             <div class="ticket-container">
                 
                 <div class="ticket-header">
@@ -132,22 +145,103 @@
     
                         </div>
                     </div>
+
+                    @if(isset($booking['booking_snacks']) && $booking['booking_snacks']->count() > 0)
+                    <div class="ticket-row">
+                        <span class="ticket-label">Snacks</span>
+                        <div class="snack-order-list">
+                            @foreach($booking['booking_snacks'] as $item)
+                            <div class="snack-order-item">
+                                <span class="snack-order-name">
+                                    {{ $item->snack->name }}
+                                    @if($item->snack->size !== 'REGULAR')
+                                        ({{ $item->snack->size }})
+                                    @endif
+                                </span>
+                                <span class="snack-order-qty">x{{ $item->quantity }}</span>
+                                <span class="snack-order-price">Rs. {{ number_format($item->price * $item->quantity, 2) }}</span>
+                            </div>
+                            @endforeach
+                        </div>
+                    </div>
+                    @endif
     
                     <div class="ticket-row">
-                        <span class="ticket-label">Status</span>
+                        <span class="ticket-label">Payment Status</span>
                         <span class="ticket-status">{{ $booking['payment_status']}}</span>
                     </div>
+
+                    @if(isset($booking['booking_snacks']) && $booking['booking_snacks']->count() > 0)
+                    <div class="ticket-row ticket-amounts-row">
+                        <div class="amounts-breakdown">
+                            <div class="amount-line">
+                                <span class="ticket-label">Tickets</span>
+                                <span class="ticket-value">LKR {{ number_format($booking['amount'], 2) }}</span>
+                            </div>
+                            <div class="amount-line">
+                                <span class="ticket-label">Snacks</span>
+                                <span class="ticket-value">LKR {{ number_format($booking['snacks_amount'], 2) }}</span>
+                            </div>
+                            <div class="amount-line grand-total-line">
+                                <span class="ticket-label">Total Amount</span>
+                                <span class="ticket-value ticket-amount">LKR {{ number_format($booking['amount'] + $booking['snacks_amount'], 2) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    @else
     
                     <div class="ticket-row">
                         <span class="ticket-label">Total Amount</span>
                         <span class="ticket-value ticket-amount">LKR {{ number_format($booking['amount'], 2) }}</span>
-                    </div>   
+                    </div>
 
+                    @endif
                     
-                    <div class="text-center">
+                    <div class="d-flex flex-column justify-content-center align-items-center mx-2  mt-3">
+                        <div class="d-flex flex-column align-items-center mt-2 w-100">
+                        <div class="ticket-row d-flex flex-row justify-content-between align-items-center w-100">
+                            <p class="mb-0">
+                                <span class="ticket-label">Available Entries</span> 
+                                <span class="ticket-value"> : {{ $booking['available_seats'] }} </span>
+                            </p>
+                            <p class="mb-0">
+                                <span class="ticket-label">Confirmed Entries</span> 
+                                <span class="ticket-value"> : {{ $booking['entered_count'] }}</span>
+                            </p>
+                        </div>
+
+                        @if(auth()->user()->user_role_iduser_role == 1 || auth()->user()->user_role_iduser_role == 2 || auth()->user()->user_role_iduser_role == 3)
+
+                        @if(isset($booking['available_seats']) && $booking['available_seats'] <= 0)
+                            <p class="text-danger mb-0 mt-1">All entries have been confirmed for this booking.</p>
+                        @else
+                        <button class="btn btn-ticket-page mt-2" type="button" id="confirm-entry-btn" data-toggle="modal" data-target="#changeEntryModal" 
+                                data-id="{{ $booking['booking_id'] }}" data-availableentries="{{ $booking['available_seats'] }}">
+                            Confirm Entry
+                        </button>
+                        @endif
+                        </div>
+
+                         @if(isset($booking['booking_snacks']) && $booking['booking_snacks']->count() > 0)
+
+                            @if(isset($booking['available_snacks']) && $booking['available_snacks'] <= 0)
+                                <p class="text-danger mb-0 mt-1">All snacks have been collected for this booking.</p>
+                            @else
+                            <div>
+                                <button type="button" class="btn btn-ticket-page" data-toggle="modal" data-target="#confirmSnackModal">
+                                    Confirm Snack Collection
+                                </button>
+                            </div>
+                            @endif
+                        @endif
+
+                        @endif
+
+                        <div class="d-flex flex-row justify-content-center mb-2">
+
                         @if(auth()->user()->user_role_iduser_role == 1 || auth()->user()->user_role_iduser_role == 3 || auth()->user()->user_role_iduser_role == 4)
                             <a href="{{route('printTicket', ['booking_id' => $booking['booking_id']])}}" target="_blank">
-                                <button class="btn btn-ticket-page ">
+                                <button class="btn btn-ticket-page mx-2">
                                     <i class="fa fa-download" aria-hidden="true"></i> Get Ticket
                                 </button>
                             </a>
@@ -156,11 +250,12 @@
                         <form id="emailTicketForm" action="{{ route('sendTicketEmail') }}" method="post" >
                             @csrf
                         <input type="hidden" name="booking_id" value="{{ $booking['booking_id']}}">
-                        <button class="btn btn-ticket-page btn-email" type="submit">
+                        <button class="btn btn-ticket-page btn-email mx-2" type="submit">
                             <i class="fa fa-share" aria-hidden="true"></i> Send via Email
                         </button>
                         </form>
-
+                        </div>
+                        
                     </div>
                     
                     <div class="ticket-footer">
@@ -174,12 +269,124 @@
             </div>   
         </div>
         @else
-                <div>
-                    <h3><i class="fa fa-exclamation-triangle"></i> Enter Booking Id.</h3> 
+                <div class="d-flex w-100 align-items-center justify-content-center  ">
+                    <h3><i class="fa fa-exclamation-triangle"></i> No Bookings found.</h3> 
                 </div>
         @endif
     </div> <!-- container -->
 
+{{-- Change Entry Modal --}}
+    <div class="modal fade" id="changeEntryModal" tabindex="-1" role="dialog"
+        aria-labelledby="mySmallModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title mt-0">Confirm Entry</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                </div>
+                <div class="modal-body">
+
+                    <form id="confirmEntryForm" action="{{ route('confirmEntry') }}" method="post">
+                        @csrf
+                        <input type="hidden" id="hiddenBookingId" name="booking_id">
+
+                        <div class="form-group text-center">
+                            <label>Available Entries: <span id="availableEntriesLabel">0</span></label>
+
+                            <div class="input-group w-50 mx-auto d-flex justify-content-center align-items-center">
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-outline-secondary" id="minusEntryBtn">
+                                        <i class="fa fa-minus"></i>
+                                    </button>
+                                </div>
+                                <input type="text" class="form-control text-center" name="confirmEntry"
+                                    id="confirmEntry" >
+                                <div class="input-group-append">
+                                    <button type="button" class="btn btn-outline-secondary" id="plusEntryBtn">
+                                        <i class="fa fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <span class="text-danger d-block mt-2" id="confirmEntryError"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary float-right" id="confirmEntrySubmitBtn">
+                                Confirm Entry
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+    </div>
+    </div>
+
+
+{{-- Confirm Snack Collection Modal --}}
+<div class="modal fade" id="confirmSnackModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title mt-0">Confirm Snack Collection</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body">
+
+                <form id="confirmSnackForm" action="{{ route('confirmSnack') }}" method="post">
+                    @csrf
+                    <input type="hidden" name="booking_id" value="{{ $booking['booking_id'] ?? '' }}">
+
+                    <div id="snackItemsContainer">
+                        @if(isset($booking['booking_snacks']))
+                            @foreach($booking['booking_snacks'] as $item)
+                                @php
+                                    $remaining = $item->quantity - $item->received_quantity;
+                                    $label = $item->snack->name;
+                                    if ($item->snack->size !== 'REGULAR') {
+                                        $label .= ' (' . $item->snack->size . ')';
+                                    }
+                                @endphp
+
+                                <div class="snack-item-row d-flex justify-content-between align-items-center mb-2"
+                                     data-booking-snack-id="{{ $item->idbooking_snacks }}"
+                                     data-max="{{ $remaining }}">
+
+                                    <span>{{ $label }} - Remaining: {{ $remaining }}</span>
+
+                                    <div class="input-group" style="width: 150px;">
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-outline-secondary btn-minus-snack">
+                                                <i class="fa fa-minus"></i>
+                                            </button>
+                                        </div>
+                                        <input type="text" class="form-control text-center received-input"
+                                               readonly value="{{ $remaining }}">
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-outline-secondary btn-plus-snack">
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @endif
+                    </div>
+
+                    <span class="text-danger d-block mt-2" id="confirmSnackError"></span>
+
+                    <div class="form-group mt-3">
+                        <button type="submit" class="btn btn-primary float-right">
+                            Confirm Collection
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
 </div> <!-- Page content Wrapper -->
 
 </div> <!-- content -->
@@ -197,6 +404,7 @@
 <script src="{{ URL::asset('assets/plugins/bootstrap-filestyle/js/bootstrap-filestyle.min.js')}}" type="text/javascript"></script>
 <script src="{{ URL::asset('assets/plugins/bootstrap-touchspin/js/jquery.bootstrap-touchspin.min.js')}}"
         type="text/javascript"></script>
+<script src="{{ URL::asset('assets/plugins/jsqr/jsQR.js') }}"></script>
 
 <!-- Plugins Init js -->
 <script src="{{ URL::asset('assets/pages/form-advanced.js')}}"></script>
@@ -256,12 +464,228 @@
 
 
 
-    const verifyBtn = document.getElementById('verifyBtn');
-    const ticketVerificationForm = document.getElementById('ticketVerificationForm');
+    //QR Code Scanning****************************************************************
 
-    verifyBtn.addEventListener('click', function () {
-        preventDefault();
-        ticketVerificationForm.submit();
+    var qrVideoElement = document.getElementById('qrVideo');
+    var qrCanvasElement = document.getElementById('qrCanvas');
+    var qrCanvasContext = qrCanvasElement.getContext('2d');
+    var qrScanStatus = document.getElementById('qrScanStatus');
+
+    var cameraStream = null;
+    var scanningActive = false;
+
+    
+    document.getElementById('startScanBtn').addEventListener('click', function () {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+            .then(function (stream) {
+                cameraStream = stream;
+                qrVideoElement.srcObject = stream;
+                qrVideoElement.play();
+
+                document.getElementById('qrScannerContainer').style.display = 'block';
+                document.getElementById('startScanBtn').style.display = 'none';
+                document.getElementById('stopScanBtn').style.display = 'inline-block';
+                document.getElementById('ticketVerificationForm').style.display = 'block';
+
+                scanningActive = true;
+                requestAnimationFrame(scanVideoFrame);
+            })
+            .catch(function (error) {
+                qrScanStatus.textContent = 'Camera access denied or not available.';
+            });
+    });
+
+    document.getElementById('stopScanBtn').addEventListener('click', function () {
+        scanningActive = false;
+
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(function (track) {
+                track.stop();
+            });
+            cameraStream = null;
+        }
+
+        document.getElementById('qrScannerContainer').style.display = 'none';
+        document.getElementById('startScanBtn').style.display = 'inline-block';
+        document.getElementById('stopScanBtn').style.display = 'none';
+        document.getElementById('ticketVerificationForm').style.display = 'none';
+    });
+
+
+    function scanVideoFrame() {
+        if (!scanningActive) {
+            return;
+        }
+
+        // Wait until the video has enough data to read frames from
+        if (qrVideoElement.readyState === qrVideoElement.HAVE_ENOUGH_DATA) {
+
+            qrCanvasElement.width = qrVideoElement.videoWidth;
+            qrCanvasElement.height = qrVideoElement.videoHeight;
+            qrCanvasContext.drawImage(qrVideoElement, 0, 0, qrCanvasElement.width, qrCanvasElement.height);
+
+            var imageData = qrCanvasContext.getImageData(0, 0, qrCanvasElement.width, qrCanvasElement.height);
+            var qrResult = jsQR(imageData.data, imageData.width, imageData.height);
+
+            if (qrResult) {
+                handleSuccessfulScan(qrResult.data);
+                return; // stop the loop, we found something
+            }
+        }
+
+        requestAnimationFrame(scanVideoFrame);
+    }
+
+    function handleSuccessfulScan(scannedText) {
+        // Pull out only the digits, in case the QR contains "BK123456789" or similar
+        var bookingId = scannedText.replace(/\D/g, '');
+
+        qrScanStatus.textContent = 'QR code detected! Loading ticket...';
+
+        stopScanning();
+
+        // Fill the existing input and submit the existing form
+        document.getElementById('bookingId').value = bookingId;
+        document.getElementById('ticketVerificationForm').submit();
+    }
+
+    //Confirm Entry****************************************************************
+    
+    var maxEntries = 0;
+    var currentEntry = 0;
+
+    // Populate data for Confirm Entry Modal
+    $(document).on('click', '#confirm-entry-btn', function () {
+        var bookingId = $(this).data('id');
+        var availableEntries = $(this).data('availableentries');
+
+        maxEntries = parseInt(availableEntries);
+        currentEntry = maxEntries;
+
+        $("#changeEntryModal #hiddenBookingId").val(bookingId);
+        $("#changeEntryModal #availableEntriesLabel").text(maxEntries);
+        $("#changeEntryModal #confirmEntry").val(currentEntry);
+        $("#changeEntryModal #confirmEntryError").text('');
+    });
+
+    $('#plusEntryBtn').on('click', function () {
+        if (currentEntry < maxEntries) {
+            currentEntry = currentEntry + 1;
+            $('#confirmEntry').val(currentEntry);
+            $('#confirmEntryError').text('');
+        } else {
+            $('#confirmEntryError').text('Cannot exceed available entries.');
+        }
+    });
+
+    
+    $('#minusEntryBtn').on('click', function () {
+        if (currentEntry > 0) {
+            currentEntry = currentEntry - 1;
+            $('#confirmEntry').val(currentEntry);
+            $('#confirmEntryError').text('');
+        } else {
+            $('#confirmEntryError').text('Entry cannot go below 0.');
+        }
+    });
+
+    
+    $('#confirmEntryForm').on('submit', function (e) {
+        e.preventDefault();
+
+        var formData = $(this).serialize();
+
+        $.ajax({
+            url: '{{ route('confirmEntry') }}',
+            method: 'POST',
+            data: formData,
+            success: function (response) {
+                $('#changeEntryModal').modal('hide');
+                $.notify(response.message || 'Entry confirmed successfully.', 'success');
+
+                setTimeout(function () {
+                    location.reload();
+                }, 1000);
+            },
+            error: function (xhr) {
+                var errorMessage = 'Something went wrong. Please try again.';
+
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                }
+
+                $('#confirmEntryError').text(errorMessage);
+            }
+        });
+    });
+
+    //Confirm Snack Collection****************************************************************
+
+    // Plus button for a snack row
+    $(document).on('click', '.btn-plus-snack', function () {
+        var row = $(this).closest('.snack-item-row');
+        var input = row.find('.received-input');
+        var max = parseInt(row.data('max'));
+        var current = parseInt(input.val());
+
+        if (current < max) {
+            input.val(current + 1);
+        }
+    });
+
+    // Minus button for a snack row
+    $(document).on('click', '.btn-minus-snack', function () {
+        var row = $(this).closest('.snack-item-row');
+        var input = row.find('.received-input');
+        var current = parseInt(input.val());
+
+        if (current > 0) {
+            input.val(current - 1);
+        }
+    });
+
+    // Submit the whole form via AJAX
+    $('#confirmSnackForm').on('submit', function (e) {
+        e.preventDefault();
+
+        var bookingId = $('input[name="booking_id"]', this).val();
+        var items = [];
+
+        $('.snack-item-row').each(function () {
+            var bookingSnackId = $(this).data('booking-snack-id');
+            var chosenQuantity = $(this).find('.received-input').val();
+
+            items.push({
+                booking_snack_id: bookingSnackId,
+                quantity: chosenQuantity
+            });
+        });
+
+        $.ajax({
+            url: $(this).attr('action'),
+            method: 'POST',
+            data: {
+                booking_id: bookingId,
+                items: items
+            },
+            success: function (response) {
+                $('#confirmSnackModal').modal('hide');
+                $.notify(response.message || 'Snacks confirmed successfully.', 'success');
+
+                setTimeout(function () {
+                    location.reload();
+                }, 1000);
+            },
+            error: function (xhr) {
+                var errorMessage = 'Something went wrong. Please try again.';
+
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                }
+
+                $('#confirmSnackError').text(errorMessage);
+            }
+        });
     });
 
     //Download Ticket****************************************************************

@@ -169,8 +169,8 @@ Route::group(['middleware' => 'auth', 'prefix' => ''], function () {
         Route::group(['middleware' => 'role:1,3'], function () {
 
             //Ticket Verification
-            
-
+            Route::post('/confirmEntry', 'TicketController@confirmEntry')->name('confirmEntry');
+            Route::post('/confirmSnack', 'TicketController@confirmSnack')->name('confirmSnack');
 
         });
 

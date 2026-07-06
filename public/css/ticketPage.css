@@ -127,6 +127,7 @@
         font-size: 14px;
         border-bottom: 1px dashed #555;
         color: #fff;
+        width: 100%;
     }
 
     .ticket-row:last-child {
@@ -209,13 +210,11 @@
         text-transform: uppercase;
         letter-spacing: 1px;
         margin-top: 20px;
-        transition: transform 0.3s ease;
+        transition: all 0.3s ease;
     }
 
     .btn-ticket-page:hover {
-        transform: translateY(-2px);
-        color: white;
-        background: none;
+        transform: scale(1.1);
         border: 1px solid #b22222;
     }
 
@@ -240,14 +239,12 @@
         align-items: center;
         margin-top: 20px;
         font-size: 18px;
-        padding: 10px;
         border-radius: 15px;
         font-weight: 600;
     }
 
     .ticket-verification-input div{
         color: black;
-        padding: 5px 10px;
         border-radius: 15px;
         font-weight: 600;
         margin-left: 10px;

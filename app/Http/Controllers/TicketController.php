@@ -38,10 +38,13 @@ class TicketController extends Controller
     //Ticket Verification *****************************************************************************************************
     public function ticketVerification(){
 
+        $booking = session('bookingData');
+        $seats = session('seats');
+
         return view('management.ticketVerification', [
             'title' => 'Ticket Verification',
-            'booking' => session('booking'),
-            'seats' => session('seats')
+            'booking' => $booking,
+            'seats' => $seats,
         ]);   
     }
       
@@ -59,6 +62,13 @@ class TicketController extends Controller
                 
         }
 
+        if(session()->has('booking')){
+            session()->forget('booking');
+        }
+        if(session()->has('seats')){
+            session()->forget('seats');
+        }
+
         try{
             $booking = Bookings::where('booking_id', $request->bookingId)->first();
             
@@ -73,18 +83,35 @@ class TicketController extends Controller
                 
                 $movie = Movies::find($booking->movies_movie_id);
                 $show = Shows::find($booking->shows_show_id);
-            
+                $snacks = BookingSnack::where('booking_id', $booking->booking_id)
+                            ->with('snack')
+                            ->get();
+
+                $snacksAmount = $snacks->sum(function ($item) {
+                    return $item->price * $item->quantity;
+                });
+
+                $availableSeats = $booking->total_seats - $booking->entered_count;
+                
+                $availableSnacks = $snacks->sum(function ($item) {
+                    return $item->quantity - $item->received_quantity;
+                });
 
                 $bookingData = $booking->toArray();
 
+                $bookingData['available_seats'] = $availableSeats;
+                $bookingData['available_snacks'] = $availableSnacks;
                 $bookingData['movie_name'] = $movie->name;
                 $bookingData['show_time'] = $show->time;
                 $bookingData['show_date'] = $show->date;
+                $bookingData['booking_snacks'] = $snacks;
+                $bookingData['snacks_amount'] = $snacksAmount;
+
+                session(['bookingData' => $bookingData]);
+                session(['seats' => $seats]);
                 
                 return redirect()->route('ticketVerification')->with([
                     'success' => 'Ticket verified successfully!',
-                    'booking' => $bookingData,
-                    'seats' => $seats
                 ]);
 
             } else {
@@ -323,6 +350,108 @@ class TicketController extends Controller
                 session()->flash('error', 'An error occurred while downloading the ticket!');
                 return back();
             }
+    }
+
+//Confirm Entry *****************************************************************************************************
+    public function confirmEntry(Request $request){
+        $validator = Validator::make($request->all(), [
+            'booking_id' => 'required|numeric',
+            'confirmEntry' => 'required|numeric|min:1',
+        ],[
+            'booking_id.required' => 'Booking ID is required',
+            'booking_id.numeric' => 'Booking ID must be numeric',
+            'confirmEntry.required' => 'Confirm entry is required',
+            'confirmEntry.numeric' => 'Confirm entry must be numeric',
+            'confirmEntry.min' => 'Confirm entry must be at least 1',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->route('ticketVerification')->with('error', $validator->errors()->first());
+        }
+
+        try{
+            $booking = Bookings::where('booking_id', $request->booking_id)->first();
+            
+            if($booking){
+                
+                $total_seats = $booking->total_seats;
+                $entered_count = $booking->entered_count;
+                $availableSeats = $total_seats - $entered_count;
+
+                if($request->confirmEntry > $availableSeats){
+                    return redirect()->route('ticketVerification')->with('error', 'Confirm entry exceeds available seats!');
+                }
+                
+                $booking->entered_count += $request->confirmEntry;
+                $booking->save();
+
+                if (session()->has('bookingData')) {
+                    $bookingData = session('bookingData');
+                    if ($bookingData['booking_id'] == $booking->booking_id) {
+                        $bookingData['entered_count'] = $booking->entered_count;
+                        $bookingData['available_seats'] = $booking->total_seats - $booking->entered_count;
+                        session(['bookingData' => $bookingData]);
+                    }
+                }
+
+                return response()->json(['success' => 'Entry confirmed successfully!']);
+               
+            } else {
+                return redirect()->route('ticketVerification')->with('error', 'Booking not found!');
+            }
+        } catch (\Exception $e) {
+            return redirect()->route('ticketVerification')->with('error', 'An error occurred while confirming entry!');
+        }
+    }
+
+//Confirm Snack *****************************************************************************************************
+    public function confirmSnack(Request $request)
+    {
+        $items = $request->input('items');
+
+        foreach ($items as $item) {
+
+            $bookingSnack = BookingSnack::find($item['booking_snack_id']);
+
+            if (!$bookingSnack) {
+                continue; 
+            }
+
+            $newReceivedQuantity = $bookingSnack->received_quantity + $item['quantity'];
+
+        
+            if ($newReceivedQuantity > $bookingSnack->quantity) {
+                $newReceivedQuantity = $bookingSnack->quantity;
+            }
+
+            $bookingSnack->received_quantity = $newReceivedQuantity;
+            $bookingSnack->save();
+        }
+
+        if(session()->has('bookingData')){
+            $bookingData = session('bookingData');
+            $booking_id = $bookingData['booking_id'];
+
+            $snacks = BookingSnack::where('booking_id', $booking_id)
+                        ->with('snack')
+                        ->get();
+
+            $snacksAmount = $snacks->sum(function ($item) {
+                return $item->price * $item->quantity;
+            });
+
+            $availableSnacks = $snacks->sum(function ($item) {
+                return $item->quantity - $item->received_quantity;
+            });
+
+            $bookingData['booking_snacks'] = $snacks;
+            $bookingData['snacks_amount'] = $snacksAmount;
+            $bookingData['available_snacks'] = $availableSnacks;
+
+            session(['bookingData' => $bookingData]);
+        }
+
+        return response()->json(['message' => 'Snack collection updated successfully.']);
     }
     
 }

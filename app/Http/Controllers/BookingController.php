@@ -121,6 +121,7 @@ class BookingController extends Controller
                 $timeComponent
             );
 
+            $total_seats = count($selectedSeatsId);
            
             $saveBooking = new Bookings();
             $saveBooking->booking_id = $bookingId;
@@ -128,6 +129,7 @@ class BookingController extends Controller
             $saveBooking->movies_movie_id = $request->movieId;
             $saveBooking->master_user_idmaster_user = $customerId;
             $saveBooking->amount = $request->totalAmount;
+            $saveBooking->total_seats = $total_seats;
             $saveBooking->payment_status = 'PENDING'; 
             $saveBooking->save();
 
