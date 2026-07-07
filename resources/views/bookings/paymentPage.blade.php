@@ -421,7 +421,7 @@ plusButtons.forEach(function (button) {
 
         var newQty = parseInt(qtyEl.textContent) + 1;
         if (newQty > 10) {
-            return; // don't allow more than 10 of one snack
+            return; 
         }
 
         qtyEl.textContent = newQty;

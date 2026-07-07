@@ -126,7 +126,15 @@
 
                     @if(Auth::check() &&( Auth::user()->user_role_iduser_role == 1 || Auth::user()->user_role_iduser_role == 3))
                     
-                        <div>
+                        <div class="d-flex flex-row justify-content-between">
+                        <form action="{{ route('verifyTicket') }}" method="post" >
+                            @csrf
+                            <input type="hidden" name="bookingId" value="{{$booking['booking_id']}}">
+                            <button class="btn btn-ticket-page mx-2" type="submit">
+                                <i class="fa fa-download" aria-hidden="true"></i> Confirm entry
+                            </button>
+                        </form>
+
                         <a href="{{route('printTicket', ['booking_id' => $booking['booking_id']])}}" target="_blank">
                             <button class="btn btn-ticket-page mx-2">
                                 <i class="fa fa-download" aria-hidden="true"></i> Print Ticket
