@@ -41,7 +41,7 @@ class ShowsController extends Controller
 
 
 
-        $shows = Shows::whereRaw("STR_TO_DATE(CONCAT(date, ' ', time), '%Y-%m-%d %H:%i:%s') >= ?", [now()->subHours(3)])
+        $shows = Shows::whereRaw("STR_TO_DATE(CONCAT(date, ' ', time), '%Y-%m-%d %H:%i:%s') >= ?", [now()->subHours(2)])
                 ->get();
         $movies = Movies::where('status', 1)->where('screening_status', 1)->get();
         $showtimes = Showtimes::where('status',1)->get();

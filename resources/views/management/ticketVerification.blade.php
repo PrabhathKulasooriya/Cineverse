@@ -199,27 +199,27 @@
                     
                     <div class="d-flex flex-column justify-content-center align-items-center mx-2  mt-3">
                         <div class="d-flex flex-column align-items-center mt-2 w-100">
-                        <div class="ticket-row d-flex flex-row justify-content-between align-items-center w-100">
-                            <p class="mb-0">
-                                <span class="ticket-label">Available Entries</span> 
-                                <span class="ticket-value"> : {{ $booking['available_seats'] }} </span>
-                            </p>
-                            <p class="mb-0">
-                                <span class="ticket-label">Confirmed Entries</span> 
-                                <span class="ticket-value"> : {{ $booking['entered_count'] }}</span>
-                            </p>
-                        </div>
+                            <div class="ticket-row d-flex flex-row justify-content-between align-items-center w-100">
+                                <p class="mb-0">
+                                    <span class="ticket-label">Available Entries</span> 
+                                    <span class="ticket-value"> : {{ $booking['available_seats'] }} </span>
+                                </p>
+                                <p class="mb-0">
+                                    <span class="ticket-label">Confirmed Entries</span> 
+                                    <span class="ticket-value"> : {{ $booking['entered_count'] }}</span>
+                                </p>
+                            </div>
 
-                        @if(auth()->user()->user_role_iduser_role == 1 || auth()->user()->user_role_iduser_role == 2 || auth()->user()->user_role_iduser_role == 3)
+                            @if(auth()->user()->user_role_iduser_role == 1 || auth()->user()->user_role_iduser_role == 2 || auth()->user()->user_role_iduser_role == 3)
 
-                        @if(isset($booking['available_seats']) && $booking['available_seats'] <= 0)
-                            <p class="text-danger mb-0 mt-1">All entries have been confirmed for this booking.</p>
-                        @else
-                        <button class="btn btn-ticket-page mt-2" type="button" id="confirm-entry-btn" data-toggle="modal" data-target="#changeEntryModal" 
-                                data-id="{{ $booking['booking_id'] }}" data-availableentries="{{ $booking['available_seats'] }}">
-                            Confirm Entry
-                        </button>
-                        @endif
+                            @if(isset($booking['available_seats']) && $booking['available_seats'] <= 0)
+                                <p class="text-danger mb-0 mt-1">All entries have been confirmed for this booking.</p>
+                            @else
+                            <button class="btn btn-ticket-page mt-2" type="button" id="confirm-entry-btn" data-toggle="modal" data-target="#changeEntryModal" 
+                                    data-id="{{ $booking['booking_id'] }}" data-availableentries="{{ $booking['available_seats'] }}">
+                                Confirm Entry
+                            </button>
+                            @endif
                         </div>
 
                          @if(isset($booking['booking_snacks']) && $booking['booking_snacks']->count() > 0)
@@ -227,6 +227,7 @@
                             @if(isset($booking['available_snacks']) && $booking['available_snacks'] <= 0)
                                 <p class="text-danger mb-0 mt-1">All snacks have been collected for this booking.</p>
                             @else
+                            
                             <div>
                                 <button type="button" class="btn btn-ticket-page" data-toggle="modal" data-target="#confirmSnackModal">
                                     Confirm Snack Collection
@@ -498,6 +499,10 @@
     });
 
     document.getElementById('stopScanBtn').addEventListener('click', function () {
+        stopScanning();
+    });
+
+    function stopScanning() {
         scanningActive = false;
 
         if (cameraStream) {
@@ -511,7 +516,7 @@
         document.getElementById('startScanBtn').style.display = 'inline-block';
         document.getElementById('stopScanBtn').style.display = 'none';
         document.getElementById('ticketVerificationForm').style.display = 'none';
-    });
+    }
 
 
     function scanVideoFrame() {
