@@ -125,11 +125,28 @@
                 <div class="text-center">
 
                     @if(Auth::check() &&( Auth::user()->user_role_iduser_role == 1 || Auth::user()->user_role_iduser_role == 3))
+                    
+                        <div>
                         <a href="{{route('printTicket', ['booking_id' => $booking['booking_id']])}}" target="_blank">
-                            <button class="btn btn-ticket-page ">
+                            <button class="btn btn-ticket-page mx-2">
                                 <i class="fa fa-download" aria-hidden="true"></i> Print Ticket
                             </button>
                         </a>
+                        </div> 
+                        
+                        <div class="">
+                        <a href="{{route('shows')}}" >
+                            <button class="btn btn-ticket-page mx-2">
+                                <i class="fa fa-download" aria-hidden="true"></i> Back to all shows
+                            </button>
+                        </a>
+
+                        <a href="{{ route('seatSelection', ['show_id' => $booking['showId']]) }}"> 
+                            <button class="btn btn-ticket-page mx-2">
+                                <i class="fa fa-download" aria-hidden="true"></i> Book Again
+                            </button>
+                        </a>
+                        </div>
                     @else
                         
                         <a href="{{route('downloadTicket', ['booking_id' => $booking['booking_id']])}}" target="_blank">
