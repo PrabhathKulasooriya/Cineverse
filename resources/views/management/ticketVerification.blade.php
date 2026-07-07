@@ -465,6 +465,13 @@
         $(this).blur();
     });
 
+    $(document).ready(function (){
+        var hasbooking = @json(isset($booking));
+
+        if( !hasbooking ){
+            startScanning();
+        }
+    })
 
 
     //QR Code Scanning****************************************************************
@@ -479,6 +486,16 @@
 
     
     document.getElementById('startScanBtn').addEventListener('click', function () {
+        startScanning();
+    });
+
+
+
+    document.getElementById('stopScanBtn').addEventListener('click', function () {
+        stopScanning();
+    });
+
+    function startScanning(){
         navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
             .then(function (stream) {
                 cameraStream = stream;
@@ -496,11 +513,7 @@
             .catch(function (error) {
                 qrScanStatus.textContent = 'Camera access denied or not available.';
             });
-    });
-
-    document.getElementById('stopScanBtn').addEventListener('click', function () {
-        stopScanning();
-    });
+    }
 
     function stopScanning() {
         scanningActive = false;
