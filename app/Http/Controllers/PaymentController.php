@@ -131,7 +131,7 @@ class PaymentController extends Controller
 
         $snacks = Snack::orderBy('name')->get()->groupBy('name');
         
-        return view('bookings.paymentPage', compact('bookingData', 'snacks', 'secondsRemaining', 'formattedTimeLeft'));
+        return view('bookings.paymentPage', compact('bookingData', 'snacks', 'secondsRemaining', 'formattedTimeLeft', 'expiresAt'));
     }
 
     public function timeRemaining()

@@ -327,6 +327,7 @@ setTimeout(function () {
 // ── Countdown timer ─────────────────────────────────────────────────────────
 var secondsLeft = {{ $secondsRemaining }};
 var timerInterval;
+var expiresAt = new Date('{{ $expiresAt }}').getTime();
 var ticketAmount = {{ $bookingData['amount'] }};
 
 function formatTime(totalSeconds) {
@@ -372,7 +373,8 @@ function startTimer() {
     countdownEl.textContent = formatTime(secondsLeft);
 
     timerInterval = setInterval(function () {
-        secondsLeft = secondsLeft - 1;
+        
+        secondsLeft = Math.floor((expiresAt - Date.now()) / 1000);
         countdownEl.textContent = formatTime(secondsLeft);
 
         if (secondsLeft <= 120) {
