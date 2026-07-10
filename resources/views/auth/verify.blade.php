@@ -33,6 +33,7 @@
             <p class="verify-desc">
                 We sent a verification link to your inbox.<br>
                 Click it to activate your account and start booking.
+                The verify link will be expire in 1 hour.
             </p>
 
             <hr class="verify-divider">

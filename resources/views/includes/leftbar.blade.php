@@ -231,14 +231,19 @@
                     <li class="menu-title">Reports</li>
 
                         <li>
-                            <a href="revenueReport" class="waves-effect"><i
+                            <a href="{{ route('monthlyRevenueReport') }}" class="waves-effect"><i
                                         class="fa fa-file-text-o"></i><span>Revenue Report</span></a>
                         </li> 
 
 
                          <li>
-                            <a href="clientReport" class="waves-effect"><i
-                                        class="fa fa-file-text-o"></i><span>Client Report</span></a>
+                            <a href="{{ route('movieIncomeReport') }}" class="waves-effect"><i
+                                        class="fa fa-file-text-o"></i><span>Movie Income Report</span></a>
+                        </li> 
+
+                        <li>
+                            <a href="{{ route('snackDemandReport') }}" class="waves-effect"><i
+                                        class="fa fa-file-text-o"></i><span>Snack Demand Report</span></a>
                         </li> 
 
                     @endif

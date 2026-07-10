@@ -12,4 +12,9 @@ class BookingSnack extends Model
     {
         return $this->belongsTo(Snack::class, 'snacks_idsnacks', 'idsnacks');
     }
+
+    public function booking()
+    {
+        return $this->belongsTo(Bookings::class, 'booking_id', 'booking_id');
+    }
 }

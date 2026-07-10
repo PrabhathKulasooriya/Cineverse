@@ -14,5 +14,10 @@ class Shows extends Model
      {
         return $this->belongsTo(Movies::class,'movies_movie_id', 'movie_id');
     }
+
+    public function bookings()
+    {
+        return $this->hasMany(Bookings::class, 'shows_show_id', 'show_id');
+    }
     
 }

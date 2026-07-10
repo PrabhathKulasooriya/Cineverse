@@ -44,15 +44,11 @@ Route::get('/printTicket/{booking_id}', 'TicketController@printTicket')->name('p
 
 Route::get('/booking/time-remaining', 'PaymentController@timeRemaining')->name('timeRemaining');
 
-
 //Search Movies
 Route::get('/search', 'MoviesController@search')->name('search');
 
-
-
 //After Login ('auth')**************************************************************************************************************************
 Route::group(['middleware' => 'auth', 'prefix' => ''], function () {
-
 
     //Log Out
     Route::get('/logout', 'SecurityController@logoutNow')->name('logout');
@@ -128,8 +124,9 @@ Route::group(['middleware' => 'auth', 'prefix' => ''], function () {
             Route::get('/screenedShows','ShowsController@screened')->name('screenedShows');
 
             //Reports
-            Route::get('/revenueReport', 'ReportController@revenueReport')->name('revenueReport');
-            Route::get('/clientReport', 'ReportController@clientReport')->name('clientReport');
+            Route::get('reports/monthly-revenue', 'ReportController@monthlyRevenueReport')->name('monthlyRevenueReport');
+            Route::get('reports/movie-income', 'ReportController@movieIncomeReport')->name('movieIncomeReport');
+            Route::get('reports/snack-demand', 'ReportController@snackDemandReport')->name('snackDemandReport');
 
         });
 
