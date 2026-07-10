@@ -37,7 +37,14 @@ class BookingController extends Controller
 
         $bookingCutOff = now()->addMinutes(env('BOOKING_CUTOFF_MINUTES', 15));
         $shows = Shows::where('movies_movie_id', $movie_id)
-                ->whereRaw("STR_TO_DATE(CONCAT(date, ' ', time), '%Y-%m-%d %H:%i:%s') >= ?", [$bookingCutOff])
+                ->where(function ($query) use ($bookingCutOff) {
+                    $query->where('date', '>', now()->format('Y-m-d'))
+                        ->orWhere(function ($q) use ($bookingCutOff) {
+                            $q->where('date', '=', now()->format('Y-m-d'))
+                                ->where('time', '>=', $bookingCutOff->format('H:i:s'));
+                        });
+                })
+                ->where('date', '<=', now()->addDays(6)->format('Y-m-d'))
                 ->get();
 
         if($shows->isEmpty()){

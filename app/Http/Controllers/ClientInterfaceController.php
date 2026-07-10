@@ -14,19 +14,18 @@ public function index(){
     $bookingCutOff = now()->addMinutes(env('BOOKING_CUTOFF_MINUTES', 15));
 
     $movies = Movies::where('status', 1)
-            ->where('screening_status', 1)
-            ->whereHas('shows', function ($query) use ($bookingCutOff) {
-            $query->whereNotNull('date')
-              ->whereNotNull('time')
-              ->whereRaw(
-                  "STR_TO_DATE(CONCAT(date, ' ', time), '%Y-%m-%d %H:%i:%s') >= ?",
-                  [$bookingCutOff]
-              );
+    ->where('screening_status', 1)
+    ->whereHas('shows', function ($query) use ($bookingCutOff) {
+        // Range query is faster and uses indexes
+        $query->where('date', '>=', $bookingCutOff->format('Y-m-d'))
+              ->orWhere(function ($q) use ($bookingCutOff) {
+                  $q->where('date', '=', $bookingCutOff->format('Y-m-d'))
+                    ->where('time', '>=', $bookingCutOff->format('H:i:s'));
+              });
     })
     ->get()
-    ->map(function ($movie) {
+    ->each(function ($movie) {
         $movie->formatted_duration = $this->formatDuration($movie->duration);
-        return $movie;
     });
 
     $movieIds = $movies->pluck('movie_id'); 
