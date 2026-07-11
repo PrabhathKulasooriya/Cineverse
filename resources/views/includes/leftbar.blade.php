@@ -31,13 +31,13 @@
                         \Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==2 || 
                         \Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==3)
                             <li>
-                                <a href="dashboard" class="waves-effect"><i
+                                <a href="{{ route('dashboard') }}" class="waves-effect"><i
                                             class="fa fa-area-chart"></i><span>Dashboard </span></a>
                             </li>
                         @endif
                             
                             <li>
-                                <a href="myAccount" class="waves-effect"><i
+                                <a href="{{ route('myAccount') }}" class="waves-effect"><i
                                             class="fa fa-user"></i><span>My Account</span></a>
                             </li>
 
@@ -101,21 +101,21 @@
                   
                         
                         <li>
-                            <a href="upcomingBookings" class="waves-effect">
+                            <a href="{{ route('upcomingBookings') }}" class="waves-effect">
                                 <i class="fa fa-calendar-check-o" aria-hidden="true"></i>
                                 <span>Upcoming Bookings</span>
                             </a>
                         </li>
 
                         <li>
-                            <a href="pastBookings" class="waves-effect">
+                            <a href="{{ route('pastBookings') }}" class="waves-effect">
                                 <i class="fa fa-history" aria-hidden="true"></i>
                                 <span>Past Bookings</span>
                             </a>
                         </li>
 
                         <li>
-                            <a href="customerPendingPayments" class="waves-effect">
+                            <a href="{{ route('customerPendingPayments') }}" class="waves-effect">
                                 <i class="fa fa-hourglass" aria-hidden="true"></i>
                                 <span>Pending Payments</span>
                             </a>
@@ -130,20 +130,20 @@
                         
                     
                         <li>
-                            <a href="ticketVerification" class="waves-effect">
+                            <a href="{{ route('ticketVerification') }}" class="waves-effect">
                                 <i class="fa fa-ticket" aria-hidden="true"></i><span>Ticket Verification</span>
                             </a>
                         </li>
                     
                     
                         <li>
-                            <a href="findBooking" class="waves-effect">
+                            <a href="{{ route('findBooking') }}" class="waves-effect">
                                 <i class="fa fa-search" aria-hidden="true"></i><span>Find Booking</span>
                             </a>
                         </li>
 
                         <li>
-                            <a href="pendingPayments" class="waves-effect">
+                            <a href="{{ route('pendingPayments') }}" class="waves-effect">
                                 <i class="fa fa-clock-o" aria-hidden="true"></i><span>Pending Payments</span>
                             </a>
                         </li>
@@ -160,7 +160,7 @@
                     <li class="menu-title">Snacks</li>
 
                     <li>
-                            <a href="snacks" class="waves-effect">
+                            <a href="{{ route('snacks') }}" class="waves-effect">
                                 <i class="fa fa-cutlery" aria-hidden="true"></i>
                                 <span>Manage Snacks</span>
                             </a>
@@ -178,7 +178,7 @@
 
 
                         <li>
-                            <a href="clientManagement" class="waves-effect"><i
+                            <a href="{{ route('clientManagement') }}" class="waves-effect"><i
                                         class="fa fa-user"></i><span>Client Management</span></a>
                         </li>
 
@@ -190,13 +190,13 @@
                     @if(\Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==1)
 
                         <li>
-                            <a href="employeeManagement" class="waves-effect"><i
+                            <a href="{{ route('employeeManagement') }}" class="waves-effect"><i
                                         class="fa fa-user"></i><span>Staff Management </span></a>
                         </li>
 
                         
                         <li>
-                            <a href="screenedMovies" class="waves-effect"><i
+                            <a href="{{ route('screenedMovies') }}" class="waves-effect"><i
                                         class="fa fa-user"></i><span>Screened Movies </span></a>
                         </li>
 
@@ -216,7 +216,7 @@
 
                     <li class="menu-title">Ticket Settings</li>
                     <li>
-                        <a href="ticketSettings" class="waves-effect">
+                        <a href="{{ route('ticketSettings') }}" class="waves-effect">
                             <i class="fa fa-ticket" aria-hidden="true"></i><span>Ticket Prices</span>
                         </a>
                     </li>

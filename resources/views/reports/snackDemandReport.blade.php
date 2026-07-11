@@ -1,5 +1,8 @@
 @include('includes/header_start')
+<link rel="stylesheet" href="{{ asset('css/reports.css') }}">
 <meta name="csrf-token" content="{{ csrf_token() }}"/>
+
+
 @include('includes/header_end')
 
 <ul class="list-inline menu-left mb-0">
@@ -20,72 +23,33 @@
     <div class="container-fluid">
         <div class="col-lg-12">
 
-            <div class="card m-b-20">
+            <div class="card m-b-20 today-card" style="border: 2px solid #B22222;">
                 <div class="card-body">
-                    <h5 class="mb-3">Snacks Needed — Next 7 Days</h5>
-                    <table class="table table-striped table-bordered">
-                        <thead>
-                            <tr>
-                                <th>SHOW DATE</th>
-                                <th>TIME</th>
-                                <th>MOVIE</th>
-                                <th>SNACK</th>
-                                <th>SIZE</th>
-                                <th>QUANTITY NEEDED</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($upcomingSnackDemand as $row)
-                                <tr>
-                                    <td>{{ $row->show_date }}</td>
-                                    <td>{{ $row->show_time }}</td>
-                                    <td>{{ $row->movie_name }}</td>
-                                    <td>{{ $row->snack_name }}</td>
-                                    <td>{{ $row->snack_size }}</td>
-                                    <td><strong>{{ $row->quantity_needed }}</strong></td>
-                                </tr>
-                            @empty
-                                <tr><td colspan="6" class="text-center">No snack pre-orders for the coming week.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                    <h5 class="section-heading text-danger">Today's Snack Need</h5>
+                    @include('reports.partials.snackDemandTable', ['shows' => $todaySnackDemand, 'emptyText' => 'No snack pre-orders for today.'])
                 </div>
             </div>
 
-            <div class="card m-b-20">
+            <div class="card m-b-20" style="border: none; box-shadow: none;">
                 <div class="card-body">
-                    <h5 class="mb-3">Snack Sales — Passed Shows</h5>
-                    <table class="table table-striped table-bordered">
-                        <thead>
-                            <tr>
-                                <th>SHOW DATE</th>
-                                <th>TIME</th>
-                                <th>MOVIE</th>
-                                <th>SNACKS SOLD</th>
-                                <th>SNACK INCOME (LKR)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($passedShowSnackSales as $row)
-                                <tr>
-                                    <td>{{ $row->show_date }}</td>
-                                    <td>{{ $row->show_time }}</td>
-                                    <td>{{ $row->movie_name }}</td>
-                                    <td>{{ $row->total_snacks_sold }}</td>
-                                    <td>{{ number_format($row->snack_income, 2) }}</td>
-                                </tr>
-                            @empty
-                                <tr><td colspan="5" class="text-center">No passed shows with snack sales.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                    <h5 class="section-heading">Snacks Needed — Next 7 Days (Daily Summary)</h5>
+                    @include('reports.partials.dailySnackDemandTable', ['days' => $upcomingSnackDemand, 'emptyText' => 'No snack pre-orders for the coming week.'])
                 </div>
             </div>
 
-            <div class="card m-b-20">
+            <div class="card m-b-20" style="border: none; box-shadow: none;">
                 <div class="card-body">
-                    <h5 class="mb-3">Top 3 Selling Snacks (All Time)</h5>
-                    <canvas id="topSnacksChart" height="100"></canvas>
+                    <h5 class="section-heading">All-Time Most Popular Snacks</h5>
+                    <div class="row mt-4">
+                        @foreach($topSnacksAllTime as $top)
+                            <div class="col-md-3">
+                                <div class="top-snack-card border">
+                                    <p>{{ $top->snack_name }}</p>
+                                    <h3>{{ number_format($top->total_sold) }} <small style="font-size: 14px;">Units</small></h3>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
             </div>
 
@@ -94,26 +58,4 @@
 </div>
 
 @include('includes/footer_start')
-
-<script src="{{ URL::asset('assets/plugins/chartjs/Chart.min.js')}}"></script>
-<script type="text/javascript">
-    var chartLabels = @json($chartLabels);
-    var chartData = @json($chartData);
-
-    var ctx = document.getElementById('topSnacksChart').getContext('2d');
-    var topSnacksChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: chartLabels,
-            datasets: [{
-                data: chartData,
-                backgroundColor: ['#B22222', '#FFD700', '#2C2C2C']
-            }]
-        },
-        options: {
-            responsive: true
-        }
-    });
-</script>
-
 @include('includes/footer_end')

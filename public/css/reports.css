@@ -1,51 +1,170 @@
-.revenue-amount {
-    font-weight: bold;
-    color: #28a745;
-}
-.seat-count {
-    text-align: center;
-    font-weight: 500;
-}
-.low-occupancy {
-    background-color: #f8d7da;
-    color: #721c24;
-}
-.medium-occupancy {
-    background-color: #fff3cd;
-    color: #856404;
-}
-.high-occupancy {
-    background-color: #d4edda;
-    color: #155724;
-}
-.summary-row {
-    background-color: #e9ecef;
-    font-weight: bold;
-}
-.occupancy-row {
-    background-color: #f8f9fa;
-    font-weight: bold;
-}
-.card-title {
-    color: #495057;
-    font-weight: 600;
-}
+
 .stats-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 20px;
+    background: #fff;
+    border: 1px solid #e3e3e3;
+    border-radius: 6px;
+    padding: 16px 20px;
+    text-align: center;
 }
+
 .stats-card h4 {
-    margin-bottom: 15px;
-    font-size: 1.2rem;
-}
-.stats-card .stat-item {
-    display: flex;
-    justify-content: space-between;
+    font-size: 14px;
+    color: #777;
     margin-bottom: 8px;
+    text-transform: uppercase;
 }
-.stats-card .stat-item:last-child {
+
+.stats-card h3 {
+    font-size: 22px;
+    margin: 0;
+    color: #2C2C2C;
+}
+
+.active-range-label {
+    background: #f8f9fa;
+    border-left: 4px solid #B22222;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.chart-wrapper {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.chart-wrapper canvas {
+    max-height: 400px;
+}
+
+.section-heading {
+    border-bottom: 2px solid #eee;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+}
+
+.today-card {
+    border: 2px solid #B22222;
+}
+
+/* Utility to remove card borders */
+.report-card {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+
+.snack-box {
+   
+    border-radius: 6px;
+    
+    margin-bottom: 8px;
+    display: block;
+    width: fit-content;
+}
+
+.snack-box:last-child {
     margin-bottom: 0;
+}
+
+.snack-box strong {
+    color: #B22222;
+    margin-right: 6px;
+}
+
+.snack-badge {
+    background-color: #e9ecef;
+    color: #333;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-right: 4px;
+    font-weight: 600;
+    border: 1px solid #ced4da;
+}
+
+/* Top Snack Metric Cards */
+.top-snack-card {
+    background: #fff;
+    border-left: 4px solid #B22222;
+    padding: 15px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-bottom: 15px;
+}
+
+.top-snack-card h3 { 
+    margin: 0; 
+    font-size: 24px; 
+    color: #333; 
+}
+
+.top-snack-card p { 
+    margin: 0; 
+    color: #777; 
+    text-transform: uppercase; 
+    font-size: 12px;
+}
+
+
+.snack-cell-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.snack-cell-list li {
+    padding: 4px 8px;
+    margin-bottom: 4px;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.snack-tag-a {
+    background-color: #ffe8e8;
+    border-left: 3px solid #B22222;
+}
+
+.snack-tag-b {
+    background-color: #fff8dc;
+    border-left: 3px solid #FFD700;
+}
+
+.snack-box-daily{
+    width: 35%;
+    min-width: 200px;
+}
+
+
+.daily-snack-container {
+    display: flex;
+    flex-direction: column; 
+    gap: 30px;
+}
+
+
+@media (min-width: 769px) {
+    .daily-snack-container {
+        flex-direction: row; 
+        flex-wrap: wrap; 
+        align-items: flex-start;
+    }
+}
+
+/* =========================================
+   Responsive Rules
+   ========================================= */
+@media (max-width: 768px) {
+    .stats-card {
+        margin-bottom: 15px;
+    }
+
+    .input-daterange label {
+        display: block;
+        width: 100%;
+    }
+
+    .table-responsive {
+        font-size: 13px;
+    }
 }

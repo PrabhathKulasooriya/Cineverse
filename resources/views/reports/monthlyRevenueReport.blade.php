@@ -1,5 +1,6 @@
 @include('includes/header_start')
 <link href="{{ URL::asset('assets/css/jquery.notify.css')}}" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="{{ asset('css/reports.css') }}">
 <meta name="csrf-token" content="{{ csrf_token() }}"/>
 @include('includes/header_end')
 
@@ -29,9 +30,9 @@
                                 <label>Select Date Range:</label>
                                 <div class="input-daterange input-group">
                                     <label class="btn">From -</label>
-                                    <input type="date" class="form-control" name="startDate" value="{{ request('startDate') }}">
+                                    <input type="date" class="form-control" name="startDate" value="{{ $startDate }}">
                                     <label class="btn">To -</label>
-                                    <input type="date" class="form-control" name="endDate" value="{{ request('endDate') }}">
+                                    <input type="date" class="form-control" name="endDate" value="{{ $endDate }}">
                                 </div>
                             </div>
                             <div class="form-group col-md-2" style="padding-top: 28px">
@@ -39,6 +40,11 @@
                             </div>
                         </div>
                     </form>
+
+                    <div class="active-range-label">
+                        <strong>Showing results for:</strong> {{ $startDate }} to {{ $endDate }}
+                       
+                    </div>
 
                     <div class="row mb-4">
                         <div class="col-md-4">
@@ -61,30 +67,34 @@
                         </div>
                     </div>
 
-                    <canvas id="monthlyRevenueChart" height="90"></canvas>
+                    <div class="chart-wrapper">
+                        <canvas id="monthlyRevenueChart" height="300"></canvas>
+                    </div>
 
-                    <table class="table table-striped table-bordered mt-4">
-                        <thead>
-                            <tr>
-                                <th>MONTH</th>
-                                <th>SEAT REVENUE (LKR)</th>
-                                <th>SNACK REVENUE (LKR)</th>
-                                <th>TOTAL REVENUE (LKR)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($tableRows as $row)
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered mt-4">
+                            <thead>
                                 <tr>
-                                    <td>{{ $row['month'] }}</td>
-                                    <td>{{ number_format($row['seat_revenue'], 2) }}</td>
-                                    <td>{{ number_format($row['snack_revenue'], 2) }}</td>
-                                    <td><strong>{{ number_format($row['total_revenue'], 2) }}</strong></td>
+                                    <th>MONTH</th>
+                                    <th>SEAT REVENUE (LKR)</th>
+                                    <th>SNACK REVENUE (LKR)</th>
+                                    <th>TOTAL REVENUE (LKR)</th>
                                 </tr>
-                            @empty
-                                <tr><td colspan="4" class="text-center">No data found for the selected date range.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @forelse($tableRows as $row)
+                                    <tr>
+                                        <td>{{ $row['month'] }}</td>
+                                        <td>{{ number_format($row['seat_revenue'], 2) }}</td>
+                                        <td>{{ number_format($row['snack_revenue'], 2) }}</td>
+                                        <td><strong>{{ number_format($row['total_revenue'], 2) }}</strong></td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="4" class="text-center">No data found for the selected date range.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
 
                 </div>
             </div>
@@ -133,6 +143,7 @@
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             scales: {
                 yAxes: [{ ticks: { beginAtZero: true } }]
             }

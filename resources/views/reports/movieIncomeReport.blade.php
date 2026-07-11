@@ -1,4 +1,5 @@
 @include('includes/header_start')
+<link rel="stylesheet" href="{{ asset('css/reports.css') }}">
 <meta name="csrf-token" content="{{ csrf_token() }}"/>
 @include('includes/header_end')
 
@@ -19,18 +20,27 @@
 <div class="page-content-wrapper">
     <div class="container-fluid">
         <div class="col-lg-12">
-            <div class="card m-b-20">
+            <div class="card m-b-20" style="border: none; box-shadow: none;">
                 <div class="card-body">
 
+
+                    <h5 class="section-heading ">Best Selling Active Movies (Avg. Income Per Show)</h5>
+                    <div class="chart-wrapper">
+                        <canvas id="topMoviesChart" height="400"></canvas>
+                    </div>
+
+                    <hr class="mt-4"/>
+                    
+                    <h4>Income Report - Movies </h2>
                     <form action="{{ route('movieIncomeReport') }}" method="get">
                         <div class="row">
                             <div class="form-group col-md-5">
-                                <label>Select Date Range:</label>
+                                <label>Select Date Range</label>
                                 <div class="input-daterange input-group">
                                     <label class="btn">From -</label>
-                                    <input type="date" class="form-control" name="startDate" value="{{ request('startDate') }}">
+                                    <input type="date" class="form-control" name="startDate" value="{{ $startDate }}">
                                     <label class="btn">To -</label>
-                                    <input type="date" class="form-control" name="endDate" value="{{ request('endDate') }}">
+                                    <input type="date" class="form-control" name="endDate" value="{{ $endDate }}">
                                 </div>
                             </div>
                             <div class="form-group col-md-2" style="padding-top: 28px">
@@ -39,31 +49,40 @@
                         </div>
                     </form>
 
-                    <h5 class="mt-4 mb-3">Top 5 Best-Selling Active Movies</h5>
-                    <canvas id="topMoviesChart" height="90"></canvas>
+                    <div class="active-range-label">
+                        <strong>Showing table results for:</strong> {{ $startDate }} to {{ $endDate }}
+                      
+                    </div>
 
-                    <table class="table table-striped table-bordered mt-4">
-                        <thead>
-                            <tr>
-                                <th>MOVIE</th>
-                                <th>TOTAL BOOKINGS</th>
-                                <th>TOTAL TICKETS</th>
-                                <th>TICKET INCOME (LKR)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($movieIncomeData as $movie)
+                    <div class="table-responsive">
+                        
+                        <table class="table table-striped table-bordered mt-4">
+                            <thead>
                                 <tr>
-                                    <td>{{ $movie->movie_name }}</td>
-                                    <td>{{ $movie->total_bookings }}</td>
-                                    <td>{{ $movie->total_tickets }}</td>
-                                    <td>{{ number_format($movie->total_income, 2) }}</td>
+                                    <th>MOVIE</th>
+                                    <th>START DATE</th>
+                                    <th>DAYS ON SCREEN</th>
+                                    <th>NO. OF SHOWS</th>
+                                    <th>TICKET INCOME (LKR)</th>
                                 </tr>
-                            @empty
-                                <tr><td colspan="4" class="text-center">No data found.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @forelse($movieIncomeData as $movie)
+                                    <tr>
+                                        <td>{{ $movie->movie_name }}</td>
+                                        <td>{{ $movie->start_date ?? '-' }}</td>
+                                        <td>{{ $movie->days_screening }}</td>
+                                        <td>{{ $movie->no_of_shows }}</td>
+                                        <td>{{ number_format($movie->total_income, 2) }}</td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="5" class="text-center">No data found.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+
+                    
 
                 </div>
             </div>
@@ -77,23 +96,52 @@
 <script type="text/javascript">
     var chartLabels = @json($chartLabels);
     var chartData = @json($chartData);
+    var chartShowCounts = @json($chartShowCounts);
+
+    // Map labels to arrays to create multi-line text on the X-axis
+    var multiLineLabels = chartLabels.map(function(label, index) {
+        return [label, 'Shows: ' + chartShowCounts[index]];
+    });
 
     var ctx = document.getElementById('topMoviesChart').getContext('2d');
     var topMoviesChart = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: chartLabels,
+            labels: multiLineLabels, 
             datasets: [{
-                label: 'Ticket Income (LKR)',
+                label: 'Avg. Income Per Show (LKR)',
                 data: chartData,
-                backgroundColor: '#B22222'
+                backgroundColor: '#B22222',
+                barThickness: 40, 
+                maxBarThickness: 50
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             legend: { display: false },
             scales: {
-                yAxes: [{ ticks: { beginAtZero: true } }]
+                yAxes: [{ 
+                    ticks: { beginAtZero: true },
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Average Income per show(LKR)'
+                    }
+                }],
+                xAxes: [{ 
+                    ticks: { 
+                        autoSkip: false,
+                        maxRotation: 0,
+                        minRotation: 0
+                    } 
+                }]
+            },
+            tooltips: {
+                callbacks: {
+                    label: function(tooltipItem, data) {
+                        return 'Avg Income: LKR ' + Number(tooltipItem.yLabel).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    }
+                }
             }
         }
     });

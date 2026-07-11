@@ -113,7 +113,7 @@ Route::group(['middleware' => 'auth', 'prefix' => ''], function () {
             Route::delete('/destroyShowtime/{id}', 'ShowtimesController@destroyShowtime')->name('destroyShowtime');
 
             //Ticket Prices
-            Route::get('/ticketSettings', 'TicketController@ticketPrices')->name('ticketPrices');
+            Route::get('/ticketSettings', 'TicketController@ticketPrices')->name('ticketSettings');
             Route::put('/updateTicketPrice', 'TicketController@updateTicketPrice')->name('updateTicketPrice');
 
             //Screened Movies
