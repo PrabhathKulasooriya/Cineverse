@@ -65,10 +65,13 @@ class MyAccountController extends Controller
 
         // Update User table
         $updateUser = User::find(Auth::user()->idmaster_user);
-        
+  
         if(!$updateUser){
             return response()->json(['errors' => 'User not found!']);
         }
+
+        $oldEmail = $updateUser->email;
+        $newEmail = $request['email'];
 
         $updateUser->first_name = strtoupper($request['fName']);
         $updateUser->last_name = strtoupper($request['lName']);
@@ -76,14 +79,8 @@ class MyAccountController extends Controller
         $updateUser->email = strtolower($request['email']); 
         $updateUser->save();
 
-        
-        $updateClient = Client::where('master_user_idmaster_user', Auth::user()->idmaster_user)->first();
-        
-        if($updateClient) {
-            $updateClient->first_name = strtoupper($request['fName']);
-            $updateClient->last_name = strtoupper($request['lName']);
-            $updateClient->contact_number = $request['contactNo'];
-            $updateClient->save();
+        if($oldEmail != $newEmail){
+            $updateUser->email_verified_at = null;
         }
 
         return response()->json(['success'=>'']);

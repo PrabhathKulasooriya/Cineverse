@@ -45,7 +45,6 @@ class SecurityController extends Controller
         if ($user && $user->status == 0) {
             return back()->with('warning', 'User has been suspended! Contact your System Administrator.');
         }
-
        
         return back()->with('error', 'Incorrect login details! Check email and Password');
     }

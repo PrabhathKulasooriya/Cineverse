@@ -4,7 +4,6 @@
 namespace App\Http\Controllers;
 
 use App\User;
-use App\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -19,8 +18,6 @@ class ClientController extends Controller
 
         return view('client_management.clientManagement',['title'=>'Client Management', 'userClients'=>$userClients]);
     }
-
-
 
 
 
@@ -74,15 +71,6 @@ class ClientController extends Controller
         $saveUser->user_role_iduser_role = 4;
 
         $saveUser->save();
-
-        $saveClient=new Client();
-
-        $saveClient->first_name = strtoupper($request['fName']);
-        $saveClient->last_name = strtoupper($request['lName']);
-        $saveClient->contact_number = $request['contactNo'];
-        $saveClient->master_user_idmaster_user =$saveUser->idmaster_user;
-
-        $saveClient->save();
 
         Auth::login($saveUser);
         $saveUser->sendEmailVerificationNotification();
@@ -147,24 +135,13 @@ class ClientController extends Controller
 
         $saveUser->save();
 
-        $saveClient=new Client();
-
-        $saveClient->first_name = strtoupper($request['fName']);
-        $saveClient->last_name = strtoupper($request['lName']);
-        $saveClient->contact_number = $request['contactNo'];
-        $saveClient->master_user_idmaster_user =$saveUser->idmaster_user;
-
-        $saveClient->save();
-
         $saveUser->sendEmailVerificationNotification();
 
-        session()->flash('success', 'Account Created Successfully! You have to verify your account when you login for the first time.');
+        session()->flash('success', 'Account Created Successfully! Verify  account when login for the first time.');
         return response()->json(['success' => 'Client saved successfully.']);
 
     }
     //Save Client by Admin End
-
-
 
 
 
@@ -220,18 +197,7 @@ class ClientController extends Controller
         $updateUser->email=strtolower($email);
         $updateUser->save();
 
-        $updateClient = Client::where('master_user_idmaster_user',$hiddenUserId)->first();
-
-        if(!$updateClient){
-            return response()->json(['errors' => ['general' => ['Client not found!']]]);
-        }
-
-        $updateClient->first_name=strtoupper($firstName);
-        $updateClient->last_name=strtoupper($lastName);
-        $updateClient->contact_number=$contactNo;
-        $updateClient->save();
-
-        return response()->json(['success'=>'Client Updated']);
+        return response()->json(['success'=>'Customer Updated Successfully']);
     }
     //Update Client End
 

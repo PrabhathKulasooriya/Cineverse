@@ -3,9 +3,6 @@
 
 namespace App\Http\Controllers;
 
-
-use App\Appointment;
-use App\Client;
 use App\User;
 use App\Movies;
 use App\Shows;
