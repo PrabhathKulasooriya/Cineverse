@@ -82,7 +82,7 @@ class ClientController extends Controller
 
 
 //Save Client by Admin Start
-    public function saveClientByAdmin(Request $request){
+public function saveClientByAdmin(Request $request){
 
 
         $validator = \Validator::make($request->all(), [
@@ -155,7 +155,7 @@ class ClientController extends Controller
         $firstName = $request['firstName'];
         $lastName = $request['lastName'];
         $contactNo = $request['contactNo'];
-        $email = $request['email'];
+        $email = strtolower($request['email']);
 
         //Validation
         $validator = \Validator::make($request->all(), [
@@ -191,11 +191,20 @@ class ClientController extends Controller
             return response()->json(['errors' => ['general' => ['User not found!']]]);
         }
 
+        $oldEmail = $updateUser->email;
+        $isEmailUpdated = ($oldEmail != $email);
+
+        if($isEmailUpdated){
+            $updateUser->email_verified_at = null;
+        }
+
         $updateUser->first_name=strtoupper($firstName);
         $updateUser->last_name=strtoupper($lastName);
         $updateUser->contact_number=$contactNo;
-        $updateUser->email=strtolower($email);
+        $updateUser->email=$email;
         $updateUser->save();
+
+        
 
         return response()->json(['success'=>'Customer Updated Successfully']);
     }

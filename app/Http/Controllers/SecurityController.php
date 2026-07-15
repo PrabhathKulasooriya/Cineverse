@@ -6,6 +6,7 @@ use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Hash;
 
 class SecurityController extends Controller
 {
@@ -42,7 +43,7 @@ class SecurityController extends Controller
 
         
         $user = User::where('email', $request->email)->first();
-        if ($user && $user->status == 0) {
+        if ($user && Hash::check($request->password, $user->password) && $user->status == 0) {
             return back()->with('warning', 'User has been suspended! Contact your System Administrator.');
         }
        
@@ -52,7 +53,7 @@ class SecurityController extends Controller
 
 
     public function logoutNow(Request $request){
-        //Auth::logout();
+        Auth::logout();
         $request->session()->invalidate();
         return redirect('/');
     }

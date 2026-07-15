@@ -44,7 +44,12 @@ class BookingsSeeder extends Seeder
             ['id' => 117, 'name' => 'COUNTER EMPLOYEE', 'email' => 'counter@cineverse.lk']
         ];
         
-        $shows = Shows::where('date', '>=', Carbon::now()->format('Y-m-d'))->get();
+        // --- MODIFIED DATE SELECTION LOGIC ---
+        // Select dates between the 12th and 25th of the current month
+        $startDate = Carbon::now()->day(12)->format('Y-m-d');
+        $endDate = Carbon::now()->day(25)->format('Y-m-d');
+
+        $shows = Shows::whereBetween('date', [$startDate, $endDate])->get();
 
         if ($shows->isEmpty()) {
             $this->command->info('No shows found! Please run PastShowsSeeder first.');
@@ -54,23 +59,39 @@ class BookingsSeeder extends Seeder
         $this->command->info('Generating realistic bookings. This may take a minute...');
 
         foreach ($shows as $show) {
-            // A theater has 100 seats in your DB (1-64 Standard, 65-100 Prime)
-            $availableSeats = range(1, 100);
+            // --- MODIFIED LOGIC TO KEEP EXISTING BOOKINGS ---
+            // 1. Fetch already booked seats for this show so we don't overwrite/duplicate them
+            $existingBookedSeats = DB::table('bookings')
+                ->join('booked_seats', 'bookings.booking_id', '=', 'booked_seats.bookings_booking_id')
+                ->where('bookings.shows_show_id', $show->show_id)
+                ->pluck('booked_seats.seats_seat_id')
+                ->toArray();
+
+            // 2. Remove already booked seats from the available pool
+            $availableSeats = array_values(array_diff(range(1, 100), $existingBookedSeats));
             shuffle($availableSeats);
 
             // Determine theater occupancy: Never empty, never fully booked (25% to 95% full)
             $targetOccupancy = rand(25, 95);
-            $bookedCount = 0;
+            
+            // Start our count from the seats that are ALREADY booked
+            $bookedCount = count($existingBookedSeats);
 
             $showDateTime = Carbon::parse($show->date . ' ' . $show->time);
 
-            while ($bookedCount < $targetOccupancy) {
+            // Added check to ensure we also have available seats left in the array
+            while ($bookedCount < $targetOccupancy && count($availableSeats) > 0) {
                 // A single booking usually consists of 1 to 8 seats
                 $seatsToBook = rand(1, 8);
                 
                 // Prevent overbooking the target occupancy
                 if ($bookedCount + $seatsToBook > $targetOccupancy) {
                     $seatsToBook = $targetOccupancy - $bookedCount;
+                }
+                
+                // Prevent requesting more seats than are actually available
+                if ($seatsToBook > count($availableSeats)) {
+                    $seatsToBook = count($availableSeats);
                 }
 
                 $bookingSeats = array_splice($availableSeats, 0, $seatsToBook);

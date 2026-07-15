@@ -32,6 +32,7 @@
 </div>
 
 <div class="page-content-wrapper">
+
     <div class="container-fluid">
         <div class="col-lg-12">
             <div class="card m-b-20">
@@ -237,6 +238,14 @@
 
 <script type="text/javascript">
 
+    $(document).ready(function() {
+            setTimeout(function() {
+                $(".alert").fadeOut("slow", function() {
+                    $(this).remove();
+                });
+            }, 3000); 
+        });
+
     $(document).ready(function () {
         $.ajaxSetup({
             headers: {
@@ -335,9 +344,16 @@
                         icon: '<img src="{{ URL::asset('assets/images/correct.png') }}" />',
                         message: data.success,
                     });
-                    setTimeout(function () {
+                    if(data.isEmailChanged) {
+                        setTimeout(function () {
+                            window.location.href='{{ route('signin') }}';
+                        }, 2000)
+                    }else{
+                       setTimeout(function () {
                         location.reload();
-                    }, 800);
+                    }, 1000); 
+                    }
+                    
                 }
             }
         });

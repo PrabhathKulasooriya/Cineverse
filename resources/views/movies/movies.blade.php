@@ -63,15 +63,19 @@
                         @endif
                     </div>
 
-                    @if(session('success'))
-                        <div class="alert alert-success text-center ticket-success-container" id="ticket-success-container">
-                            <i class="fa fa-exclamation-circle" aria-hidden="true"></i> {{ session('success') }}
+                     @if(session('success'))
+                        <div class="alert alert-success text-center position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
+                            <i class="fa fa-check-circle"></i> {{ session('success') }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         </div>
                     @endif
-                    
+
                     @if(session('error'))
-                        <div class="alert alert-danger text-center">
+                        <div class="alert alert-danger text-center position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
                             <i class="fa fa-exclamation-circle"></i> {{ session('error') }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
                         </div>
                     @endif
 
@@ -477,6 +481,14 @@
             }
         });
 
+    });
+
+    $(document).ready(function() {
+        setTimeout(function() {
+            $(".alert").fadeOut("slow", function() {
+                $(this).remove();
+            });
+        }, 3000); 
     });
 
     $(document).on("wheel", "input[type=number]", function (e) {

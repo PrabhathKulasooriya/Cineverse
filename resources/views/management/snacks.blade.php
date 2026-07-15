@@ -36,7 +36,6 @@
             </div>
         @endif
 
-        c
 
         <div class="col-lg-12">
             <div class="card m-b-20">

@@ -71,19 +71,30 @@ class MyAccountController extends Controller
         }
 
         $oldEmail = $updateUser->email;
-        $newEmail = $request['email'];
+        $newEmail = strtolower($request['email']);
+        $isEmailChanged = $oldEmail != $newEmail;
 
+        $updateUser->email = $newEmail;
         $updateUser->first_name = strtoupper($request['fName']);
         $updateUser->last_name = strtoupper($request['lName']);
         $updateUser->contact_number = $request['contactNo'];
-        $updateUser->email = strtolower($request['email']); 
-        $updateUser->save();
 
-        if($oldEmail != $newEmail){
+        if($isEmailChanged){
             $updateUser->email_verified_at = null;
         }
 
-        return response()->json(['success'=>'']);
+        $updateUser->save();
+
+        if($isEmailChanged){
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return response()->json(['success'=>'Account Details Updated Successfully! Please verify your email!','isEmailChanged'=>true]);
+        }
+        
+
+        return response()->json(['success'=>'Account Details Updated Successfully!','isEmailChanged'=>false]);
     }
 
 

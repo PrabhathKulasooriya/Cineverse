@@ -16,7 +16,6 @@ public function index(){
     $movies = Movies::where('status', 1)
     ->where('screening_status', 1)
     ->whereHas('shows', function ($query) use ($bookingCutOff) {
-        // Range query is faster and uses indexes
         $query->where('date', '>=', $bookingCutOff->format('Y-m-d'))
               ->orWhere(function ($q) use ($bookingCutOff) {
                   $q->where('date', '=', $bookingCutOff->format('Y-m-d'))

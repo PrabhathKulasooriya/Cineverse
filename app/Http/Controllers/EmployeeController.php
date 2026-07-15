@@ -86,6 +86,18 @@ class EmployeeController extends Controller
         }
 
         $update = User::find($request['hiddenUserId']);
+
+        if(!$update){
+            return response()->json(['errors' => 'User Not Found!']);
+        }
+
+        $oldEmail=$update->email;
+        $newEmail=strtolower($request['email']);
+
+        if($oldEmail!=$newEmail){
+            $update->email_verified_at = null;
+        }
+
         $update->first_name            = strtoupper($request['firstName']);
         $update->last_name             = strtoupper($request['lastName']);
         $update->contact_number        = $request['contactNo'];
@@ -93,6 +105,6 @@ class EmployeeController extends Controller
         $update->user_role_iduser_role = $request['userType'];
         $update->save();
 
-        return response()->json(['success' => 'User Updated']);
+        return response()->json(['success' => 'User Updated Successfully !']);
     }
 }
