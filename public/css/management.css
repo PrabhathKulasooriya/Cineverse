@@ -1,0 +1,31 @@
+    .category-cards-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 10px;
+    }
+ 
+    .category-card {
+        display: inline-flex;
+        align-items: center;
+        background-color: #B22222;
+        color: #FFFFFF;
+        padding: 4px 10px;
+        border-radius: 15px;
+        font-size: 13px;
+    }
+ 
+    .category-card-remove {
+        background: none;
+        border: none;
+        color: #FFFFFF;
+        margin-left: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        line-height: 1;
+        padding: 0;
+    }
+ 
+    .category-card-remove:hover {
+        color: #FFD700;
+    }

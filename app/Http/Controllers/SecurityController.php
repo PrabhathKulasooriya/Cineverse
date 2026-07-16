@@ -44,7 +44,7 @@ class SecurityController extends Controller
         
         $user = User::where('email', $request->email)->first();
         if ($user && Hash::check($request->password, $user->password) && $user->status == 0) {
-            return back()->with('warning', 'User has been suspended! Contact your System Administrator.');
+            return back()->with('warning', 'User has been suspended! Contact Cineverse Support.');
         }
        
         return back()->with('error', 'Incorrect login details! Check email and Password');

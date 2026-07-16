@@ -47,7 +47,7 @@ class BookingsSeeder extends Seeder
         // --- MODIFIED DATE SELECTION LOGIC ---
         // Select dates between the 12th and 25th of the current month
         $startDate = Carbon::now()->day(12)->format('Y-m-d');
-        $endDate = Carbon::now()->day(25)->format('Y-m-d');
+        $endDate = Carbon::now()->day(26)->format('Y-m-d');
 
         $shows = Shows::whereBetween('date', [$startDate, $endDate])->get();
 

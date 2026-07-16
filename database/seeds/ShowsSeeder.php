@@ -17,8 +17,8 @@ class ShowsSeeder extends Seeder
         ];
 
         // 2. Set timeframe: Today to 7 days later
-        $startDate = Carbon::today();
-        $endDate = Carbon::today()->addDays(8);
+        $startDate = Carbon::today()->addDays(5);
+        $endDate = Carbon::today()->addDays(10);
 
         // 3. Loop through days
         for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {

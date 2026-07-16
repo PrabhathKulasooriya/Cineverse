@@ -55,7 +55,7 @@ class MoviesController extends Controller
 
         // Check validation
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()]);
+            return response()->json(['errors' => $validator->errors()],422);
         }
         
 
@@ -83,7 +83,7 @@ class MoviesController extends Controller
         $saveMovie->screening_status = 1;
         $saveMovie->save();
 
-        return redirect()->route('movies')->with('success', 'Movie saved successfully!');
+        return response()->json(['success' => 'Movie saved successfully!']);
     }
 
     
@@ -124,7 +124,7 @@ class MoviesController extends Controller
 
         // Check validation
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()]);
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
         $movie = Movies::find($movie_id);
@@ -141,7 +141,6 @@ class MoviesController extends Controller
         
         $duration = $this->convertDurationToMinutes($request->input('duration'));
 
-
         // update movie
        
         $movie->name = strtoupper($request->name);
@@ -155,42 +154,27 @@ class MoviesController extends Controller
 
         $movie->save();
 
-        return redirect()->route('movies')->with('success', 'Movie Updated successfully!');
-
-
- 
+        return response()->json(['success'=>'Movie Updated successfully!']);
         }
     // Update Movie End****************************************************************************************
 
 
     // Delete Movies*******************************************************************************************
-    public function destroy(Request $request){
-        
+     public function destroy(Request $request)
+    {
         $movie = Movies::find($request->movie_id);
         $shows = Shows::whereRaw("STR_TO_DATE(CONCAT(date, ' ', time), '%Y-%m-%d %H:%i:%s') >= ?", [now()])
                         ->where('movies_movie_id', $movie->movie_id)->get();
                     
-        
         if($shows->isNotEmpty()){
-            return redirect()->route('movies')->with('error', 'Upcomig Shows available for this movie!');
-        }else{
-        
-        // $sliderImage = ImageSlider::where('movies_movie_id', $movie->movie_id)->first();
+            // FIX: Return a 400 Bad Request if it cannot be deleted
+            return response()->json(['error' => 'Upcoming Shows available for this movie!'], 400);
+        } else {
+            $movie->status = 0;
+            $movie->screening_status = 0;
+            $movie->save();
 
-        // if($sliderImage){
-        //     $imagePathSlider = public_path('sliderImages/' . $sliderImage->image);
-        //     if (File::exists($imagePathSlider)) {
-        //         File::delete($imagePathSlider);
-        //     }
-
-        // $sliderImage->delete();
-        // }
-
-        $movie->status = 0;
-        $movie->screening_status = 0;
-        $movie->save();
-
-        return redirect()->route('movies')->with('success', 'Movie Deleted Successfully!');
+            return response()->json(['success' => 'Movie deleted successfully!']);
         }
     }
 

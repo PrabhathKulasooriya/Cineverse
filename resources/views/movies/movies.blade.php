@@ -14,6 +14,7 @@
 <link href="{{ URL::asset('assets/css/custom_checkbox.css')}}" rel="stylesheet" type="text/css"/>
 <link href="{{ URL::asset('assets/css/jquery.notify.css')}}" rel="stylesheet" type="text/css">
 <link href="{{ URL::asset('assets/css/mdb.css')}}" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="{{ asset('css/management.css') }}">
 
 <meta name="csrf-token" content="{{ csrf_token() }}"/>
 
@@ -120,7 +121,15 @@
 
                                             <tr>
                                                 <td>{{$movie->name}}</td>
-                                                <td>{{$movie->category}}</td>
+                                                <td style="max-width: 200px;"> 
+                                                    <div class="category-cards-container" style="margin-top: 0;">
+                                                        @foreach(explode(',', $movie->category) as $cat)
+                                                            @if(trim($cat) !== '')
+                                                                <span class="category-card">{{ trim($cat) }}</span>
+                                                            @endif
+                                                        @endforeach
+                                                    </div>
+                                                </td>
                                                 <td>{{$movie->formatted_duration}}</td>
                                                 <td>{{$movie->language}}</td>
 
@@ -192,7 +201,7 @@
                                                           <i class="fa fa-edit"></i>
                                                         </button>
 
-                                                        <form action="{{route('destroyMovie', ['movie_id'=>$movie->movie_id])}}" method="post">
+                                                        <form action="{{route('destroyMovie', ['movie_id'=>$movie->movie_id])}}" method="post" class="delete-movie-form">
                                                             @csrf
                                                             @method('DELETE')
                                                         <button type='submit' class="btn btn-sm  btn-danger" id="deleteMovieBtn"><i class="fa fa-trash"></i></button>
@@ -232,96 +241,102 @@
 
 
 <!-- Add Movie Modal Start-->
+
 <div class="modal fade" id="addMovieModal" tabindex="-1"
      role="dialog"
      aria-labelledby="mySmallModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-
+ 
         <div class="modal-content">
-
+ 
             <div class="modal-header">
                 <h5 class="modal-title mt-0">Add Movie</h5>
                 <button type="button" class="close" data-dismiss="modal"
                         aria-hidden="true">×
                 </button>
             </div>
-            
-                <div class="modal-body" >
-
-                    <form action="{{ route('saveMovie') }}" method="post" id="addMovieForm" enctype="multipart/form-data" >
-                        @csrf
-
-                        <div>
+ 
+            <div class="modal-body">
+ 
+                <form action="{{ route('saveMovie') }}" method="post" id="addMovieForm" enctype="multipart/form-data">
+                    @csrf
+ 
+                    <div>
                         <div class="form-group">
-                            <label>Movie Name <span style="color:red">*</span> </label>
+                            <label>Movie Name <span style="color:red">*</span></label>
                             <input type="text" class="form-control" name="name"
-                                id="name" required placeholder="Movie Name" />
+                                   id="name" placeholder="Movie Name"/>
                             <span class="text-danger" id="nameError"></span>
                         </div>
-
+ 
                         <div class="form-group">
-                         <label>Category <span style="color:red">*</span> </label>
-                            <input type="text" class="form-control" name="category"
-                                 id="category" required placeholder="category" />
-                          <span class="text-danger" id="categoryError"></span>
+                            <label>Category <span style="color:red">*</span></label>
+ 
+                            <select class="form-control" id="categorySelect">
+                                <option value="">-- Select a category --</option>
+                            </select>
+ 
+                            <div class="category-cards-container" id="categoryCardsContainer"></div>
+ 
+                            <input type="hidden" name="category" id="category">
+                            <span class="text-danger" id="categoryError"></span>
                         </div>
-
+ 
                         <div class="form-group">
-                            <label>Duration <span style="color:red">*</span> </label>
+                            <label>Duration <span style="color:red">*</span></label>
                             <input type="text" class="form-control" name="duration"
-                                id="duration" required placeholder="2h 15min" />
+                                   id="duration" placeholder="0h 00min" autocomplete="off" maxlength="8"/>
                             <span class="text-danger" id="durationError"></span>
                         </div>
-
+ 
                         <div class="form-group">
-                            <label>Language <span style="color:red">*</span> </label>
+                            <label>Language <span style="color:red">*</span></label>
                             <input type="text" class="form-control" name="language"
-                                id="language" required placeholder="Movie Language" />
+                                   id="language" placeholder="Movie Language"/>
                             <span class="text-danger" id="languageError"></span>
                         </div>
-                        </div>
-
-                        <div>
+                    </div>
+ 
+                    <div>
                         <div class="form-group">
-                            <label>Rating <span style="color:red">*</span> </label>
+                            <label>Rating <span style="color:red">*</span></label>
                             <input type="number" step="0.1" max="10" min="0" class="form-control" name="rating"
-                                id="rating" required placeholder="Movie Rating 1-10" />
+                                   id="rating" placeholder="Movie Rating 1-10"/>
                             <span class="text-danger" id="ratingError"></span>
                         </div>
-
+ 
                         <div class="form-group">
-                            <label >Release Date <span style="color: red">*</span> </label>
+                            <label>Release Date <span style="color: red">*</span></label>
                             <input type="date" class="form-control" id="date"
-                                   name="date" placeholder="date" required>
+                                   name="date" placeholder="date">
                             <small class="text-danger" id="dateError"></small>
                         </div>
-
+ 
                         <div class="form-group">
-                            <label>Trailer <span style="color:red">*</span> </label>
+                            <label>Trailer <span style="color:red">*</span></label>
                             <input type="text" class="form-control" name="trailer"
-                                id="trailer" required placeholder="Movie Trailer" />
+                                   id="trailer" placeholder="Movie Trailer"/>
                             <span class="text-danger" id="trailerError"></span>
                         </div>
-
+ 
                         <div class="form-group">
-                            <label>Image <span style="color:red">*</span> </label>
+                            <label>Image <span style="color:red">*</span></label>
                             <input type="file" class="form-control" name="image" id="image" accept="image/*"/>
                             <span class="text-danger" id="imageError"></span>
                         </div>
-                        
-
+ 
                         <div class="form-group">
-                            <button type="submit"  class="btn btn-primary float-right" >
-                                 Save Movie
+                            <button type="submit" class="btn btn-primary float-right">
+                                Save Movie
                             </button>
                         </div>
-                        </div>
-
-                     </form>
-
-                </div>
+                    </div>
+ 
+                </form>
+ 
+            </div>
         </div>
-
+ 
     </div>
 </div>
 <!-- Add Movie Modal End-->
@@ -330,73 +345,92 @@
 
 
 <!-- Edit Movie Modal -->
+
 <div class="modal fade" id="editMovieModal" tabindex="-1"
      role="dialog"
      aria-labelledby="mySmallModalLabel" aria-hidden="true">
     <div class="modal-dialog">
-
+ 
         <div class="modal-content">
             <form action="{{ route('updateMovie') }}" method="post" enctype="multipart/form-data" id="editMovieForm">
                 @csrf
                 @method('PUT')
-
+ 
                 <div class="modal-header">
                     <h5 class="modal-title mt-0">Edit Movie</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                 </div>
-                
-                <div class="modal-body" >
-
+ 
+                <div class="modal-body">
+ 
                     <div class="form-group">
                         <label>Movie Name <span style="color:red">*</span></label>
                         <input type="hidden" id="hiddenMovieId" name="hiddenMovieId">
-                        <input type="text" class="form-control" name="name" id="name" required placeholder="Movie Name" />
+                        <input type="text" class="form-control" name="name" id="name" placeholder="Movie Name"/>
+                        <span class="text-danger" id="nameError"></span>
                     </div>
-
+ 
                     <div class="form-group">
                         <label>Category <span style="color:red">*</span></label>
-                        <input type="text" class="form-control" name="category" id="category" required placeholder="Category" />
+ 
+                        <select class="form-control" id="categorySelect">
+                            <option value="">-- Select a category --</option>
+                        </select>
+ 
+                        <div class="category-cards-container" id="categoryCardsContainer"></div>
+ 
+                        <input type="hidden" name="category" id="category">
+                        <span class="text-danger" id="categoryError"></span>
                     </div>
-
+ 
                     <div class="form-group">
                         <label>Duration <span style="color:red">*</span></label>
-                        <input type="text" class="form-control" name="duration" id="duration" required placeholder=" *h **min" />
+                        <input type="text" class="form-control" name="duration" id="duration"
+                               placeholder="0h 00min" autocomplete="off" maxlength="8"/>
+                        <span class="text-danger" id="durationError"></span>
                     </div>
-
+ 
                     <div class="form-group">
                         <label>Language <span style="color:red">*</span></label>
-                        <input type="text" class="form-control" name="language" id="language" required placeholder="Movie Language" />
+                        <input type="text" class="form-control" name="language" id="language" placeholder="Movie Language"/>
+                        <span class="text-danger" id="languageError"></span>
                     </div>
-
+ 
                     <div class="form-group">
                         <label>Rating <span style="color:red">*</span></label>
-                        <input type="number" step="0.1" class="form-control" name="rating" id="rating" required placeholder="Movie Rating" max="10" min="0"/>
+                        <input type="number" step="0.1" class="form-control" name="rating" id="rating"
+                               placeholder="Movie Rating" max="10" min="0"/>
+                        <span class="text-danger" id="ratingError"></span>
                     </div>
-
+ 
                     <div class="form-group">
-                        <label >Release Date <span style="color: red">*</span> </label>
-                        <input type="date" class="form-control" id="date" name="date" required placeholder="date">
+                        <label>Release Date <span style="color: red">*</span></label>
+                        <input type="date" class="form-control" id="date" name="date" placeholder="date">
+                        <small class="text-danger" id="dateError"></small>
                     </div>
-
+ 
                     <div class="form-group">
                         <label>Trailer <span style="color:red">*</span></label>
-                        <input type="text" class="form-control" name="trailer" id="trailer" required placeholder="Movie Trailer" />
+                        <input type="text" class="form-control" name="trailer" id="trailer" placeholder="Movie Trailer"/>
+                        <span class="text-danger" id="trailerError"></span>
                     </div>
-
+ 
                     <div class="form-group">
                         <label>Image (Optional)</label>
                         <input type="file" class="form-control" name="image" id="image" accept="image/*"/>
+                        <span class="text-danger" id="imageError"></span>
                     </div>
-
+ 
                     <div class="form-group">
                         <button type="submit" class="btn btn-primary float-right" id="updateMovie">Update Movie</button>
                     </div>
-
+ 
                 </div>
             </form>
         </div>
     </div>
 </div>
+
 <!-- Edit Movie Modal End-->
 
 <!-- View Poster Modal -->
@@ -472,6 +506,8 @@
 <script src="{{ URL::asset('assets/js/jquery.notify.min.js')}}"></script>
 
 <script type="text/javascript">
+
+    
     $(document).ready(function () {
         $('form').parsley();
 
@@ -481,68 +517,224 @@
             }
         });
 
-    });
-
-    $(document).ready(function() {
         setTimeout(function() {
             $(".alert").fadeOut("slow", function() {
                 $(this).remove();
             });
-        }, 3000); 
+        }, 3000);
+
+        
+        if ($.fn.DataTable.isDataTable('#datatable')) {
+            $('#datatable').DataTable().destroy();
+        }
+        $('#datatable').DataTable({
+            "order": [0, 'desc'], 
+            "columnDefs": [
+                { "orderable": false, "targets": [4, -1] } 
+            ]
+        });
+
+        
+        fillCategorySelect($('#addMovieModal #categorySelect'));
+        fillCategorySelect($('#editMovieModal #categorySelect'));
+        initDurationMask($('#addMovieModal #duration'));
+        initDurationMask($('#editMovieModal #duration'));
     });
+
 
     $(document).on("wheel", "input[type=number]", function (e) {
         $(this).blur();
     });
 
-    //remove sorting of datatable
-    $(document).ready(function() {
 
-        if ($.fn.DataTable.isDataTable('#datatable')) {
-        $('#datatable').DataTable().destroy();
-        }
+    var availableCategories = [
+    "Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", 
+    "Drama", "Family", "Fantasy", "Horror", "Musical", "Mystery", 
+    "Romance", "Sci-Fi", "Thriller"
+];
 
-        $('#datatable').DataTable({
-            "order": [0,'desc'], 
-            "columnDefs": [
-            { "orderable": false, "targets": [4, -1] } 
-            ]
-        });
-        });
-    
-
-
-    //Change Status
-    function adMethod(dataID, tableName) {
-
-        $.post('activateDeactivate', {id: dataID, table: tableName}, function (data) {
-
+    function fillCategorySelect(selectElement) {
+        selectElement.empty();
+        selectElement.append('<option value="">-- Select a category --</option>');
+        availableCategories.forEach(function (categoryName) {
+            selectElement.append('<option value="' + categoryName + '">' + categoryName + '</option>');
         });
     }
 
-    //Populate data for Update Movie Modal
-     $(document).on('click', '#edit-movie-btn', function () {
-        var movieId = $(this).data('id');
-        var name = $(this).data('name');
-        var category = $(this).data('category');
-        var duration = $(this).data('duration');
-        var language = $(this).data('language');
-        var rating = $(this).data('rating');
-        var date = $(this).data('date');
-        var trailer = $(this).data('trailer');
-        
-        $("#editMovieModal #hiddenMovieId").val(movieId);
-        $("#editMovieModal #name").val(name);
-        $("#editMovieModal #category").val(category);
-        $("#editMovieModal #duration").val(duration);
-        $("#editMovieModal #language").val(language);
-        $("#editMovieModal #rating").val(rating);
-        $("#editMovieModal #date").val(date);
-        $("#editMovieModal #trailer").val(trailer);
+    function getSelectedCategories(modalId) {
+        var selectedCategories = [];
+        $(modalId + ' .category-card').each(function () {
+            selectedCategories.push($(this).data('category'));
+        });
+        return selectedCategories;
+    }
+
+    function updateCategoryHiddenInput(modalId) {
+        var selectedCategories = getSelectedCategories(modalId);
+        $(modalId + ' #category').val(selectedCategories.join(','));
+    }
+
+    function refreshCategorySelectOptions(modalId) {
+        var selectedCategories = getSelectedCategories(modalId);
+        var selectElement = $(modalId + ' #categorySelect');
+        selectElement.empty();
+        selectElement.append('<option value="">-- Select a category --</option>');
+        availableCategories.forEach(function (categoryName) {
+            if (selectedCategories.indexOf(categoryName) === -1) {
+                selectElement.append('<option value="' + categoryName + '">' + categoryName + '</option>');
+            }
+        });
+    }
+
+    function addCategoryCard(modalId, categoryName) {
+        if (categoryName === '') return;
+
+        var cardHtml = '<span class="category-card" data-category="' + categoryName + '">' +
+            categoryName +
+            '<button type="button" class="category-card-remove">&times;</button>' +
+            '</span>';
+
+        $(modalId + ' #categoryCardsContainer').append(cardHtml);
+        updateCategoryHiddenInput(modalId);
+        refreshCategorySelectOptions(modalId);
+    }
+
+    function clearCategoryCards(modalId) {
+        $(modalId + ' #categoryCardsContainer').html('');
+        $(modalId + ' #category').val('');
+        refreshCategorySelectOptions(modalId);
+    }
+
+    function loadCategoryCards(modalId, categoryString) {
+        clearCategoryCards(modalId);
+        if (!categoryString) return;
+
+        var categoryList = categoryString.split(',');
+        categoryList.forEach(function (categoryName) {
+            var trimmedName = categoryName.trim();
+            if (trimmedName !== '') {
+                addCategoryCard(modalId, trimmedName);
+            }
+        });
+    }
+
+    $(document).on('change', '#categorySelect', function () {
+        var modalId = '#' + $(this).closest('.modal').attr('id');
+        var selectedValue = $(this).val();
+        addCategoryCard(modalId, selectedValue);
+        $(this).val('');
     });
 
-    
-    //Populate data for view poster modal
+    $(document).on('click', '.category-card-remove', function () {
+        var modalId = '#' + $(this).closest('.modal').attr('id');
+        $(this).closest('.category-card').remove();
+        updateCategoryHiddenInput(modalId);
+        refreshCategorySelectOptions(modalId);
+    });
+
+    // DURATION MASK LOGIC 
+    function initDurationMask(inputElement) {
+        inputElement.data('durationDigits', ['', '', '']);
+        inputElement.data('durationPosition', 0);
+    }
+
+    function renderDurationDisplay(inputElement) {
+        var digits = inputElement.data('durationDigits');
+        var hourDigit = digits[0] !== '' ? digits[0] : '0';
+        var minuteTens = digits[1] !== '' ? digits[1] : '0';
+        var minuteOnes = digits[2] !== '' ? digits[2] : '0';
+        var displayValue = hourDigit + 'h' +" "+ minuteTens + minuteOnes + 'min';
+        inputElement.val(displayValue);
+    }
+
+    function isDurationValid(inputElement) {
+        var digits = inputElement.data('durationDigits');
+        if (digits === undefined) return false;
+        
+        var hourValue = digits[0] !== '' ? parseInt(digits[0], 10) : 0;
+        var minuteTens = digits[1] !== '' ? parseInt(digits[1], 10) : 0;
+        var minuteOnes = digits[2] !== '' ? parseInt(digits[2], 10) : 0;
+        var totalMinutes = (hourValue * 60) + (minuteTens * 10) + minuteOnes;
+        return totalMinutes > 0;
+    }
+
+    function loadDurationValue(inputElement, durationText) {
+        initDurationMask(inputElement);
+        if (!durationText) {
+            renderDurationDisplay(inputElement);
+            return;
+        }
+
+        var durationPattern = /(\d)h\s*(\d)(\d)min/i;
+        var matches = durationPattern.exec(durationText);
+
+        if (matches) {
+            var digits = ['', '', ''];
+            digits[0] = matches[1];
+            digits[1] = matches[2];
+            digits[2] = matches[3];
+            inputElement.data('durationDigits', digits);
+            inputElement.data('durationPosition', 3);
+        }
+        renderDurationDisplay(inputElement);
+    }
+
+    function handleDurationKeydown(event) {
+        var key = event.key;
+        if (key === 'Tab' || key === 'Enter' || key === 'Shift' || key === 'Control' || key === 'Alt') return;
+
+        var inputElement = $(this);
+        var digits = inputElement.data('durationDigits');
+        var position = inputElement.data('durationPosition');
+
+        if (digits === undefined) {
+            initDurationMask(inputElement);
+            digits = inputElement.data('durationDigits');
+            position = inputElement.data('durationPosition');
+        }
+
+        if (key >= '0' && key <= '9') {
+            if (position === 0) {
+                digits[0] = key;
+                position = 1;
+            } else if (position === 1) {
+                if (key <= '5') {
+                    digits[1] = key;
+                    position = 2;
+                }
+            } else if (position === 2) {
+                digits[2] = key;
+                position = 3;
+            }
+            inputElement.data('durationDigits', digits);
+            inputElement.data('durationPosition', position);
+            renderDurationDisplay(inputElement);
+        } else if (key === 'Backspace') {
+            if (position > 0) {
+                position = position - 1;
+                digits[position] = '';
+            }
+            inputElement.data('durationDigits', digits);
+            inputElement.data('durationPosition', position);
+            renderDurationDisplay(inputElement);
+        }
+        event.preventDefault();
+    }
+
+    $(document).on('keydown', '#duration', handleDurationKeydown);
+    $(document).on('paste', '#duration', function (event) {
+        event.preventDefault();
+    });
+
+
+
+    function adMethod(dataID, tableName) {
+        $.post('activateDeactivate', {id: dataID, table: tableName}, function (data) {
+            
+        });
+    }
+
+    // View Poster Modal 
     const imageBaseUrl = "{{ asset('movieImages') }}";
     $(document).on('click','#viewPosterBtn',function(){
         var name = $(this).data('name');
@@ -555,25 +747,215 @@
         $("#viewPosterModal #poster").attr('src',fullpath);
     });
 
-
-    //Hide Validation errors after closing the modal without refreshing
-    $('#addMovieModal').on('hidden.bs.modal', function () {
-
-                        //Add Movie
-                                $('#movieError').html('');
-                                $('#movieError').html('');
-
-
-                         //Update Movie
-                                 $('#updateMovieError').html('');
-                                 $('#updateMovieError').html('');
-
-
-                                $(this).find('input').val(''); 
-                                $(this).find('.text-danger').html(''); 
-
+    
+    $('#addMovieModal').on('show.bs.modal', function () {
+        clearCategoryCards('#addMovieModal');
+        initDurationMask($('#addMovieModal #duration'));
+        $('#addMovieModal #duration').val('');
     });
 
+    $('#addMovieModal').on('hidden.bs.modal', function () {
+        $(this).find('input[type=text], input[type=number], input[type=date]').val('');
+        $(this).find('input[type=file]').val('');
+        $(this).find('.text-danger').html('');
+        $('#movieError').html(''); 
+        clearCategoryCards('#addMovieModal');
+        initDurationMask($('#addMovieModal #duration'));
+    });
+
+    // Reset Edit Movie Modal
+    $('#editMovieModal').on('hidden.bs.modal', function () {
+        $(this).find('.text-danger').html('');
+        $('#updateMovieError').html(''); 
+    });
+
+    // Populate Edit Modal
+    $(document).on('click', '#edit-movie-btn', function () {
+        var movieId = $(this).data('id');
+        var name = $(this).data('name');
+        var category = $(this).data('category');
+        var duration = $(this).data('duration');
+        var language = $(this).data('language');
+        var rating = $(this).data('rating');
+        var date = $(this).data('date');
+        var trailer = $(this).data('trailer');
+
+        $("#editMovieModal #hiddenMovieId").val(movieId);
+        $("#editMovieModal #name").val(name);
+        $("#editMovieModal #language").val(language);
+        $("#editMovieModal #rating").val(rating);
+        $("#editMovieModal #date").val(date);
+        $("#editMovieModal #trailer").val(trailer);
+
+        loadCategoryCards('#editMovieModal', category);
+        loadDurationValue($('#editMovieModal #duration'), duration);
+    });
+
+
+    function showValidationErrors(modalId, errors) {
+        $.each(errors, function (fieldName, messages) {
+            $(modalId + ' #' + fieldName + 'Error').html(messages[0]);
+        });
+    }
+
+    function clearFormErrors(modalId) {
+        $(modalId + ' .text-danger').html('');
+    }
+
+    // Add Movie Submit
+    $("#addMovieForm").on("submit", function (e) {
+        e.preventDefault();
+        clearFormErrors('#addMovieModal');
+
+        var name = $('#addMovieModal #name').val().trim();
+        var categoryValue = $('#addMovieModal #category').val();
+        var durationInput = $('#addMovieModal #duration');
+        var language = $('#addMovieModal #language').val().trim();
+        var rating = $('#addMovieModal #rating').val().trim();
+        var date = $('#addMovieModal #date').val();
+        var trailer = $('#addMovieModal #trailer').val().trim();
+        var image = $('#addMovieModal #image').val(); // Added Image Validation
+
+        var hasError = false;
+
+        if (name === '') { $('#addMovieModal #nameError').html('Movie name is required.'); hasError = true; }
+        if (categoryValue === '') { $('#addMovieModal #categoryError').html('Please select at least one category.'); hasError = true; }
+        if (!isDurationValid(durationInput)) { $('#addMovieModal #durationError').html('Please enter a valid duration.'); hasError = true; }
+        if (language === '') { $('#addMovieModal #languageError').html('Language is required.'); hasError = true; }
+        if (rating === '') { $('#addMovieModal #ratingError').html('Rating is required.'); hasError = true; }
+        if (date === '') { $('#addMovieModal #dateError').html('Release date is required.'); hasError = true; }
+        if (trailer === '') { $('#addMovieModal #trailerError').html('Trailer is required.'); hasError = true; }
+        if (image === '') { $('#addMovieModal #imageError').html('Image is required.'); hasError = true; }
+
+        if (hasError) return; 
+
+        var formData = new FormData(this);
+
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                $('#addMovieModal').modal('hide'); 
+                notify({
+                    type: "success",
+                    title: 'Movie Created',
+                    autoHide: true,
+                    delay: 2500,
+                    position: {x: "right", y: "top"},
+                    icon: '<img src="{{ URL::asset('assets/images/correct.png')}}" />',
+                    message: response.success,
+                });
+                setTimeout(function () {
+                    location.reload();
+                },1000);
+            },
+            error: function (xhr) {
+                if (xhr.status === 422) {
+                    showValidationErrors('#addMovieModal', xhr.responseJSON.errors);
+                } else {
+                    alert("An unexpected error occurred.");
+                }
+            }
+        });
+    });
+
+    // Edit Movie Submit
+    $("#editMovieForm").on("submit", function (e) {
+        e.preventDefault();
+        clearFormErrors('#editMovieModal');
+
+        var name = $('#editMovieModal #name').val().trim();
+        var categoryValue = $('#editMovieModal #category').val();
+        var durationInput = $('#editMovieModal #duration');
+        var language = $('#editMovieModal #language').val().trim();
+        var rating = $('#editMovieModal #rating').val().trim();
+        var date = $('#editMovieModal #date').val();
+        var trailer = $('#editMovieModal #trailer').val().trim();
+        // Image is optional on edit, so no frontend requirement check needed here
+
+        var hasError = false;
+
+        if (name === '') { $('#editMovieModal #nameError').html('Movie name is required.'); hasError = true; }
+        if (categoryValue === '') { $('#editMovieModal #categoryError').html('Please select at least one category.'); hasError = true; }
+        if (!isDurationValid(durationInput)) { $('#editMovieModal #durationError').html('Please enter a valid duration.'); hasError = true; }
+        if (language === '') { $('#editMovieModal #languageError').html('Language is required.'); hasError = true; }
+        if (rating === '') { $('#editMovieModal #ratingError').html('Rating is required.'); hasError = true; }
+        if (date === '') { $('#editMovieModal #dateError').html('Release date is required.'); hasError = true; }
+        if (trailer === '') { $('#editMovieModal #trailerError').html('Trailer is required.'); hasError = true; }
+
+        if (hasError) return;
+
+        var formData = new FormData(this);
+
+        $.ajax({
+            url: $(this).attr('action'),
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                $('#editMovieModal').modal('hide');
+                notify({
+                    type: "success",
+                    title: 'Movie UPDATED',
+                    autoHide: true,
+                    delay: 2500,
+                    position: {x: "right", y: "top"},
+                    icon: '<img src="{{ URL::asset('assets/images/correct.png')}}" />',
+                    message: response.success,
+                });
+                setTimeout(function () {
+                    location.reload();
+                },1000);
+            },
+            error: function (xhr) {
+                if (xhr.status === 422) {
+                    showValidationErrors('#editMovieModal', xhr.responseJSON.errors);
+                } else {
+                    alert("An unexpected error occurred.");
+                }
+            }
+        });
+    });
+
+    // Delete Movie Submit (AJAX Conversion)
+    $(document).on("submit", ".delete-movie-form", function (e) {
+        e.preventDefault();
+        var form = $(this);
+
+        if (confirm("Are you sure you want to delete this movie?")) {
+            $.ajax({
+                url: form.attr('action'),
+                type: 'POST',
+                data: form.serialize(),
+                success: function (response) {
+                    notify({
+                    type: "success",
+                    title: 'Movie Deleted',
+                    autoHide: true,
+                    delay: 2500,
+                    position: {x: "right", y: "top"},
+                    icon: '<img src="{{ URL::asset('assets/images/correct.png')}}" />',
+                    message: response.success,
+                });
+                setTimeout(function () {
+                    location.reload();
+                },500);
+                },
+                error: function (xhr) {
+
+                    if (xhr.status === 400) {
+                        swal('Cannot Delete', xhr.responseJSON.error, 'error'); 
+                    } else {
+                        swal('Error', 'An unexpected error occurred while deleting.', 'error');
+                    }
+                }
+            });
+        }
+    });
 
 </script>
 
