@@ -14,54 +14,54 @@ use Carbon\Carbon;
 
 class ShowsController extends Controller
 {
+    //Upcoming Shows Page*********************************************************************************************
     public function index(){
 
-    $availableTimeSlots = Showtimes::where('status', 1)->get();
-    $scheduledShows = Shows::whereDate('date', '>=', now()->toDateString())->get();
-    $bookedTimesByDate = [];
-    foreach ($scheduledShows as $show) {
-        $dateKey = $show->date;
-        if (!isset($bookedTimesByDate[$dateKey])) {
-            $bookedTimesByDate[$dateKey] = [];
+        $availableTimeSlots = Showtimes::where('status', 1)->get();
+        $scheduledShows = Shows::whereDate('date', '>=', now()->toDateString())->get();
+        $bookedTimesByDate = [];
+        foreach ($scheduledShows as $show) {
+            $dateKey = $show->date;
+            if (!isset($bookedTimesByDate[$dateKey])) {
+                $bookedTimesByDate[$dateKey] = [];
+            }
+            $bookedTimesByDate[$dateKey][] = $show->time;
         }
-        $bookedTimesByDate[$dateKey][] = $show->time;
-    }
 
-    // Find fully booked dates
-    $fullyBookedDates = [];
-    $availableSlotCount = $availableTimeSlots->count();
-    if ($availableSlotCount > 0) {
-        foreach ($bookedTimesByDate as $date => $bookedTimes) {
-            $uniqueBookedTimes = array_unique($bookedTimes);
-            if (count($uniqueBookedTimes) >= $availableSlotCount) {
-                $fullyBookedDates[] = $date;
+        // Find fully booked dates
+        $fullyBookedDates = [];
+        $availableSlotCount = $availableTimeSlots->count();
+        if ($availableSlotCount > 0) {
+            foreach ($bookedTimesByDate as $date => $bookedTimes) {
+                $uniqueBookedTimes = array_unique($bookedTimes);
+                if (count($uniqueBookedTimes) >= $availableSlotCount) {
+                    $fullyBookedDates[] = $date;
+                }
             }
         }
+
+        $shows = Shows::whereRaw("STR_TO_DATE(CONCAT(date, ' ', time), '%Y-%m-%d %H:%i:%s') >= ?", [now()->subHours(2)])
+                ->get();
+        $movies = Movies::where('status', 1)
+            ->where('screening_status', 1)
+            ->where('release_date', '<=', Carbon::today()->toDateString())
+            ->get();
+        $showtimes = Showtimes::orderBy('time', 'asc')->get();
+        $enabledShowtimes = $showtimes->where('status', 1)->values();
+
+        $bookedShowIds = DB::table('bookings')->pluck('shows_show_id')->unique()->toArray();
+
+        $shows = $shows->map(function ($show) use ($movies, $bookedShowIds) {
+            $show->movie_name = $movies->where('movie_id', $show->movies_movie_id)->first()->name ?? 'No movie found';
+            $show->has_bookings = in_array($show->show_id, $bookedShowIds);
+            return $show;
+        });
+        
+        return view('movies.shows',compact('shows','movies','showtimes','enabledShowtimes','fullyBookedDates'), ['title' => 'Manage Upcoming Shows']);
+
     }
 
-    $shows = Shows::whereRaw("STR_TO_DATE(CONCAT(date, ' ', time), '%Y-%m-%d %H:%i:%s') >= ?", [now()->subHours(2)])
-            ->get();
-    $movies = Movies::where('status', 1)
-        ->where('screening_status', 1)
-        ->where('release_date', '<=', Carbon::today()->toDateString())
-        ->get();
-    $showtimes = Showtimes::orderBy('time', 'asc')->get();
-    $enabledShowtimes = $showtimes->where('status', 1)->values();
-
-    // Get every show_id that has at least one booking, so we know which shows to lock from editing
-    $bookedShowIds = DB::table('bookings')->pluck('shows_show_id')->unique()->toArray();
-
-    $shows = $shows->map(function ($show) use ($movies, $bookedShowIds) {
-        $show->movie_name = $movies->where('movie_id', $show->movies_movie_id)->first()->name ?? 'No movie found';
-        $show->has_bookings = in_array($show->show_id, $bookedShowIds);
-        return $show;
-    });
-    
-    return view('movies.shows',compact('shows','movies','showtimes','enabledShowtimes','fullyBookedDates'), ['title' => 'Manage Upcoming Shows']);
-
-}
-
-    //Screened Shows************************************************************************************************
+    //Screened Shows Page*********************************************************************************************
     public function screened(){
 
         $shows = Shows::whereRaw("STR_TO_DATE(CONCAT(date, ' ', time), '%Y-%m-%d %H:%i:%s') < ?", [now()])
@@ -78,7 +78,7 @@ class ShowsController extends Controller
         return view('movies.screenedShows',compact('shows','movies','showtimes'), ['title' => 'Screened Shows']);
     }
 
-//Save Shows For A Date Range*******************************************************************************
+    //Save Shows *******************************************************************************
     public function storeShows(Request $request)
     {
         $enabledShowtimes = Showtimes::where('status', 1)
@@ -114,7 +114,6 @@ class ShowsController extends Controller
             return response()->json(['errors' => 'Shows cannot be created more than 2 months in advance.']);
         }
 
-        // Build the list of slots the user actually picked movies for
         $selectedSlots = [];
         $selectedMoviesCount = 0;
         foreach ($enabledShowtimes as $index => $showtime) {
@@ -141,7 +140,7 @@ class ShowsController extends Controller
         $minimumGap = 15;
 
         $showsToCreate = [];
-        $issues = []; // every problem we run into gets added here, so nothing is skipped silently
+        $issues = [];
 
         $currentDate = $startDate->copy();
 
@@ -160,7 +159,6 @@ class ShowsController extends Controller
                 $showTimeLabel = Carbon::parse($slot['showtime']->time)->format('h:i A');
 
                 if ($movie === null) {
-                    // No movie chosen for this slot, just leave it open - nothing to report here
                     continue;
                 }
 
@@ -245,46 +243,7 @@ class ShowsController extends Controller
         return response()->json($response);
     }
 
-    private function loadBookedRanges($dateString)
-    {
-        $existingShows = DB::table('shows')
-            ->join('movies', 'movies.movie_id', '=', 'shows.movies_movie_id')
-            ->where('shows.date', $dateString)
-            ->select('shows.time', 'movies.duration')
-            ->get();
-
-        $ranges = [];
-        foreach ($existingShows as $existingShow) {
-            $timeParts = explode(':', $existingShow->time);
-            $existingStart = ((int)$timeParts[0]) * 60 + (int)$timeParts[1];
-            $ranges[] = ['start' => $existingStart, 'end' => $existingStart + $existingShow->duration];
-        }
-
-        return $ranges;
-    }
-
-    private function convertTimeToMinutes($time)
-    {
-        $parts = explode(':', $time);
-        return ((int)$parts[0] * 60) + (int)$parts[1];
-    }
-
-    private function roundUpToQuarterHour($minutes)
-    {
-        return (int) (ceil($minutes / 15) * 15);
-    }
-
-    private function hasConflict($startTime, $endTime, $bookedRanges, $minimumGap)
-    {
-        foreach ($bookedRanges as $range) {
-            if ($startTime < ($range['end'] + $minimumGap) && ($endTime + $minimumGap) > $range['start']) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
+    //Update Show*******************************************************************************************
     public function update(Request $request){ 
 
         $validator = Validator::make($request->all(), [
@@ -302,14 +261,12 @@ class ShowsController extends Controller
             return response()->json(['errors' => $validator->errors()]);
         }
 
-        // Find the show using the correct ID field
         $show = Shows::find($request->hiddenMovieID);
         
         if (!$show) {
             return response()->json(['errors' => 'Show not found']);
         }
 
-        // Block editing if this show already has bookings - the movie/date/time can no longer be changed
         $bookingCount = Bookings::where('shows_show_id', $show->show_id)->count();
         if ($bookingCount > 0) {
             return response()->json(['errors' => 'This show already has bookings and cannot be edited.']);
@@ -350,6 +307,7 @@ class ShowsController extends Controller
         return response()->json(['success' => 'Show Updated Successfully.']);
     }
 
+    //Delete Show*******************************************************************************************
     public function destroy(Request $request){
         try {
             $show = Shows::find($request->show_id);
@@ -373,7 +331,7 @@ class ShowsController extends Controller
         } 
     }
 
-
+    //Get Available Showtimes For The Update Modal*****************************************************************
     public function getAvailableShowtimes(Request $request)
     {
         $validated = $request->validate([
@@ -439,5 +397,47 @@ class ShowsController extends Controller
             'success' => true,
             'showtimes' => $availableShowtimes
         ]);
+    }
+
+    //Shared Helper Functions*****************************************************************************
+
+    private function loadBookedRanges($dateString)
+    {
+        $existingShows = DB::table('shows')
+            ->join('movies', 'movies.movie_id', '=', 'shows.movies_movie_id')
+            ->where('shows.date', $dateString)
+            ->select('shows.time', 'movies.duration')
+            ->get();
+
+        $ranges = [];
+        foreach ($existingShows as $existingShow) {
+            $timeParts = explode(':', $existingShow->time);
+            $existingStart = ((int)$timeParts[0]) * 60 + (int)$timeParts[1];
+            $ranges[] = ['start' => $existingStart, 'end' => $existingStart + $existingShow->duration];
+        }
+
+        return $ranges;
+    }
+
+    private function convertTimeToMinutes($time)
+    {
+        $parts = explode(':', $time);
+        return ((int)$parts[0] * 60) + (int)$parts[1];
+    }
+
+    private function roundUpToQuarterHour($minutes)
+    {
+        return (int) (ceil($minutes / 15) * 15);
+    }
+
+    private function hasConflict($startTime, $endTime, $bookedRanges, $minimumGap)
+    {
+        foreach ($bookedRanges as $range) {
+            if ($startTime < ($range['end'] + $minimumGap) && ($endTime + $minimumGap) > $range['start']) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
