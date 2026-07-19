@@ -125,13 +125,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <figure class="about-img animate" data-animate="fadeInUp">
-                                        <div class="rounded" style="min-height:220px; display:flex; align-items:center; justify-content:center; background:#f8f9fa; color:#333;">
-                                            About Cineverse
-                                        </div>
-                                    </figure>
-                                </div>
+                               
                             </div>
                         </div>
                     </div>
@@ -156,8 +150,8 @@
                                     <div class="contact-box">
                                         <div class="contact-row contact-row-location">
                                             <i class="fa fa-map-marker"></i> 123 New Street , Kuliyapitiya  60200
-                                            <div class="contact-box-map offline-map-placeholder" style="min-height:280px; display:flex; align-items:center; justify-content:center; background:#f8f9fa; color:#333; padding:16px; border-radius:8px;">
-                                                Offline map unavailable. Please visit us at the address above.
+                                            <div class="contact-box-map offline-map-placeholder" style=" display:flex; align-items:center; justify-content:center; background:#f8f9fa; color:#333; padding:16px; border-radius:8px;">
+                                                Offline map unavailable. 
                                             </div>
                                         </div>
                                         <div class="contact-row">

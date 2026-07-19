@@ -119,31 +119,46 @@
                                                             </a>
                                                         @endif
                                                         @if(Auth::user()->user_role_iduser_role == 1 || Auth::user()->user_role_iduser_role == 2)
-                                                            
 
-                                                            <button type="button"
-                                                                    class="btn btn-sm btn-warning  waves-effect waves-light mr-2"
-                                                                    data-toggle="modal"
-
-                                                                    data-id="{{$show->show_id}}"
-                                                                    data-date="{{$show->date}}"
-                                                                    data-time="{{$show->time}}"
-                                                                    data-movie="{{$show->movies_movie_id}}"
-
-                                                                    id="updateShowID"
-                                                                    data-target="#updateShowModal">
+                                                            @if($show->has_bookings)
+                                                                <button type="button"
+                                                                        class="btn btn-sm btn-secondary waves-effect waves-light mr-2"
+                                                                        disabled
+                                                                        title="This show has bookings and cannot be edited">
                                                                     <i class="fa fa-edit"></i>
-                                                            </button>
+                                                                </button>
+                                                            @else
+                                                                <button type="button"
+                                                                        class="btn btn-sm btn-warning  waves-effect waves-light mr-2"
+                                                                        data-toggle="modal"
 
-                                                            
-                                                            <div class="delete-show-button mr-2"> 
-                                                                    {{csrf_field()}}
-                                                                    <input type="hidden" name="show_id" id="show_id" value="{{$show->show_id}}">
-                                                                    <button type="button" class="btn btn-sm btn-danger waves-effect waves-light" id="deleteShowBtn"> 
-                                                                        <i class="fa fa-trash"></i>
-                                                                    </button>
-                                                            </div>
-                                                            
+                                                                        data-id="{{$show->show_id}}"
+                                                                        data-date="{{$show->date}}"
+                                                                        data-time="{{$show->time}}"
+                                                                        data-movie="{{$show->movies_movie_id}}"
+
+                                                                        id="updateShowID"
+                                                                        data-target="#updateShowModal">
+                                                                        <i class="fa fa-edit"></i>
+                                                                </button>
+                                                            @endif
+
+                                                            @if($show->has_bookings)
+                                                                <button type="button"
+                                                                        class="btn btn-sm btn-secondary waves-effect waves-light"
+                                                                        disabled
+                                                                        title="This show has bookings and cannot be deleted">
+                                                                    <i class="fa fa-trash"></i>
+                                                                </button>
+                                                            @else
+                                                                <div class="delete-show-button mr-2"> 
+                                                                        {{csrf_field()}}
+                                                                        <input type="hidden" name="show_id" id="show_id" value="{{$show->show_id}}">
+                                                                        <button type="button" class="btn btn-sm btn-danger waves-effect waves-light" id="deleteShowBtn"> 
+                                                                            <i class="fa fa-trash"></i>
+                                                                        </button>
+                                                                </div>
+                                                            @endif
 
                                                         @endif
                                                         
@@ -217,56 +232,40 @@
                     <small class="text-muted">Exact times depend on the movies picked below - these are rough guides only.</small>
                     <br><br>
 
-                    <div class="form-group">
-                        <label>Movie 1 <span class="text-muted">(~morning)</span><span style="color: red">*</span></label>
-                        <select class="form-control" name="movie1" id="rangeMovie1" required>
-                            <option value="" disabled selected>-- Select a Movie --</option>
-                            @foreach ($movies as $movie)
-                                <option value="{{ $movie->movie_id }}"> {{ $movie->name }} </option>
-                            @endforeach
-                        </select>
-                        <small class="text-danger" id="movie1Error"></small>
-                    </div>
+                    @if(isset($showtimes) && $showtimes->count() > 0)
+                        @php $slotNumber = 0; @endphp
+                        @foreach($showtimes as $showtime)
+                            @if($showtime->status == 1)
+                                @php $slotNumber++; @endphp
+                                <div class="form-group">
+                                    <label>Slot {{ $slotNumber }} <span class="text-muted">({{ \Carbon\Carbon::parse($showtime->time)->format('h:i A') }})</span></label>
+                                    <select class="form-control" name="movie{{ $slotNumber }}" id="rangeMovie{{ $slotNumber }}">
+                                        <option value="" selected>-- Select a Movie --</option>
+                                        @foreach ($movies as $movie)
+                                            <option value="{{ $movie->movie_id }}"> {{ $movie->name }} </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @else
+                                <div class="form-group">
+                                    <label class="text-muted">{{ \Carbon\Carbon::parse($showtime->time)->format('h:i A') }}</label>
+                                    <div class="form-control bg-light text-muted" style="cursor: not-allowed;">
+                                        Showtime disabled by admin
+                                    </div>
+                                </div>
+                            @endif
+                        @endforeach
 
-                    <div class="form-group">
-                        <label>Movie 2 <span class="text-muted">(~midday)</span></label>
-                        <select class="form-control" name="movie2" id="rangeMovie2">
-                            <option value="" selected>-- Select a Movie --</option>
-                            @foreach ($movies as $movie)
-                                <option value="{{ $movie->movie_id }}"> {{ $movie->name }} </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Movie 3 <span class="text-muted">(~afternoon)</span></label>
-                        <select class="form-control" name="movie3" id="rangeMovie3">
-                            <option value="" selected>-- Select a Movie --</option>
-                            @foreach ($movies as $movie)
-                                <option value="{{ $movie->movie_id }}"> {{ $movie->name }} </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Movie 4 <span class="text-muted">(~evening)</span></label>
-                        <select class="form-control" name="movie4" id="rangeMovie4">
-                            <option value="" selected>-- Select a Movie --</option>
-                            @foreach ($movies as $movie)
-                                <option value="{{ $movie->movie_id }}"> {{ $movie->name }} </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Movie 5 <span class="text-muted">(~night)</span></label>
-                        <select class="form-control" name="movie5" id="rangeMovie5">
-                            <option value="" selected>-- Select a Movie --</option>
-                            @foreach ($movies as $movie)
-                                <option value="{{ $movie->movie_id }}"> {{ $movie->name }} </option>
-                            @endforeach
-                        </select>
-                    </div>
+                        @if($slotNumber == 0)
+                            <div class="alert alert-warning">
+                                No enabled showtime anchors are available. Please enable showtimes first.
+                            </div>
+                        @endif
+                    @else
+                        <div class="alert alert-warning">
+                            No showtimes exist yet. Please create showtimes first.
+                        </div>
+                    @endif
 
                     <small class="text-danger" id="rangeShowsError"></small>
 
@@ -454,62 +453,42 @@
 
         function addShowsRange(){
 
-            console.log("addShowsRange function called");
-
             $("#startDateError").html('');
             $("#endDateError").html('');
-            $("#movie1Error").html('');
             $("#rangeShowsError").html('');
 
             var startDate = $("#rangeStartDate").val();
             var endDate = $("#rangeEndDate").val();
-            var movie1 = $("#rangeMovie1").val();
-            var movie2 = $("#rangeMovie2").val();
-            var movie3 = $("#rangeMovie3").val();
-            var movie4 = $("#rangeMovie4").val();
-            var movie5 = $("#rangeMovie5").val();
-
-            $.post('{{ route('saveShows') }}',{
-
+            var postData = {
                 start_date: startDate,
                 end_date: endDate,
-                movie1: movie1,
-                movie2: movie2,
-                movie3: movie3,
-                movie4: movie4,
-                movie5: movie5,
+            };
 
-            },function (data) {
+            $('#addShowModal select[name^="movie"]').each(function(index) {
+                postData['movie' + (index + 1)] = $(this).val();
+            });
 
-
+            $.post('{{ route('saveShows') }}', postData, function (data) {
                 if (data.errors != null) {
-
                     if (typeof data.errors === "string") {
-
                         $("#rangeShowsError").html(data.errors);
-
                     } else {
-
                         if(data.errors.start_date) {
-                            var p = document.getElementById('startDateError');
-                            p.innerHTML = data.errors.start_date[0];
+                            $("#startDateError").html(data.errors.start_date[0]);
                         }
-
                         if(data.errors.end_date) {
-                            var p = document.getElementById('endDateError');
-                            p.innerHTML = data.errors.end_date[0];
+                            $("#endDateError").html(data.errors.end_date[0]);
                         }
 
-                        if(data.errors.movie1) {
-                            var p = document.getElementById('movie1Error');
-                            p.innerHTML = data.errors.movie1[0];
+                        var firstMovieError = Object.keys(data.errors).find(function(key) {
+                            return key.indexOf('movie') === 0;
+                        });
+                        if (firstMovieError) {
+                            $("#rangeShowsError").html(data.errors[firstMovieError][0]);
                         }
                     }
-
                 }
 
-
-                //On success
                 if (data.success != null) {
                     notify({
                         type: "success",
@@ -521,9 +500,22 @@
                             y: "top"
                         },
                         icon: '<img src="{{ URL::asset('assets/images/correct.png')}}" />',
-
                         message: data.success,
                     });
+
+                    if (data.issues && data.issues.length > 0) {
+                        notify({
+                            type: "warning",
+                            title: 'Some showtimes were skipped',
+                            autoHide: false,
+                            position: {
+                                x: "right",
+                                y: "top"
+                            },
+                            icon: '<img src="{{ URL::asset('assets/images/wrong.png')}}" />',
+                            message: data.issues.join('<br/>'),
+                        });
+                    }
 
                     setTimeout(function () {
                         $('#addShowModal').modal('hide');
@@ -534,24 +526,21 @@
                     }, 1000);
                 }
 
-                //On errors
                 if(data.errors != null){
+                    var errorMessage = typeof data.errors === 'string' ? data.errors : JSON.stringify(data.errors);
                     notify({
-                        type: "error", //alert | success | error | warning | info
+                        type: "error",
                         title: 'Shows NOT CREATED',
-                        autoHide: true, //true | false
-                        delay: 2500, //number ms
+                        autoHide: false,
                         position: {
                             x: "right",
                             y: "top"
                         },
                         icon: '<img src="{{ URL::asset('assets/images/wrong.png')}}" />',
-                        message: data.errors,
+                        message: errorMessage,
                     });
                 }
-        
             });
-
         }
         //Save Shows (Date Range) End
 
@@ -651,21 +640,14 @@
                     notify({
                         type: "error", //alert | success | error | warning | info
                         title: 'Show NOT UPDATED',
-                        autoHide: true, //true | false
-                        delay: 2500, //number ms
+                        autoHide: false,
                         position: {
                             x: "right",
                             y: "top"
                         },
                         icon: '<img src="{{ URL::asset('assets/images/wrong.png')}}" />',
-                        message: data.errors,
+                        message: typeof data.errors === 'string' ? data.errors : JSON.stringify(data.errors),
                     });
-                    $('input').val('');
-                    setTimeout(function () {
-                        $('#updateShowModal').modal('hide');
-                    }, 200);
-
-
                 }
             })
         }
@@ -765,7 +747,6 @@
 
             $("#startDateError").html('');
             $("#endDateError").html('');
-            $("#movie1Error").html('');
             $("#rangeShowsError").html('');
 
             $('#updateMovieError').html('');
@@ -774,7 +755,7 @@
 
             $('#rangeStartDate').val('');
             $('#rangeEndDate').val('');
-            $('#rangeMovie1, #rangeMovie2, #rangeMovie3, #rangeMovie4, #rangeMovie5').val('');
+            $('#addShowModal select[name^="movie"]').val('');
 
         });
 
@@ -866,7 +847,7 @@
     //Disable Fully Booked Dates End
 
     //Get availabe shows**************************************************************************************************
-    function loadAvailableShowtimes(date, targetSelectId, currentTime = null) {
+    function loadAvailableShowtimes(date, targetSelectId, currentTime = null, excludeShowId = null, movieId = null) {
         if (!date) {
             resetShowtimeSelect(targetSelectId);
             return;
@@ -880,6 +861,8 @@
             type: 'POST',
             data: {
                 date: date,
+                movie_id: movieId,
+                exclude_show_id: excludeShowId,
                 _token: $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
@@ -976,15 +959,30 @@
         $('#updateDate').change(function() {
             var selectedDate = $(this).val();
             var currentTime = $("#updateTime").data('current-time');
-            loadAvailableShowtimes(selectedDate, 'updateTime', currentTime);
+            var excludeShowId = $('#hiddenMovieID').val();
+            var movieId = $('#updateMovie').val();
+            loadAvailableShowtimes(selectedDate, 'updateTime', currentTime, excludeShowId, movieId);
+        });
+
+        $('#updateMovie').change(function() {
+            var selectedDate = $('#updateDate').val();
+            if (!selectedDate) {
+                return;
+            }
+            var currentTime = $("#updateTime").data('current-time');
+            var excludeShowId = $('#hiddenMovieID').val();
+            var movieId = $(this).val();
+            loadAvailableShowtimes(selectedDate, 'updateTime', currentTime, excludeShowId, movieId);
         });
         
         // For the update modal, we need to fetch available showtimes when it opens
         $('#updateShowModal').on('show.bs.modal', function() {
             var selectedDate = $('#updateDate').val();
             var currentTime = $("#updateTime").data('current-time');
+            var excludeShowId = $('#hiddenMovieID').val();
+            var movieId = $('#updateMovie').val();
             if (selectedDate) {
-                loadAvailableShowtimes(selectedDate, 'updateTime', currentTime);
+                loadAvailableShowtimes(selectedDate, 'updateTime', currentTime, excludeShowId, movieId);
             } else {
                 resetShowtimeSelect('updateTime');
             }

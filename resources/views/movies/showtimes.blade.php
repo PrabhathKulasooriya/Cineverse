@@ -53,13 +53,14 @@
                         <div class="col-lg-8">
                         </div>
 
+                        @if(count($showtimes)<5)
                         <div class="col-lg-4">
                             <button type="button" class="btn btn-primary float-right"
                                     data-toggle="modal"  data-target="#addShowtimeModal" >
                                 Add Showtime
                             </button>
                         </div>
-
+                        @endif
                     </div>
 
 
