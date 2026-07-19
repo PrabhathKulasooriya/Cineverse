@@ -126,7 +126,11 @@
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <figure class="about-img animate" data-animate="fadeInUp"><img src="images/profile-girl.jpg" class="rounded" alt=""></figure>
+                                    <figure class="about-img animate" data-animate="fadeInUp">
+                                        <div class="rounded" style="min-height:220px; display:flex; align-items:center; justify-content:center; background:#f8f9fa; color:#333;">
+                                            About Cineverse
+                                        </div>
+                                    </figure>
                                 </div>
                             </div>
                         </div>
@@ -152,7 +156,9 @@
                                     <div class="contact-box">
                                         <div class="contact-row contact-row-location">
                                             <i class="fa fa-map-marker"></i> 123 New Street , Kuliyapitiya  60200
-                                            <iframe class="contact-box-map"src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15823.704415163236!2d80.03588313959332!3d7.473412756168999!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3ae2d9bae1806e5d%3A0xdeaaab4c8b8ae97!2sKuliyapitiya!5e0!3m2!1sen!2slk!4v1746679252658!5m2!1sen!2slk"   allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                                            <div class="contact-box-map offline-map-placeholder" style="min-height:280px; display:flex; align-items:center; justify-content:center; background:#f8f9fa; color:#333; padding:16px; border-radius:8px;">
+                                                Offline map unavailable. Please visit us at the address above.
+                                            </div>
                                         </div>
                                         <div class="contact-row">
                                             <i class="fa fa-phone"></i> 0115 123 456

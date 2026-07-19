@@ -1,6 +1,5 @@
 @extends('moviePage_include.main')
 @section('pageSpecificStyles')
-<script src="https://kit.fontawesome.com/e8fa2e31b4.js" crossorigin='anonymous'></script>
 <link rel="stylesheet" href="{{ asset('css/payment.css') }}">
 @endsection
 

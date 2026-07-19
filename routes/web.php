@@ -147,7 +147,7 @@ Route::group(['middleware' => 'auth', 'prefix' => ''], function () {
 
             //Shows
             Route::post('/getAvailableShowtimes', 'ShowsController@getAvailableShowtimes')->name('getAvailableShowtimes');
-            Route::post('/shows','ShowsController@store')->name('saveShow');
+            Route::post('/saveShows', 'ShowsController@storeShows')->name('saveShows');
             Route::post('/updateShow','ShowsController@update')->name('updateShow');
             Route::post('/destroyShow','ShowsController@destroy')->name('destroyShow');
             

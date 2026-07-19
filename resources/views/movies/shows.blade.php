@@ -185,71 +185,102 @@
 
 
 
-    <!-- Add Show Modal Start-->
+    <!-- Create Shows Modal Start-->
     <div class="modal fade" id="addShowModal" tabindex="-1"
         role="dialog"
         aria-labelledby="mySmallModalLabel" aria-hidden="true">
         <div class="modal-dialog">
-
             <div class="modal-content">
 
                 <div class="modal-header">
-                    <h5 class="modal-title mt-0">Create Show</h5>
-                    <button type="button" class="close" data-dismiss="modal"
-                            aria-hidden="true">×
-                    </button>
+                    <h5 class="modal-title mt-0">Create Shows</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
                 </div>
 
                 <div class="modal-body">
 
                     <div class="form-group">
-                        <label>Movie<span style="color: red">*</span></label>
-                        <select class="form-control" name="movie" id="movie" required>
+                        <label>Start Date<span style="color: red">*</span></label>
+                        <input type="text" class="form-control" id="rangeStartDate" name="start_date" required
+                            placeholder="YYYY-MM-DD" readonly>
+                        <small class="text-danger" id="startDateError"></small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>End Date <small class="text-muted">(optional - leave empty for a single date)</small></label>
+                        <input type="text" class="form-control" id="rangeEndDate" name="end_date"
+                            placeholder="YYYY-MM-DD" readonly>
+                        <small class="text-danger" id="endDateError"></small>
+                    </div>
+
+                    <hr>
+                    <small class="text-muted">Exact times depend on the movies picked below - these are rough guides only.</small>
+                    <br><br>
+
+                    <div class="form-group">
+                        <label>Movie 1 <span class="text-muted">(~morning)</span><span style="color: red">*</span></label>
+                        <select class="form-control" name="movie1" id="rangeMovie1" required>
                             <option value="" disabled selected>-- Select a Movie --</option>
-                            @foreach ($movies as $movie) 
+                            @foreach ($movies as $movie)
                                 <option value="{{ $movie->movie_id }}"> {{ $movie->name }} </option>
                             @endforeach
                         </select>
-                        <small class="text-danger" id="movieError"></small>
+                        <small class="text-danger" id="movie1Error"></small>
                     </div>
 
                     <div class="form-group">
-                        <label > Date <span style="color: red">*</span> </label>
-                        <input type="text" class="form-control" id="date" name="date"  required placeholder="YYYYY-MM-DD" 
-                                    min="<?= date('Y-m-d') ?>" 
-                                    max="<?= date('Y-m-d', strtotime('+3 months')) ?>" readonly >
-                        <small class="text-danger" id="dateError"></small>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Time<span style="color: red"> *</span></label>
-                        <select class="form-control" name="time" id="time" required>
-                            <option value="" disabled selected>-- Select a Showtime --</option>
-                            @foreach ($showtimes as $showtime) 
-                                <option value="{{ $showtime->time }}"> 
-                                    {{$showtime->idshowtimes}}
-                                    .
-                                    {{ \Carbon\Carbon::createFromFormat('H:i:s', $showtime->time)->format('h:i A') }}
-                                </option>
+                        <label>Movie 2 <span class="text-muted">(~midday)</span></label>
+                        <select class="form-control" name="movie2" id="rangeMovie2">
+                            <option value="" selected>-- Select a Movie --</option>
+                            @foreach ($movies as $movie)
+                                <option value="{{ $movie->movie_id }}"> {{ $movie->name }} </option>
                             @endforeach
                         </select>
-                        <small class="text-danger" id="timeError"></small>
                     </div>
 
                     <div class="form-group">
-                        <button type="button"  class="btn btn-primary float-right"
-                                onclick="addShow()" >
-                            Create Show
+                        <label>Movie 3 <span class="text-muted">(~afternoon)</span></label>
+                        <select class="form-control" name="movie3" id="rangeMovie3">
+                            <option value="" selected>-- Select a Movie --</option>
+                            @foreach ($movies as $movie)
+                                <option value="{{ $movie->movie_id }}"> {{ $movie->name }} </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Movie 4 <span class="text-muted">(~evening)</span></label>
+                        <select class="form-control" name="movie4" id="rangeMovie4">
+                            <option value="" selected>-- Select a Movie --</option>
+                            @foreach ($movies as $movie)
+                                <option value="{{ $movie->movie_id }}"> {{ $movie->name }} </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Movie 5 <span class="text-muted">(~night)</span></label>
+                        <select class="form-control" name="movie5" id="rangeMovie5">
+                            <option value="" selected>-- Select a Movie --</option>
+                            @foreach ($movies as $movie)
+                                <option value="{{ $movie->movie_id }}"> {{ $movie->name }} </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <small class="text-danger" id="rangeShowsError"></small>
+
+                    <div class="form-group">
+                        <button type="button" class="btn btn-primary float-right" onclick="addShowsRange()">
+                            Create Shows
                         </button>
                     </div>
 
                 </div>
-
             </div>
-
         </div>
     </div>
-    <!-- Add Show Modal End-->
+    <!-- Create Shows Modal End-->
 
 
 
@@ -419,55 +450,62 @@
 
 
 
-        //Save Show Start
+        //Save Shows (Date Range) Start
 
+        function addShowsRange(){
 
-        function addShow(){
+            console.log("addShowsRange function called");
 
-            console.log("addShow function called");
+            $("#startDateError").html('');
+            $("#endDateError").html('');
+            $("#movie1Error").html('');
+            $("#rangeShowsError").html('');
 
-            $("#movieError").html('');
-            $("#dateError").html('');
-            $("#timeError").html('');
-            
+            var startDate = $("#rangeStartDate").val();
+            var endDate = $("#rangeEndDate").val();
+            var movie1 = $("#rangeMovie1").val();
+            var movie2 = $("#rangeMovie2").val();
+            var movie3 = $("#rangeMovie3").val();
+            var movie4 = $("#rangeMovie4").val();
+            var movie5 = $("#rangeMovie5").val();
 
+            $.post('{{ route('saveShows') }}',{
 
-
-            var movie = $("#movie").val();
-            var date = $("#date").val();
-            var time = $("#time").val();
-            
-
-
-
-            $.post('{{ route('saveShow') }}',{
-
-                movie:movie,
-                date:date,
-                time:time,
+                start_date: startDate,
+                end_date: endDate,
+                movie1: movie1,
+                movie2: movie2,
+                movie3: movie3,
+                movie4: movie4,
+                movie5: movie5,
 
             },function (data) {
 
 
                 if (data.errors != null) {
 
+                    if (typeof data.errors === "string") {
 
-                    if(data.errors.movie) {
-                        var p = document.getElementById('movieError');
-                        p.innerHTML = data.errors.movie[0];
+                        $("#rangeShowsError").html(data.errors);
+
+                    } else {
+
+                        if(data.errors.start_date) {
+                            var p = document.getElementById('startDateError');
+                            p.innerHTML = data.errors.start_date[0];
+                        }
+
+                        if(data.errors.end_date) {
+                            var p = document.getElementById('endDateError');
+                            p.innerHTML = data.errors.end_date[0];
+                        }
+
+                        if(data.errors.movie1) {
+                            var p = document.getElementById('movie1Error');
+                            p.innerHTML = data.errors.movie1[0];
+                        }
                     }
 
-                    if(data.errors.date) {
-                        var p = document.getElementById('dateError');
-                        p.innerHTML = data.errors.date[0];
-                    }
-
-                    if(data.errors.time) {
-                        var p = document.getElementById('timeError');
-                        p.innerHTML = data.errors.time[0];
-                    }
-
-                    
                 }
 
 
@@ -475,7 +513,7 @@
                 if (data.success != null) {
                     notify({
                         type: "success",
-                        title: 'Show SAVED',
+                        title: 'Shows SAVED',
                         autoHide: true,
                         delay: 2500,
                         position: {
@@ -487,7 +525,6 @@
                         message: data.success,
                     });
 
-                    $('input').val('');
                     setTimeout(function () {
                         $('#addShowModal').modal('hide');
                     }, 200);
@@ -501,7 +538,7 @@
                 if(data.errors != null){
                     notify({
                         type: "error", //alert | success | error | warning | info
-                        title: 'Show NOT CREATED',
+                        title: 'Shows NOT CREATED',
                         autoHide: true, //true | false
                         delay: 2500, //number ms
                         position: {
@@ -511,18 +548,12 @@
                         icon: '<img src="{{ URL::asset('assets/images/wrong.png')}}" />',
                         message: data.errors,
                     });
-                    $('input').val('');
-                    setTimeout(function () {
-                        $('#addShowModal').modal('hide');
-                    }, 200);
-
-
                 }
         
             });
 
         }
-        //Save Show End
+        //Save Shows (Date Range) End
 
 
 
@@ -732,18 +763,18 @@
         //Hide Validation errors after closing the modal without refreshing
         $('.modal').on('hidden.bs.modal', function () {
 
-
-            $("#movieError").html('');
-            $("#dateError").html('');
-            $("#timeError").html('');
-            
+            $("#startDateError").html('');
+            $("#endDateError").html('');
+            $("#movie1Error").html('');
+            $("#rangeShowsError").html('');
 
             $('#updateMovieError').html('');
             $("#updateDateError").html('');
             $("#updateTimeError").html('');
 
-
-            $('input').val(''); //Clear input values of input fields
+            $('#rangeStartDate').val('');
+            $('#rangeEndDate').val('');
+            $('#rangeMovie1, #rangeMovie2, #rangeMovie3, #rangeMovie4, #rangeMovie5').val('');
 
         });
 
@@ -752,22 +783,27 @@
     console.log(fullyBookedDates);
 
     document.addEventListener('DOMContentLoaded', function () {
-        // For the add show modal
-        const dateInput = document.getElementById('date');
+        // For the add shows modal (date range)
+        const rangeStartInput = document.getElementById('rangeStartDate');
+        const rangeEndInput = document.getElementById('rangeEndDate');
         const updateDateInput = document.getElementById('updateDate');
 
-        // Set min date to today and max date to 3 months from today
+        // Set min date to today and max date to 2 months from today for the range pickers
         const today = new Date();
-        const maxDate = new Date();
-        maxDate.setMonth(today.getMonth() + 3);
+        const maxRangeDate = new Date();
+        maxRangeDate.setMonth(today.getMonth() + 2);
 
-        // Initialize date picker for add modal
-        $(dateInput).datepicker({
+        // Set min date to today and max date to 3 months from today for the update picker
+        const maxUpdateDate = new Date();
+        maxUpdateDate.setMonth(today.getMonth() + 3);
+
+        // Initialize date picker for range start date
+        $(rangeStartInput).datepicker({
             format: 'yyyy-mm-dd',
             autoclose: true,
             todayHighlight: true,
-            startDate: today, // No dates before today can be selected
-            endDate: maxDate, // No dates beyond 3 months can be selected
+            startDate: today,
+            endDate: maxRangeDate,
             beforeShowDay: function(date) {
                 const formattedDate = date.getFullYear() + '-' + 
                                         String(date.getMonth() + 1).padStart(2, '0') + '-' + 
@@ -778,8 +814,31 @@
             }
         }).on('changeDate', function(e) {
             // Update the input with the selected date
-            dateInput.value = e.format('yyyy-mm-dd');
-            document.getElementById('dateError').innerText = "";
+            rangeStartInput.value = e.format('yyyy-mm-dd');
+            document.getElementById('startDateError').innerText = "";
+            // Prevent end date being before the newly selected start date
+            $(rangeEndInput).datepicker('setStartDate', e.date);
+        });
+
+        // Initialize date picker for range end date
+        $(rangeEndInput).datepicker({
+            format: 'yyyy-mm-dd',
+            autoclose: true,
+            todayHighlight: true,
+            startDate: today,
+            endDate: maxRangeDate,
+            beforeShowDay: function(date) {
+                const formattedDate = date.getFullYear() + '-' + 
+                                        String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                                        String(date.getDate()).padStart(2, '0');
+                return {
+                    enabled: !fullyBookedDates.includes(formattedDate)
+                };
+            }
+        }).on('changeDate', function(e) {
+            // Update the input with the selected date
+            rangeEndInput.value = e.format('yyyy-mm-dd');
+            document.getElementById('endDateError').innerText = "";
         });
 
         // Initialize date picker for update modal
@@ -788,7 +847,7 @@
             autoclose: true,
             todayHighlight: true,
             startDate: today, // No dates before today can be selected
-            endDate: maxDate, // No dates beyond 3 months can be selected
+            endDate: maxUpdateDate, // No dates beyond 3 months can be selected
             beforeShowDay: function(date) {
                 const formattedDate = date.getFullYear() + '-' + 
                                         String(date.getMonth() + 1).padStart(2, '0') + '-' + 
@@ -912,22 +971,12 @@
 
     // Attach event handlers when document is ready
     $(document).ready(function() {
-        // For the add show modal
-        $('#date').change(function() {
-            var selectedDate = $(this).val();
-            loadAvailableShowtimes(selectedDate, 'time');
-        });
         
         // For the update show modal
         $('#updateDate').change(function() {
             var selectedDate = $(this).val();
             var currentTime = $("#updateTime").data('current-time');
             loadAvailableShowtimes(selectedDate, 'updateTime', currentTime);
-        });
-        
-        // Make sure we reset the showtime select when modals are opened
-        $('#addShowModal').on('show.bs.modal', function() {
-            resetShowtimeSelect('time');
         });
         
         // For the update modal, we need to fetch available showtimes when it opens
