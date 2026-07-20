@@ -68,6 +68,10 @@
         
             @if(isset($bookings))
 
+            
+            <h5 >Date : {{$show->date }}</h5>
+            <h5 >Time : {{ \Carbon\Carbon::parse($show->time)->format('h:i A') }}</h5>
+
             <!--Data Table Start-->
             <div class="col-lg-12">
             <div class="table-rep-plugin">
@@ -75,7 +79,7 @@
                     <div class="card-body">
                     <div class="table-responsive b-0" data-pattern="priority-columns">
 
-
+                    
                     <table id="datatable"   class="table table-striped table-bordered"
                         cellspacing="0"
                         width="100%">
@@ -83,11 +87,9 @@
                         <thead>
                             <tr>
                                 <th>BOOKING ID</th>
-                                <th>MOVIE NAME</th>
-                                <th>SHOW DATE</th>
-                                <th>SHOW TIME</th>
+                                <th>CUSTOMER Name</th>
+                                <th>BOOKING</th>
                                 <th>CREATED AT</th>
-                                <th>SEATS</th>
                                 <th>OPTIONS</th>
                                 
                             </tr>
@@ -100,18 +102,9 @@
                                         <tr>
                                             <!-- Use object syntax (->) instead of array syntax (['']) -->
                                             <td>BK{{ $booking->booking_id ?? $booking->id }}</td>
-                                            <td>{{ $movie->name }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($booking->show_date)->format('d M Y') }}</td>
-                                            <td>{{ \Carbon\Carbon::parse($booking->show_time)->format('h:i A') }}</td>
+                                            <td>{{ $booking->customer_name }}</td>
+                                            <td>{{ $booking->email }}</td>
                                             <td>{{ \Carbon\Carbon::parse($booking->created_at)->format('H:i A | d-M-Y ') }}</td>
-                                            <td>
-                                                @if($booking->seats)
-                                                    @foreach($booking->seats as $seat)
-                                                        <!-- Depending on how seats is cast in your model, you may need $seat->row or $seat['row'] -->
-                                                        <span class="seat-badge">{{ is_array($seat) ? $seat['row'].$seat['number'] : $seat->row.$seat->number }}</span>
-                                                    @endforeach
-                                                @endif
-                                            </td>
                                             <td>
                                                 <form action="{{ route('verifyTicket') }}" method="post">
                                                     @csrf

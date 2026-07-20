@@ -37,8 +37,12 @@ class SecurityController extends Controller
                 $user->sendEmailVerificationNotification();
                 return redirect()->route('verification.notice');
             }
-
-            return redirect()->intended('/')->with('success', 'Login Successful!');
+            
+            if($user->user_role_iduser_role == 4){
+                return redirect()->intended('/')->with('success', 'Login Successful!');
+            }else{
+                return redirect()->route('dashboard')->with('success', 'Login Successful!');
+            }
         }
 
         

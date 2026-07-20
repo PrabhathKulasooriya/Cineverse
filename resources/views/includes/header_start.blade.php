@@ -10,7 +10,7 @@
 
         <!-- App Icons -->
 
-        <link rel="icon" href="{{asset('favicon.ico')}}" type="image/x-icon">
+        <link rel="icon" href="{{ asset('assets/images/logo/logo_1.png') }}" type="image/png">
 
         <!-- App title -->
         <title>{{$title}}</title>

@@ -13,7 +13,6 @@
 <link href="{{ URL::asset('assets/plugins/bootstrap-touchspin/css/jquery.bootstrap-touchspin.min.css')}}" rel="stylesheet"/>
 <link href="{{ URL::asset('assets/css/custom_checkbox.css')}}" rel="stylesheet" type="text/css"/>
 <link href="{{ URL::asset('assets/css/jquery.notify.css')}}" rel="stylesheet" type="text/css">
-<link href="{{ URL::asset('assets/css/mdb.css')}}" rel="stylesheet" type="text/css">
 <link rel="stylesheet" href="{{ asset('css/ticketPage.css') }}">
 
 <meta name="csrf-token" content="{{ csrf_token() }}"/>
@@ -39,242 +38,228 @@
 </div>
 <!-- Top Bar End -->
 
-<!-- ==================
-     PAGE CONTENT START
-     ================== -->
+<!-- PAGE CONTENT START-->
 
+<!-- PAGE CONTENT START -->
 <div class="page-content-wrapper">
     <div class="container-fluid">
-        <div class="row ticketpage-alert-container">
+       
+        <div class="row mt-4">
+            
+            <!-- LEFT SIDE: Ticket Details-->
+            @if(auth()->user()->user_role_iduser_role == 1 || auth()->user()->user_role_iduser_role == 3)
+            <div class="col-lg-9 mb-4" id="ticketDetailsSection">
+            @else
+            <div class="w-100 mb-4" id="ticketDetailsSection">
+            @endif
 
-                    @if(session('success'))
-                        <div class="alert alert-success text-center position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
-                            <i class="fa fa-check-circle"></i> {{ session('success') }}
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
+                @if(isset($booking))
+                <!-- Added max-width and mx-auto to prevent over-stretching -->
+                <div class="ticket-verification-page-main mx-auto" style="max-width: 500px; width: 100%;">
+                    <div class="ticket-container">
+                        <div class="ticket-header">
+                            <h2> <img src="{{ URL::asset('assets/images/logo/logo_1.png')}}" alt="" height="50"> Cineverse Cinema</h2>
+                            <p class="mb-0">Seat Booking Confirmation</p>
                         </div>
-                    @endif
-
-                    @if(session('error'))
-                        <div class="alert alert-danger text-center position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
-                            <i class="fa fa-exclamation-circle"></i> {{ session('error') }}
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                    @endif
-        </div>        
-
-        @if(auth()->user()->user_role_iduser_role == 1 || auth()->user()->user_role_iduser_role == 2 || auth()->user()->user_role_iduser_role == 3)
-
-            <div class="qr-scanner-section  text-right">
-                <button type="button" class="btn btn-ticket-page" id="startScanBtn">
-                    <i class="fa fa-camera"></i> Scan QR Code
-                </button>
-
-                <button type="button" class="btn btn-secondary" id="stopScanBtn" style="display:none;">
-                    Stop Scanning
-                </button>
-
-                <div id="qrScannerContainer" style="display:none;" class="mt-2">
-                    <video id="qrVideo" style="width: 100%; max-width: 400px;"></video>
-                    <canvas id="qrCanvas" style="display:none;"></canvas>
-                    <p class="text-muted mt-1" id="qrScanStatus">Point the qr code at the camera</p>
-                </div>
-            </div>
-            <form action="{{ route('verifyTicket') }}" method="post" id="ticketVerificationForm" style="display:none;">
-                <div class="ticket-verification-input" id='ticketVerificationInput'>
-                    <div>
-                        <span>BK
-                            {{csrf_field()}}
-                            <input type="number" name="bookingId" id="bookingId" placeholder="123456789" >
-                        </span>
-                        <button type="submit" class="btn-verify" id="verifyBtn">Verify</button>
-                    </div>
-                </div>
-            </form>
-
-        @endif
-
-        @if(isset($booking))
-        <div class="ticket-verification-page-main">
-    
-            <div class="ticket-container">
-                
-                <div class="ticket-header">
-                    <h2> <img src="{{ URL::asset('assets/images/logo/logo_1.png')}}" alt="" height="50"> Cineverse Cinema</h2>
-                    <p class="mb-0">Seat Booking Confirmation</p>
-                </div>
-    
-                <div class="ticket-body">
-                    
-                    <div class="ticket-row">
-                        <span class="ticket-label">Booking ID</span>
-                        <span class="ticket-value">BK{{ $booking['booking_id']}}</span>
-                    </div>
-    
-                    <div class="ticket-row">
-                        <span class="ticket-label">Customer</span>
-                        <span class="ticket-value">{{ $booking['customer_name']  }}</span>
-                    </div>
-    
-                    <div class="ticket-row">
-                        <span class="ticket-label">Movie</span>
-                        <span class="ticket-value">{{ $booking['movie_name'] ?? 'Movie ID: ' . $booking['movieId'] }}</span>
-                    </div>
-    
-                    <div class="ticket-row">
-                        <span class="ticket-label">Date</span>
-                        <span class="ticket-value">{{Carbon\Carbon::parse($booking['show_date'])->format('d-m-Y')}}</span>
-                    </div>
-    
-                    <div class="ticket-row">
-                        <span class="ticket-label">Show Time</span>
-                        <span class="ticket-value">{{Carbon\Carbon::parse($booking['show_time'])->format('h:i A')}}</span>
-                    </div>
-    
-    
-                    <div class="ticket-row">
-                        <span class="ticket-label">Seats</span>
-                        <div class="seat-numbers">
-    
-                                @foreach($seats as $seat)
-                                    <span class="seat-badge">{{ $seat->row}}{{ $seat->number }}</span>
-                                @endforeach    
-    
-                        </div>
-                    </div>
-
-                    @if(isset($booking['booking_snacks']) && $booking['booking_snacks']->count() > 0)
-                    <div class="ticket-row">
-                        <span class="ticket-label">Snacks</span>
-                        <div class="snack-order-list">
-                            @foreach($booking['booking_snacks'] as $item)
-                            <div class="snack-order-item">
-                                <span class="snack-order-name">
-                                    {{ $item->snack->name }}
-                                    @if($item->snack->size !== 'REGULAR')
-                                        ({{ $item->snack->size }})
-                                    @endif
-                                </span>
-                                <span class="snack-order-qty">x{{ $item->quantity }}</span>
-                                <span class="snack-order-price">Rs. {{ number_format($item->price * $item->quantity, 2) }}</span>
+                        
+                        <div class="ticket-body">
+                            <div class="ticket-row">
+                                <span class="ticket-label">Booking ID</span>
+                                <span class="ticket-value">BK{{ $booking['booking_id']}}</span>
                             </div>
-                            @endforeach
-                        </div>
-                    </div>
-                    @endif
-    
-                    <div class="ticket-row">
-                        <span class="ticket-label">Payment Status</span>
-                        <span class="ticket-status">{{ $booking['payment_status']}}</span>
-                    </div>
-
-                    @if(isset($booking['booking_snacks']) && $booking['booking_snacks']->count() > 0)
-                    <div class="ticket-row ticket-amounts-row">
-                        <div class="amounts-breakdown">
-                            <div class="amount-line">
-                                <span class="ticket-label">Tickets</span>
-                                <span class="ticket-value">LKR {{ number_format($booking['amount'], 2) }}</span>
+                            <div class="ticket-row">
+                                <span class="ticket-label">Customer</span>
+                                <span class="ticket-value">{{ $booking['customer_name'] }}</span>
                             </div>
-                            <div class="amount-line">
-                                <span class="ticket-label">Snacks</span>
-                                <span class="ticket-value">LKR {{ number_format($booking['snacks_amount'], 2) }}</span>
+                            <div class="ticket-row">
+                                <span class="ticket-label">Movie</span>
+                                <span class="ticket-value">{{ $booking['movie_name'] ?? 'Movie ID: ' . $booking['movieId'] }}</span>
                             </div>
-                            <div class="amount-line grand-total-line">
-                                <span class="ticket-label">Total Amount</span>
-                                <span class="ticket-value ticket-amount">LKR {{ number_format($booking['amount'] + $booking['snacks_amount'], 2) }}</span>
+                            <div class="ticket-row">
+                                <span class="ticket-label">Date</span>
+                                <span class="ticket-value">{{Carbon\Carbon::parse($booking['show_date'])->format('d-m-Y')}}</span>
                             </div>
-                        </div>
-                    </div>
-                    @else
-    
-                    <div class="ticket-row">
-                        <span class="ticket-label">Total Amount</span>
-                        <span class="ticket-value ticket-amount">LKR {{ number_format($booking['amount'], 2) }}</span>
-                    </div>
-
-                    @endif
-                    
-                    <div class="d-flex flex-column justify-content-center align-items-center mx-2  mt-3">
-                        <div class="d-flex flex-column align-items-center mt-2 w-100">
-                            <div class="ticket-row d-flex flex-row justify-content-between align-items-center w-100">
-                                <p class="mb-0">
-                                    <span class="ticket-label">Available Entries</span> 
-                                    <span class="ticket-value"> : {{ $booking['available_seats'] }} </span>
-                                </p>
-                                <p class="mb-0">
-                                    <span class="ticket-label">Confirmed Entries</span> 
-                                    <span class="ticket-value"> : {{ $booking['entered_count'] }}</span>
-                                </p>
+                            <div class="ticket-row">
+                                <span class="ticket-label">Show Time</span>
+                                <span class="ticket-value">{{Carbon\Carbon::parse($booking['show_time'])->format('h:i A')}}</span>
                             </div>
-
-                            @if(auth()->user()->user_role_iduser_role == 1 || auth()->user()->user_role_iduser_role == 2 || auth()->user()->user_role_iduser_role == 3)
-
-                            @if(isset($booking['available_seats']) && $booking['available_seats'] <= 0)
-                                <p class="text-danger mb-0 mt-1">All entries have been confirmed for this booking.</p>
-                            @else
-                            <button class="btn btn-ticket-page mt-2" type="button" id="confirm-entry-btn" data-toggle="modal" data-target="#changeEntryModal" 
-                                    data-id="{{ $booking['booking_id'] }}" data-availableentries="{{ $booking['available_seats'] }}">
-                                Confirm Entry
-                            </button>
-                            @endif
-                        </div>
-
-                         @if(isset($booking['booking_snacks']) && $booking['booking_snacks']->count() > 0)
-
-                            @if(isset($booking['available_snacks']) && $booking['available_snacks'] <= 0)
-                                <p class="text-danger mb-0 mt-1">All snacks have been collected for this booking.</p>
-                            @else
                             
-                            <div>
-                                <button type="button" class="btn btn-ticket-page" data-toggle="modal" data-target="#confirmSnackModal">
-                                    Confirm Snack Collection
-                                </button>
+                            <div class="ticket-row">
+                                <span class="ticket-label">Seats</span>
+                                <div class="seat-numbers">
+                                    @if(isset($seats) && is_iterable($seats))
+                                        @foreach($seats as $seat)
+                                            <span class="seat-badge">{{ $seat->row}}{{ $seat->number }}</span>
+                                        @endforeach
+                                    @else
+                                        <span class="text-muted">No seats assigned</span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            @if(isset($booking['booking_snacks']) && $booking['booking_snacks']->count() > 0)
+                            <div class="ticket-row">
+                                <span class="ticket-label">Snacks</span>
+                                <div class="snack-order-list">
+                                    @foreach($booking['booking_snacks'] as $item)
+                                    <div class="snack-order-item">
+                                        <span class="snack-order-name">
+                                            {{ $item->snack->name }}
+                                            @if($item->snack->size !== 'REGULAR')
+                                                ({{ $item->snack->size }})
+                                            @endif
+                                        </span>
+                                        <span class="snack-order-qty">x{{ $item->quantity }}</span>
+                                        <span class="snack-order-price">Rs. {{ number_format($item->price * $item->quantity, 2) }}</span>
+                                    </div>
+                                    @endforeach
+                                </div>
                             </div>
                             @endif
-                        @endif
+            
+                            <div class="ticket-row">
+                                <span class="ticket-label">Payment Status</span>
+                                <span class="ticket-status">{{ $booking['payment_status']}}</span>
+                            </div>
 
-                        @endif
+                            @if(isset($booking['booking_snacks']) && $booking['booking_snacks']->count() > 0)
+                            <div class="ticket-row ticket-amounts-row">
+                                <div class="amounts-breakdown">
+                                    <div class="amount-line">
+                                        <span class="ticket-label">Tickets</span>
+                                        <span class="ticket-value">LKR {{ number_format($booking['amount'], 2) }}</span>
+                                    </div>
+                                    <div class="amount-line">
+                                        <span class="ticket-label">Snacks</span>
+                                        <span class="ticket-value">LKR {{ number_format($booking['snacks_amount'], 2) }}</span>
+                                    </div>
+                                    <div class="amount-line grand-total-line">
+                                        <span class="ticket-label">Total Amount</span>
+                                        <span class="ticket-value ticket-amount">LKR {{ number_format($booking['amount'] + $booking['snacks_amount'], 2) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            @else
+                            <div class="ticket-row">
+                                <span class="ticket-label">Total Amount</span>
+                                <span class="ticket-value ticket-amount">LKR {{ number_format($booking['amount'], 2) }}</span>
+                            </div>
+                            @endif
 
-                        <div class="d-flex flex-row justify-content-center mb-2">
-
-                        @if(auth()->user()->user_role_iduser_role == 1 || auth()->user()->user_role_iduser_role == 3 || auth()->user()->user_role_iduser_role == 4)
-                            <a href="{{route('printTicket', ['booking_id' => $booking['booking_id']])}}" target="_blank">
-                                <button class="btn btn-ticket-page mx-2">
-                                    <i class="fa fa-download" aria-hidden="true"></i> Get Ticket
-                                </button>
-                            </a>
-                        @endif
-
-                        <form id="emailTicketForm" action="{{ route('sendTicketEmail') }}" method="post" >
-                            @csrf
-                        <input type="hidden" name="booking_id" value="{{ $booking['booking_id']}}">
-                        <button class="btn btn-ticket-page btn-email mx-2" type="submit">
-                            <i class="fa fa-share" aria-hidden="true"></i> Send via Email
-                        </button>
-                        </form>
+                            @if(auth()->user()->user_role_iduser_role == 1 || auth()->user()->user_role_iduser_role == 2 || auth()->user()->user_role_iduser_role == 4)
+                            <div class="d-flex flex-column justify-content-center align-items-center mx-2 mt-3">
+                                <div class="d-flex flex-row justify-content-center mb-2">
+                                    @if(auth()->user()->user_role_iduser_role == 1 || auth()->user()->user_role_iduser_role == 3 || auth()->user()->user_role_iduser_role == 4)
+                                        <a href="{{route('printTicket', ['booking_id' => $booking['booking_id']])}}" target="_blank" style="text-decoration: none;">
+                                            <button class="btn btn-ticket-page mx-2">
+                                                <i class="fa fa-download" aria-hidden="true"></i> Get Ticket
+                                            </button>
+                                        </a>
+                                    @endif
+                                    <form id="emailTicketForm" action="{{ route('sendTicketEmail') }}" method="post" >
+                                        @csrf
+                                        <input type="hidden" name="booking_id" value="{{ $booking['booking_id']}}">
+                                        <button class="btn btn-ticket-page btn-email mx-2" type="submit">
+                                            <i class="fa fa-share" aria-hidden="true"></i> Send via Email
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            @endif
+                            
+                            <div class="ticket-footer">
+                                <p class="mb-1">Please ensure you keep this ticket and bring it with you on the scheduled movie date</p>
+                                <p class="mb-1">Please arrive 15 minutes before showtime</p>
+                                <p class="mb-0">Contact us : info@cineverse.com</p>
+                                <p class="mb-0">Call us : 0115123456</p>
+                            </div>
                         </div>
-                        
-                    </div>
+                    </div>   
+                </div>
+                @else
+                <div class="d-flex w-100 align-items-center justify-content-center mt-5">
+                    <h3><i class="fa fa-exclamation-triangle"></i> No Booking Found</h3> 
+                </div>
+                @endif
+            </div>
+
+            <!-- RIGHT SIDE: Action Buttons & Scanner  -->
+            <div class="col-lg-3">
+                @if(auth()->user()->user_role_iduser_role == 1 || auth()->user()->user_role_iduser_role == 3)
                     
-                    <div class="ticket-footer">
-                        <p class="mb-1">Please ensure you keep this ticket and bring it with you on the scheduled movie date</p>
-                        <p class="mb-1">Please arrive 15 minutes before showtime</p>
-                        <p class="mb-0">Contact us : info@cineverse.com</p>
-                        <p class="mb-0">Call us : 0115123456</p>
-                        
+                    <!-- Scanner Button -->
+                    <div class="qr-scanner-section w-100 mb-3">
+                        <button type="button" class="btn btn-ticket-page w-100 mb-2" id="startScanBtn" style="margin-top:0;">
+                            <i class="fa fa-camera"></i> Scan QR Code
+                        </button>
+
+                        <button type="button" class="btn btn-secondary w-100 mb-2" id="stopScanBtn" style="display:none;">
+                            Stop Scanning
+                        </button>
+
+                        <div id="qrScannerContainer" style="display:none;" class="mt-2 text-center w-100">
+                            <video id="qrVideo" style="width: 100%; border-radius: 8px;"></video>
+                            <canvas id="qrCanvas" style="display:none;"></canvas>
+                            <p class="text-muted mt-1" id="qrScanStatus">Point the qr code at the camera</p>
+                        </div>
+
+                        <form action="{{ route('verifyTicket') }}" method="post" id="ticketVerificationForm" style="display:none;">
+                            <div class="input-group mt-2">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text font-weight-bold">BK</span>
+                                </div>
+                                {{csrf_field()}}
+                                <input type="number" class="form-control" name="bookingId" id="bookingId" placeholder="123456789">
+                                <div class="input-group-append">
+                                    <button type="submit" class="btn btn-dark" id="verifyBtn">Verify</button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
-                </div>
-            </div>   
-        </div>
-        @else
-                <div class="d-flex w-100 align-items-center justify-content-center  ">
-                    <h3><i class="fa fa-exclamation-triangle"></i> No Bookings found.</h3> 
-                </div>
-        @endif
-    </div> <!-- container -->
+
+                    <!-- Action Buttons Wrapper (Hides during scan) -->
+                    <div id="actionButtonsSection" class="w-100">
+                        @if(isset($booking))
+                            
+                            <!-- Confirm Entry Block -->
+                            <div class="action-block mb-3 p-3 text-center" style="background: #2d2d2d; border-radius: 10px; border: 1px solid #444;">
+                                <h6 style="color: #00d4aa; text-transform: uppercase;">Entry Status</h6>
+                                <p class="mb-1 text-white" style="font-size: 13px;">Available: <span class="font-weight-bold">{{ $booking['available_seats'] }}</span></p>
+                                <p class="mb-2 text-white" style="font-size: 13px;">Confirmed: <span class="font-weight-bold">{{ $booking['entered_count'] }}</span></p>
+                                
+                                @if(isset($booking['available_seats']) && $booking['available_seats'] <= 0)
+                                    <p class="text-danger mb-0 font-weight-bold">All entries confirmed.</p>
+                                @else
+                                    <button class="btn btn-ticket-page w-100 mt-2" style="margin-top:0;" type="button" id="confirm-entry-btn" data-toggle="modal" data-target="#changeEntryModal" data-id="{{ $booking['booking_id'] }}" data-availableentries="{{ $booking['available_seats'] }}">
+                                        Confirm Entry
+                                    </button>
+                                @endif
+                            </div>
+
+                            <!-- Confirm Snack Block -->
+                            @if(isset($booking['booking_snacks']) && $booking['booking_snacks']->count() > 0)
+                                <div class="action-block mb-3 p-3 text-center" style="background: #2d2d2d; border-radius: 10px; border: 1px solid #444;">
+                                    <h6 style="color: #00d4aa; text-transform: uppercase;">Snack Status</h6>
+                                    @if(isset($booking['available_snacks']) && $booking['available_snacks'] <= 0)
+                                        <p class="text-danger mb-0 font-weight-bold">All snacks collected.</p>
+                                    @else
+                                        <button type="button" class="btn btn-ticket-page w-100 mt-2" style="margin-top:0;" data-toggle="modal" data-target="#confirmSnackModal">
+                                            Confirm Snacks
+                                        </button>
+                                    @endif
+                                </div>
+                            @endif
+
+                        @endif
+                    </div>
+                @endif
+            </div>
+
+        </div> <!-- End Row -->
+    </div> <!-- End container -->
+...
+    
+    
 
 {{-- Change Entry Modal --}}
     <div class="modal fade" id="changeEntryModal" tabindex="-1" role="dialog"
@@ -507,6 +492,9 @@
                 document.getElementById('stopScanBtn').style.display = 'inline-block';
                 document.getElementById('ticketVerificationForm').style.display = 'block';
 
+                // Note: Removed the DOM manipulation that hides the ticket and action buttons. 
+                // The ticket will stay visible, and the scanner will naturally push the action buttons down.
+
                 scanningActive = true;
                 requestAnimationFrame(scanVideoFrame);
             })
@@ -537,15 +525,33 @@
             return;
         }
 
-        // Wait until the video has enough data to read frames from
         if (qrVideoElement.readyState === qrVideoElement.HAVE_ENOUGH_DATA) {
+            // 1. DOWNSCALE FOR PERFORMANCE
+            // Instead of processing millions of pixels, restrict it to a 400x400 square.
+            // This makes jsQR run instantly without freezing the browser.
+            var scanSize = 400; 
+            
+            qrCanvasElement.width = scanSize;
+            qrCanvasElement.height = scanSize;
+            
+            // Draw the center of the video scaled down to the canvas
+            var minDimension = Math.min(qrVideoElement.videoWidth, qrVideoElement.videoHeight);
+            var startX = (qrVideoElement.videoWidth - minDimension) / 2;
+            var startY = (qrVideoElement.videoHeight - minDimension) / 2;
+            
+            qrCanvasContext.drawImage(
+                qrVideoElement, 
+                startX, startY, minDimension, minDimension, // Source crop
+                0, 0, scanSize, scanSize                      // Destination canvas
+            );
 
-            qrCanvasElement.width = qrVideoElement.videoWidth;
-            qrCanvasElement.height = qrVideoElement.videoHeight;
-            qrCanvasContext.drawImage(qrVideoElement, 0, 0, qrCanvasElement.width, qrCanvasElement.height);
-
-            var imageData = qrCanvasContext.getImageData(0, 0, qrCanvasElement.width, qrCanvasElement.height);
-            var qrResult = jsQR(imageData.data, imageData.width, imageData.height);
+            var imageData = qrCanvasContext.getImageData(0, 0, scanSize, scanSize);
+            
+            // 2. ENABLE INVERSION ATTEMPTS
+            // This helps detect QR codes displayed on phone screens with dark mode enabled.
+            var qrResult = jsQR(imageData.data, imageData.width, imageData.height, {
+                inversionAttempts: "attemptBoth",
+            });
 
             if (qrResult) {
                 handleSuccessfulScan(qrResult.data);
@@ -553,7 +559,12 @@
             }
         }
 
-        requestAnimationFrame(scanVideoFrame);
+        // 3. THROTTLE THE LOOP
+        // Give the CPU a break. Running this 4-5 times a second is plenty fast for a user, 
+        // and prevents the phone from overheating or lagging.
+        setTimeout(function() {
+            requestAnimationFrame(scanVideoFrame);
+        }, 200);
     }
 
     function handleSuccessfulScan(scannedText) {

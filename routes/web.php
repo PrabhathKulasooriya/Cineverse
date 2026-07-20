@@ -93,6 +93,9 @@ Route::group(['middleware' => 'auth', 'prefix' => ''], function () {
             Route::get('/clientManagement', 'ClientController@index')->name('clientManagement');
             Route::post('/saveClientByAdmin', 'ClientController@saveClientByAdmin')->name('saveClientByAdmin');
             Route::post('/updateClient', 'ClientController@updateClient')->name('updateClient');
+
+            //Snack Demand Report
+            Route::get('/snack-demand', 'ReportController@snackDemandReport')->name('snackDemandReport');
             
         });
 
@@ -125,9 +128,9 @@ Route::group(['middleware' => 'auth', 'prefix' => ''], function () {
             Route::get('/screenedShows','ShowsController@screened')->name('screenedShows');
 
             //Reports
-            Route::get('reports/monthly-revenue', 'ReportController@monthlyRevenueReport')->name('monthlyRevenueReport');
-            Route::get('reports/movie-income', 'ReportController@movieIncomeReport')->name('movieIncomeReport');
-            Route::get('reports/snack-demand', 'ReportController@snackDemandReport')->name('snackDemandReport');
+            Route::get('/monthly-revenue', 'ReportController@monthlyRevenueReport')->name('monthlyRevenueReport');
+            Route::get('/movie-income', 'ReportController@movieIncomeReport')->name('movieIncomeReport');
+            
 
         });
 

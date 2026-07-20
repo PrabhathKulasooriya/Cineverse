@@ -233,7 +233,6 @@ class ReportController extends Controller
         $tomorrow = Carbon::now()->addDay()->format('Y-m-d');
         $weekAhead = Carbon::now()->addDays(7)->format('Y-m-d');
 
-        // 1. Fetch grouped tables
         $todaySnackDemand = $this->getSnackDemandForRange($today, $today);
         $upcomingSnackDemand = $this->getDailySnackDemandForRange($tomorrow, $weekAhead);
 

@@ -33,6 +33,26 @@
 
      <div class="page-content-wrapper">
 
+            <div class="row ticketpage-alert-container">
+                @if(session('success'))
+                        <div class="alert alert-success text-center position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
+                            <i class="fa fa-check-circle"></i> {{ session('success') }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    @endif
+
+                    @if(session('error'))
+                        <div class="alert alert-danger text-center position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
+                            <i class="fa fa-exclamation-circle"></i> {{ session('error') }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    @endif
+            </div>
+
         <div class="header-dashboard">
             <h3>Daily Statistics for {{ $today }}</h3>
         </div>
@@ -115,6 +135,15 @@
 
 <script src="assets/pages/dashborad.js"></script>
 
+<script>
+    $(document).ready(function() {
+        setTimeout(function() {
+            $(".alert").fadeOut("slow", function() {
+                $(this).remove();
+            });
+        }, 2500); 
+    });
+</script>
 
 
 @include('includes/footer_end')

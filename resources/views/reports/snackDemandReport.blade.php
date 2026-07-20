@@ -32,7 +32,7 @@
 
             <div class="card m-b-20" style="border: none; box-shadow: none;">
                 <div class="card-body">
-                    <h5 class="section-heading">Snacks Needed — Next 7 Days (Daily Summary)</h5>
+                    <h5 class="section-heading">Snacks Needed for Upcoming Days (Daily Summary)</h5>
                     @include('reports.partials.dailySnackDemandTable', ['days' => $upcomingSnackDemand, 'emptyText' => 'No snack pre-orders for the coming week.'])
                 </div>
             </div>

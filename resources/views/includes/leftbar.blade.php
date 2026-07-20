@@ -44,12 +44,11 @@
 
                     {{-- MOVIES --}}
 
+                    <li class="menu-title">Movies & Shows</li>
                     
                     @if(\Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==1 || 
                     \Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==2 || 
                     \Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==3)
-
-                        <li class="menu-title">Movies</li>
 
                         <li>
                             <a href="{{route('shows')}}" class="waves-effect">
@@ -57,6 +56,11 @@
                                 <span>Upcoming Shows</span>
                             </a>
                         </li>
+                    
+                    @endif
+
+                    @if(\Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==1 || 
+                    \Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==2 )
 
                         <li>
                             <a href="{{route('movies')}}" class="waves-effect">
@@ -64,7 +68,6 @@
                                 <span>Movies</span>
                             </a>
                         </li>
-
 
                     @endif
 
@@ -123,18 +126,22 @@
 
                     @endif
 
-                    @if(\Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==1 ||
-                    \Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==2 ||
-                   \Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==3)
+                    
 
-                        
+                     @if(\Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==1 ||
+                            \Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==3 )   
                     
                         <li>
                             <a href="{{ route('ticketVerification') }}" class="waves-effect">
                                 <i class="fa fa-ticket" aria-hidden="true"></i><span>Ticket Verification</span>
                             </a>
                         </li>
-                    
+
+                    @endif
+
+                    @if(\Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==1 ||
+                        \Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==2 ||
+                        \Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==3)
                     
                         <li>
                             <a href="{{ route('findBooking') }}" class="waves-effect">
@@ -225,11 +232,14 @@
 
       
 
-                    @if(\Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==1 )
-
+                    
+                    @if(\Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==1 || 
+                        \Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==2 ||
+                        \Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==3)
 
                     <li class="menu-title">Reports</li>
 
+                    @if(\Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==1 )
                         <li>
                             <a href="{{ route('monthlyRevenueReport') }}" class="waves-effect"><i
                                         class="fa fa-file-text-o"></i><span>Revenue Report</span></a>
@@ -240,6 +250,8 @@
                             <a href="{{ route('movieIncomeReport') }}" class="waves-effect"><i
                                         class="fa fa-file-text-o"></i><span>Movie Income Report</span></a>
                         </li> 
+
+                    @endif
 
                         <li>
                             <a href="{{ route('snackDemandReport') }}" class="waves-effect"><i

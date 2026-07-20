@@ -18,7 +18,6 @@ class ShowsController extends Controller
 
     public function index()
     {
-        // Fix for fully booked dates: count shows per date and compare to enabled slots
         $enabledSlotsCount = Showtimes::where('status', 1)->count();
         $showsPerDate = Shows::whereDate('date', '>=', now()->toDateString())
             ->selectRaw('date, count(show_id) as count')

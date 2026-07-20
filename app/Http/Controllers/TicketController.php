@@ -40,7 +40,7 @@ class TicketController extends Controller
 
         $booking = session('bookingData');
         $seats = session('seats');
-
+        
         return view('management.ticketVerification', [
             'title' => 'Ticket Verification',
             'booking' => $booking,
