@@ -21,6 +21,9 @@
 
 <div class="page-content-wrapper">
     <div class="container-fluid">
+        <div class="mb-3 text-right">
+        <a href="{{ route('snackDemandReport.pdf') }}" class="btn btn-secondary">Export PDF</a>
+    </div>
         <div class="col-lg-12">
 
             <div class="card m-b-20 today-card" style="border: 2px solid #B22222;">

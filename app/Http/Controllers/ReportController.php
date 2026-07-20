@@ -5,11 +5,27 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use DB;
+use PDF;
 
 class ReportController extends Controller
 {
     // Monthly Revenue Report *****************************************************************
     public function monthlyRevenueReport(Request $request)
+    {
+        $data = $this->buildMonthlyRevenueReportData($request);
+        return view('reports.monthlyRevenueReport', $data);
+    }
+
+    public function monthlyRevenueReportPdf(Request $request)
+    {
+        $data = $this->buildMonthlyRevenueReportData($request);
+        $pdf = PDF::loadView('reports.pdf.monthlyRevenueReport', $data);
+        $pdf->setPaper('A4', 'landscape');
+
+        return $pdf->download('monthly-revenue-report.pdf');
+    }
+
+    private function buildMonthlyRevenueReportData(Request $request)
     {
         $startDate = $request->input('startDate');
         $endDate = $request->input('endDate');
@@ -66,7 +82,7 @@ class ReportController extends Controller
             $grandSnackTotal += $snackRevenue;
         }
 
-        return view('reports.monthlyRevenueReport', [
+        return [
             'title' => 'Monthly Revenue Report',
             'tableRows' => $tableRows,
             'chartLabels' => $chartLabels,
@@ -79,13 +95,27 @@ class ReportController extends Controller
             'startDate' => $startDate,
             'endDate' => $endDate,
             'isCustomRange' => $isCustomRange
-        ]);
+        ];
     }
 
     // Movie Ticket Income Report *************************************************************
     public function movieIncomeReport(Request $request)
     {
-        // --- 1. TABLE DATA LOGIC (Date Filtered) ---
+        $data = $this->buildMovieIncomeReportData($request);
+        return view('reports.movieIncomeReport', $data);
+    }
+
+    public function movieIncomeReportPdf(Request $request)
+    {
+        $data = $this->buildMovieIncomeReportData($request);
+        $pdf = PDF::loadView('reports.pdf.movieIncomeReport', $data);
+        $pdf->setPaper('A4', 'landscape');
+
+        return $pdf->download('movie-income-report.pdf');
+    }
+
+    private function buildMovieIncomeReportData(Request $request)
+    {
         $startDate = $request->input('startDate');
         $endDate = $request->input('endDate');
         $isCustomRange = false;
@@ -99,7 +129,6 @@ class ReportController extends Controller
             $startDate = Carbon::now()->subYear()->format('Y-m-d');
         }
 
-        // Revenue + booking count per movie for table
         $revenueData = DB::table('bookings')
             ->join('movies', 'bookings.movies_movie_id', '=', 'movies.movie_id')
             ->select(
@@ -114,7 +143,6 @@ class ReportController extends Controller
             ->get()
             ->keyBy('movie_id');
 
-        // Show screening stats per movie for table
         $showStats = DB::table('shows')
             ->select(
                 'movies_movie_id',
@@ -141,11 +169,8 @@ class ReportController extends Controller
             ];
         }
 
-
-        // --- 2. CHART DATA LOGIC (All-Time, Active Movies Only) ---
         $today = Carbon::now()->format('Y-m-d');
 
-        // Active = has a show scheduled today or later
         $activeMovieIds = DB::table('shows')
             ->where('date', '>=', $today)
             ->pluck('movies_movie_id')
@@ -154,7 +179,6 @@ class ReportController extends Controller
 
         $allTimeStats = [];
         if (!empty($activeMovieIds)) {
-            // Get all-time revenue for active movies
             $allTimeRevenueData = DB::table('bookings')
                 ->join('movies', 'bookings.movies_movie_id', '=', 'movies.movie_id')
                 ->select('movies.movie_id', 'movies.name as movie_name', DB::raw('SUM(bookings.amount) as total_income'))
@@ -164,11 +188,10 @@ class ReportController extends Controller
                 ->get()
                 ->keyBy('movie_id');
 
-            // Get all-time show counts for active movies (PAST & TODAY'S SHOWS ONLY)
             $allTimeShowData = DB::table('shows')
                 ->select('movies_movie_id', DB::raw('COUNT(show_id) as no_of_shows'))
                 ->whereIn('movies_movie_id', $activeMovieIds)
-                ->where('date', '<=', $today) // Added this filter to ignore upcoming shows
+                ->where('date', '<=', $today)
                 ->groupBy('movies_movie_id')
                 ->get()
                 ->keyBy('movies_movie_id');
@@ -176,7 +199,7 @@ class ReportController extends Controller
             foreach ($activeMovieIds as $movieId) {
                 $income = $allTimeRevenueData->has($movieId) ? $allTimeRevenueData[$movieId]->total_income : 0;
                 $shows = $allTimeShowData->has($movieId) ? $allTimeShowData[$movieId]->no_of_shows : 0;
-                
+
                 if ($allTimeRevenueData->has($movieId)) {
                     $name = $allTimeRevenueData[$movieId]->movie_name;
                 } else {
@@ -184,7 +207,6 @@ class ReportController extends Controller
                     $name = $movieObj ? $movieObj->name : 'Unknown';
                 }
 
-                // Calculate fair comparison metric
                 $avgIncome = $shows > 0 ? ($income / $shows) : 0;
 
                 if ($shows > 0) {
@@ -196,12 +218,10 @@ class ReportController extends Controller
                 }
             }
 
-            // Sort by average income descending to find the top performers
             usort($allTimeStats, function($a, $b) {
                 return $b->avg_income <=> $a->avg_income;
             });
 
-            // Limit to top 5
             $allTimeStats = array_slice($allTimeStats, 0, 5);
         }
 
@@ -214,7 +234,7 @@ class ReportController extends Controller
             $chartShowCounts[] = $stat->shows;
         }
 
-        return view('reports.movieIncomeReport', [
+        return [
             'title' => 'Movie Ticket Income Report',
             'movieIncomeData' => $movieIncomeData,
             'chartLabels' => $chartLabels,
@@ -223,11 +243,26 @@ class ReportController extends Controller
             'startDate' => $startDate,
             'endDate' => $endDate,
             'isCustomRange' => $isCustomRange
-        ]);
+        ];
     }
 
     // Snack Demand Report ********************************************************************
     public function snackDemandReport(Request $request)
+    {
+        $data = $this->buildSnackDemandReportData($request);
+        return view('reports.snackDemandReport', $data);
+    }
+
+    public function snackDemandReportPdf(Request $request)
+    {
+        $data = $this->buildSnackDemandReportData($request);
+        $pdf = PDF::loadView('reports.pdf.snackDemandReport', $data);
+        $pdf->setPaper('A4', 'portrait');
+
+        return $pdf->download('snack-demand-report.pdf');
+    }
+
+    private function buildSnackDemandReportData(Request $request)
     {
         $today = Carbon::now()->format('Y-m-d');
         $tomorrow = Carbon::now()->addDay()->format('Y-m-d');
@@ -236,7 +271,6 @@ class ReportController extends Controller
         $todaySnackDemand = $this->getSnackDemandForRange($today, $today);
         $upcomingSnackDemand = $this->getDailySnackDemandForRange($tomorrow, $weekAhead);
 
-        // 2. Simplify "All Time Top Snacks" (No need for complex chart datasets)
         $topSnacksAllTime = DB::table('booking_snacks')
             ->join('snacks', 'booking_snacks.snacks_idsnacks', '=', 'snacks.idsnacks')
             ->join('bookings', 'booking_snacks.booking_id', '=', 'bookings.booking_id')
@@ -247,15 +281,15 @@ class ReportController extends Controller
             ->where('bookings.payment_status', 'PAID')
             ->groupBy('snacks.name')
             ->orderBy('total_sold', 'desc')
-            ->limit(4) // Get top 4 for a nice grid
+            ->limit(4)
             ->get();
 
-        return view('reports.snackDemandReport', [
+        return [
             'title' => 'Snack Demand Report',
             'todaySnackDemand' => $todaySnackDemand,
             'upcomingSnackDemand' => $upcomingSnackDemand,
             'topSnacksAllTime' => $topSnacksAllTime
-        ]);
+        ];
     }
 
     // Helper: Fetches and cleanly groups snacks by show AND snack name
@@ -290,12 +324,10 @@ class ReportController extends Controller
                 ];
             }
 
-            // Initialize the snack group if it doesn't exist for this date
             if (!isset($grouped[$dateKey]->snacks[$row->snack_name])) {
                 $grouped[$dateKey]->snacks[$row->snack_name] = [];
             }
 
-            // Push the size and quantity into the grouped snack name
             $grouped[$dateKey]->snacks[$row->snack_name][] = (object) [
                 'size' => $row->snack_size,
                 'qty' => $row->quantity_needed
@@ -335,19 +367,18 @@ class ReportController extends Controller
             // Initialize the show if it doesn't exist
             if (!isset($grouped[$showId])) {
                 $grouped[$showId] = (object) [
-                    'show_date' => Carbon::parse($row->show_date)->format('Y-m-d l'), // E.g., 2026-07-12 Sunday
-                    'show_time' => Carbon::parse($row->show_time)->format('g.i a'),   // E.g., 10.00 am
+                    'show_date' => Carbon::parse($row->show_date)->format('Y-m-d l'), // 2026-07-12 Sunday
+                    'show_time' => Carbon::parse($row->show_time)->format('g.i a'),   // 10.00 am
                     'movie_name' => $row->movie_name,
-                    'snacks' => [] // We will group by snack name here
+                    'snacks' => [] 
                 ];
             }
 
-            // Initialize the snack group if it doesn't exist
+           
             if (!isset($grouped[$showId]->snacks[$row->snack_name])) {
                 $grouped[$showId]->snacks[$row->snack_name] = [];
             }
 
-            // Push the size and quantity into the grouped snack name
             $grouped[$showId]->snacks[$row->snack_name][] = (object) [
                 'size' => $row->snack_size,
                 'qty' => $row->quantity_needed

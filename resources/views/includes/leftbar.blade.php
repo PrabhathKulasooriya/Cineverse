@@ -204,7 +204,7 @@
                         
                         <li>
                             <a href="{{ route('screenedMovies') }}" class="waves-effect"><i
-                                        class="fa fa-user"></i><span>Screened Movies </span></a>
+                                        class="fa fa-film"></i><span>Screened Movies </span></a>
                         </li>
 
                         <li>

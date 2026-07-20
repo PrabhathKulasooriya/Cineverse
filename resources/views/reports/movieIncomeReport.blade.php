@@ -32,9 +32,9 @@
                     <hr class="mt-4"/>
                     
                     <h4>Income Report - Movies </h2>
-                    <form action="{{ route('movieIncomeReport') }}" method="get">
-                        <div class="row">
-                            <div class="form-group col-md-5">
+                    <form action="{{ route('movieIncomeReport') }}" method="get" class="d-flex flex-row align-items-center justify-content-between">
+                        <div class="row date-search-row">
+                            <div class="form-group col-md-9">
                                 <label>Select Date Range</label>
                                 <div class="input-daterange input-group">
                                     <label class="btn">From -</label>
@@ -46,6 +46,9 @@
                             <div class="form-group col-md-2" style="padding-top: 28px">
                                 <button type="submit" class="btn btn-md btn-primary waves-effect">Search</button>
                             </div>
+                        </div>
+                        <div class="">
+                            <a href="{{ route('movieIncomeReport.pdf', request()->query()) }}" class="btn btn-md btn-secondary waves-effect ml-2">Export PDF</a>
                         </div>
                     </form>
 

@@ -96,6 +96,7 @@ Route::group(['middleware' => 'auth', 'prefix' => ''], function () {
 
             //Snack Demand Report
             Route::get('/snack-demand', 'ReportController@snackDemandReport')->name('snackDemandReport');
+            Route::get('/snack-demand/export', 'ReportController@snackDemandReportPdf')->name('snackDemandReport.pdf');
             
         });
 
@@ -129,7 +130,9 @@ Route::group(['middleware' => 'auth', 'prefix' => ''], function () {
 
             //Reports
             Route::get('/monthly-revenue', 'ReportController@monthlyRevenueReport')->name('monthlyRevenueReport');
+            Route::get('/monthly-revenue/export', 'ReportController@monthlyRevenueReportPdf')->name('monthlyRevenueReport.pdf');
             Route::get('/movie-income', 'ReportController@movieIncomeReport')->name('movieIncomeReport');
+            Route::get('/movie-income/export', 'ReportController@movieIncomeReportPdf')->name('movieIncomeReport.pdf');
             
 
         });

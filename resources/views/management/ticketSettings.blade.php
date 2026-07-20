@@ -99,9 +99,9 @@
 
                                 <thead>
                                     <tr>
-                                        <th>SEAT ID</th>
+                                        <th>SEAT TYPE ID</th>
                                         <th>SEAT TYPE</th>
-                                        <th>TICKET PRICE</th>
+                                        <th>TICKET PRICE (LKR)</th>
                                         <th>OPTIONS</th>
                                     </tr>
                                 </thead>
@@ -247,7 +247,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Ticket Price <span style="color:red">*</span></label>
+                        <label>Ticket Price (LKR) <span style="color:red">*</span></label>
                         <input type="number" class="form-control" name="price" id="price" required placeholder="Price" />
                     </div>
 
@@ -352,7 +352,7 @@
 
 
 
-    //Populate data for Update Showtime Modal
+    
      $(document).on('click', '#edit-seatType-btn', function () {
         var seatTypeId = $(this).data('id');
         var type = $(this).data('type');
@@ -364,10 +364,10 @@
         $("#editSeatTypeModal #price").val(price);
     });
 
-    //Hide Validation errors after closing the modal without refreshing
+    
     $('#addSeatTypeModal').on('hidden.bs.modal', function () {
 
-                        //Add Showtime
+                        
                                 $('#addSeattypeerror').html('');
                                 $('#addSeattypeerror').html('');
 

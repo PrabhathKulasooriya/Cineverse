@@ -142,6 +142,11 @@
     gap: 30px;
 }
 
+.date-search-row{
+    min-width: 450px;
+    width: 50%;
+}
+
 
 @media (min-width: 769px) {
     .daily-snack-container {

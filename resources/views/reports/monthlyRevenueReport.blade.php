@@ -24,9 +24,9 @@
             <div class="card m-b-20">
                 <div class="card-body">
 
-                    <form action="{{ route('monthlyRevenueReport') }}" method="get">
+                    <form action="{{ route('monthlyRevenueReport') }}" method="get" class="d-flex flex-row align-items-center justify-content-between">
                         <div class="row">
-                            <div class="form-group col-md-5">
+                            <div class="form-group col-md-9">
                                 <label>Select Date Range:</label>
                                 <div class="input-daterange input-group">
                                     <label class="btn">From -</label>
@@ -38,6 +38,9 @@
                             <div class="form-group col-md-2" style="padding-top: 28px">
                                 <button type="submit" class="btn btn-md btn-primary waves-effect">Search</button>
                             </div>
+                        </div>
+                        <div class="">
+                            <a href="{{ route('monthlyRevenueReport.pdf', request()->query()) }}" class="btn btn-md btn-secondary waves-effect ml-2">Export PDF</a>
                         </div>
                     </form>
 
@@ -70,6 +73,7 @@
                     <div class="chart-wrapper">
                         <canvas id="monthlyRevenueChart" height="300"></canvas>
                     </div>
+                    
 
                     <div class="table-responsive">
                         <table class="table table-striped table-bordered mt-4">
