@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-
 use App\Shows;
 use App\Movies;
 use App\Showtimes;
@@ -14,98 +13,58 @@ use Carbon\Carbon;
 
 class ShowsController extends Controller
 {
-    //Upcoming Shows Page*********************************************************************************************
-    public function index(){
+    const MINIMUM_GAP = 20;
+    const BUSINESS_END = 1470; // 24*60 + 30 = 12:30 AM
 
-        $availableTimeSlots = Showtimes::where('status', 1)->get();
-        $scheduledShows = Shows::whereDate('date', '>=', now()->toDateString())->get();
-        $bookedTimesByDate = [];
-        foreach ($scheduledShows as $show) {
-            $dateKey = $show->date;
-            if (!isset($bookedTimesByDate[$dateKey])) {
-                $bookedTimesByDate[$dateKey] = [];
-            }
-            $bookedTimesByDate[$dateKey][] = $show->time;
-        }
-
-        // Find fully booked dates
-        $fullyBookedDates = [];
-        $availableSlotCount = $availableTimeSlots->count();
-        if ($availableSlotCount > 0) {
-            foreach ($bookedTimesByDate as $date => $bookedTimes) {
-                $uniqueBookedTimes = array_unique($bookedTimes);
-                if (count($uniqueBookedTimes) >= $availableSlotCount) {
-                    $fullyBookedDates[] = $date;
-                }
-            }
-        }
-
-        $shows = Shows::whereRaw("STR_TO_DATE(CONCAT(date, ' ', time), '%Y-%m-%d %H:%i:%s') >= ?", [now()->subHours(2)])
-                ->get();
-        $movies = Movies::where('status', 1)
-            ->where('screening_status', 1)
-            ->where('release_date', '<=', Carbon::today()->toDateString())
+    public function index()
+    {
+        // Fix for fully booked dates: count shows per date and compare to enabled slots
+        $enabledSlotsCount = Showtimes::where('status', 1)->count();
+        $showsPerDate = Shows::whereDate('date', '>=', now()->toDateString())
+            ->selectRaw('date, count(show_id) as count')
+            ->groupBy('date')
             ->get();
+        $fullyBookedDates = $showsPerDate->where('count', '>=', $enabledSlotsCount)->pluck('date')->toArray();
+
+        $shows = Shows::whereRaw("STR_TO_DATE(CONCAT(date, ' ', time), '%Y-%m-%d %H:%i:%s') >= ?", [now()->subHours(2)])->get();
+        $movies = Movies::where('status', 1)->where('screening_status', 1)->where('release_date', '<=', Carbon::today()->toDateString())->get();
         $showtimes = Showtimes::orderBy('time', 'asc')->get();
         $enabledShowtimes = $showtimes->where('status', 1)->values();
-
         $bookedShowIds = DB::table('bookings')->pluck('shows_show_id')->unique()->toArray();
 
-        $shows = $shows->map(function ($show) use ($movies, $bookedShowIds) {
+        $shows->map(function ($show) use ($movies, $bookedShowIds) {
             $show->movie_name = $movies->where('movie_id', $show->movies_movie_id)->first()->name ?? 'No movie found';
             $show->has_bookings = in_array($show->show_id, $bookedShowIds);
             return $show;
         });
-        
-        return view('movies.shows',compact('shows','movies','showtimes','enabledShowtimes','fullyBookedDates'), ['title' => 'Manage Upcoming Shows']);
 
+        return view('movies.shows', compact('shows', 'movies', 'showtimes', 'enabledShowtimes', 'fullyBookedDates'), ['title' => 'Manage Upcoming Shows']);
     }
 
-    //Screened Shows Page*********************************************************************************************
-    public function screened(){
-
-        $shows = Shows::whereRaw("STR_TO_DATE(CONCAT(date, ' ', time), '%Y-%m-%d %H:%i:%s') < ?", [now()])
-                ->get();
+    public function screened()
+    {
+        $shows = Shows::whereRaw("STR_TO_DATE(CONCAT(date, ' ', time), '%Y-%m-%d %H:%i:%s') < ?", [now()])->get();
         $movies = Movies::all();
-
         $showtimes = Showtimes::all();
 
-        $shows = $shows->map(function ($show) use ($movies) {
+        $shows->map(function ($show) use ($movies) {
             $show->movie_name = $movies->where('movie_id', $show->movies_movie_id)->first()->name ?? 'No movie found';
             return $show;
         });
-        
-        return view('movies.screenedShows',compact('shows','movies','showtimes'), ['title' => 'Screened Shows']);
+
+        return view('movies.screenedShows', compact('shows', 'movies', 'showtimes'), ['title' => 'Screened Shows']);
     }
 
-    //Save Shows *******************************************************************************
     public function storeShows(Request $request)
     {
-        $enabledShowtimes = Showtimes::where('status', 1)
-            ->orderBy('time', 'asc')
-            ->get();
+        $enabledShowtimes = Showtimes::where('status', 1)->orderBy('time', 'asc')->get();
+        if ($enabledShowtimes->isEmpty()) return response()->json(['errors' => 'No enabled showtimes.']);
 
-        if ($enabledShowtimes->isEmpty()) {
-            return response()->json(['errors' => 'No enabled showtime anchors are available for scheduling.']);
-        }
-
-        $rules = [
-            'start_date' => 'required|date',
-            'end_date'   => 'nullable|date|after_or_equal:start_date',
-        ];
-
-        foreach ($enabledShowtimes as $index => $showtime) {
-            $rules['movie' . ($index + 1)] = 'nullable|exists:movies,movie_id';
-        }
-
-        $validator = Validator::make($request->all(), $rules, [
-            'start_date.required' => 'Please select a start date.',
-            'end_date.after_or_equal' => 'End date cannot be before start date.',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()]);
-        }
+        $rules = ['start_date' => 'required|date', 'end_date' => 'nullable|date|after_or_equal:start_date'];
+        foreach ($enabledShowtimes as $index => $st) $rules['movie' . ($index + 1)] = 'nullable|exists:movies,movie_id';
+        
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) return response()->json(['errors' => $validator->errors()]);
 
         $startDate = Carbon::parse($request->start_date);
         $endDate = $request->end_date ? Carbon::parse($request->end_date) : $startDate->copy();
@@ -115,308 +74,198 @@ class ShowsController extends Controller
         }
 
         $selectedSlots = [];
-        $selectedMoviesCount = 0;
         foreach ($enabledShowtimes as $index => $showtime) {
-            $movieId = $request->input('movie' . ($index + 1));
-            $movie = $movieId ? Movies::find($movieId) : null;
-
-            if ($movie !== null) {
-                $selectedMoviesCount++;
+            if ($movie = Movies::find($request->input('movie' . ($index + 1)))) {
+                $selectedSlots[] = ['anchor_minutes' => $this->convertTimeToMinutes($showtime->time), 'movie' => $movie];
             }
-
-            $selectedSlots[] = [
-                'slotIndex' => $index + 1,
-                'showtime' => $showtime,
-                'anchor_minutes' => $this->convertTimeToMinutes($showtime->time),
-                'movie' => $movie,
-            ];
         }
 
-        if ($selectedMoviesCount === 0) {
-            return response()->json(['errors' => 'Please select at least one movie.']);
-        }
+        if (empty($selectedSlots)) return response()->json(['errors' => 'Please select at least one movie.']);
 
-        $businessEnd = 24 * 60 + 30; // 12:30 AM next day
-        $minimumGap = 15;
+        $dailySchedule = $this->generateDailySchedule($selectedSlots);
+        if (end($dailySchedule)['end'] > self::BUSINESS_END) {
+            return response()->json(['errors' => 'Lineup runs past 12:30 AM. Pick shorter movies.']);
+        }
 
         $showsToCreate = [];
         $issues = [];
+        for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+            $dateString = $date->toDateString();
+            $bookedRanges = $this->loadBookedRanges($dateString);
+            $created = 0;
 
-        $currentDate = $startDate->copy();
-
-        while ($currentDate->lte($endDate)) {
-            $dateString = $currentDate->toDateString();
-            $bookedRangesByDate = [
-                $dateString => $this->loadBookedRanges($dateString),
-            ];
-
-            $createdThisDate = 0;
-            $carryOver = null;
-
-            foreach ($selectedSlots as $slot) {
-                $movie = $slot['movie'];
-                $anchorMinutes = $slot['anchor_minutes'];
-                $showTimeLabel = Carbon::parse($slot['showtime']->time)->format('h:i A');
-
-                if ($movie === null) {
-                    continue;
-                }
-
-                $startTime = $anchorMinutes;
-                if ($carryOver !== null) {
-                    $startTime = max($startTime, $carryOver);
-                }
-                $startTime = $this->roundUpToQuarterHour($startTime);
-                $endTime = $startTime + $movie->duration;
-
-                if ($endTime > $businessEnd) {
-                    return response()->json([
-                        'errors' => 'Schedule overflow on ' . $dateString . ' for slot ' . $slot['slotIndex'] .
-                            ' (' . $showTimeLabel . ') with movie "' . $movie->name . '". It exceeds 12:30 AM.',
-                    ]);
-                }
-
+            foreach ($dailySchedule as $slot) {
                 $targetDate = $dateString;
-                if ($startTime >= 24 * 60) {
+                $startMins = $slot['start'];
+                $endMins = $slot['end'];
+
+                if ($startMins >= 1440) {
                     $targetDate = Carbon::parse($dateString)->addDay()->toDateString();
+                    $startMins -= 1440;
+                    $endMins -= 1440;
+                    if (!isset($bookedRangesByDate[$targetDate])) $bookedRangesByDate[$targetDate] = $this->loadBookedRanges($targetDate);
                 }
 
-                if (!isset($bookedRangesByDate[$targetDate])) {
-                    $bookedRangesByDate[$targetDate] = $this->loadBookedRanges($targetDate);
-                }
-
-                $conflictStart = $startTime;
-                $conflictEnd = $endTime;
-                if ($targetDate !== $dateString) {
-                    $conflictStart -= 24 * 60;
-                    $conflictEnd -= 24 * 60;
-                }
-
-                if ($this->hasConflict($conflictStart, $conflictEnd, $bookedRangesByDate[$targetDate], $minimumGap)) {
-                    $issues[] = $dateString . ': Slot ' . $slot['slotIndex'] . ' (' . $showTimeLabel . ') for "' . $movie->name . '" was skipped - conflicts with an existing show.';
+                if ($this->hasConflict($startMins, $endMins, $bookedRanges, self::MINIMUM_GAP)) {
+                    $issues[] = "$dateString: '{$slot['movie']->name}' skipped - conflict.";
                     continue;
-                }
-
-                $showTimeMinutes = $startTime;
-                if ($showTimeMinutes >= 24 * 60) {
-                    $showTimeMinutes -= 24 * 60;
                 }
 
                 $showsToCreate[] = [
-                    'movies_movie_id' => $movie->movie_id,
+                    'movies_movie_id' => $slot['movie']->movie_id,
                     'date' => $targetDate,
-                    'time' => sprintf('%02d:%02d:00', intdiv($showTimeMinutes, 60), $showTimeMinutes % 60),
+                    'time' => sprintf('%02d:%02d:00', intdiv($startMins, 60), $startMins % 60),
+                    'created_at' => now(),
+                    'updated_at' => now()
                 ];
-
-                $bookedRangesByDate[$targetDate][] = ['start' => $conflictStart, 'end' => $conflictEnd];
-                $createdThisDate++;
-                $carryOver = $this->roundUpToQuarterHour($endTime + $minimumGap);
+                $bookedRanges[] = ['start' => $startMins, 'end' => $endMins];
+                $created++;
             }
-
-            if ($createdThisDate === 0) {
-                $issues[] = $dateString . ': No shows were created - this date is fully booked or has no available slot.';
-            }
-
-            $currentDate->addDay();
+            if ($created === 0) $issues[] = "$dateString: Fully booked.";
         }
 
-        if (count($showsToCreate) === 0) {
-            return response()->json([
-                'errors' => 'No shows could be created for the selected dates.',
-                'issues' => $issues,
-            ]);
-        }
+        if (empty($showsToCreate)) return response()->json(['errors' => 'No shows could be created.', 'issues' => $issues]);
 
-        foreach ($showsToCreate as $showData) {
-            $show = new Shows();
-            $show->movies_movie_id = $showData['movies_movie_id'];
-            $show->date = $showData['date'];
-            $show->time = $showData['time'];
-            $show->save();
-        }
+        Shows::insert($showsToCreate); // Batch insert for speed
 
-        $response = ['success' => count($showsToCreate) . ' show(s) created successfully.'];
-        if (!empty($issues)) {
-            $response['issues'] = $issues;
-        }
-
-        return response()->json($response);
+        $res = ['success' => count($showsToCreate) . ' show(s) created.'];
+        if (!empty($issues)) $res['issues'] = $issues;
+        return response()->json($res);
     }
 
-    //Update Show*******************************************************************************************
-    public function update(Request $request){ 
+    private function generateDailySchedule($selectedSlots)
+    {
+        $schedule = [];
+        if (empty($selectedSlots)) return [];
 
-        $validator = Validator::make($request->all(), [
-            'movie' => 'required',
-            'date' => 'required|date',
-            'time' => 'required',
-        ], [
-            'movie.required' => 'Please select a movie.',
-            'date.required' => 'Please select a date.',
-            'date.date' => 'Please enter a valid date.',
-            'time.required' => 'Please select a time.',
-        ]);
-        
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()]);
+        $daytimeSlots = [];
+        $eveningSlots = [];
+
+        // 1140 minutes is exactly 7:00 PM
+        foreach ($selectedSlots as $slot) {
+            if ($slot['anchor_minutes'] < 1140) {
+                $daytimeSlots[] = $slot;
+            } else {
+                $eveningSlots[] = $slot;
+            }
         }
+
+        // --- 1. Process Daytime Shows (10:00 AM to 7:00 PM) ---
+        if (count($daytimeSlots) > 0) {
+            $cursor = $daytimeSlots[0]['anchor_minutes'];
+            $eveningAnchor = 1140; // Hard limit: 7:00 PM
+            
+            $totalDuration = 0;
+            foreach ($daytimeSlots as $slot) {
+                $totalDuration += $slot['movie']->duration + self::MINIMUM_GAP;
+            }
+
+            // If a slot is disabled, $totalDuration drops significantly.
+            // This makes $freeTime huge, naturally creating your 2.5-3 hour gap!
+            $freeTime = max(0, $eveningAnchor - $cursor - $totalDuration);
+            $freeShare = (int) floor($freeTime / count($daytimeSlots));
+
+            foreach ($daytimeSlots as $slot) {
+                $movie = $slot['movie'];
+                $start = $cursor;
+                $end = $start + $movie->duration;
+                $schedule[] = ['movie' => $movie, 'start' => $start, 'end' => $end];
+
+                // Apply free time share and round DOWN to nearest 15 mins (previous quarter)
+                $cursor = (int) (floor(($end + self::MINIMUM_GAP + $freeShare) / 15) * 15);
+            }
+        }
+
+        // --- 2. Process Evening Shows (7:00 PM onwards) ---
+        if (count($eveningSlots) > 0) {
+            // Start at 7:00 PM (or immediately after daytime shows if they somehow ran late)
+            $cursor = max(empty($schedule) ? 0 : end($schedule)['end'] + self::MINIMUM_GAP, $eveningSlots[0]['anchor_minutes']);
+            
+            foreach ($eveningSlots as $slot) {
+                $movie = $slot['movie'];
+                $start = $cursor;
+                $end = $start + $movie->duration;
+                $schedule[] = ['movie' => $movie, 'start' => $start, 'end' => $end];
+
+                // Evening shows minimum gap, rounded UP to nearest 15 mins (next quarter)
+                $cursor = (int) (ceil(($end + self::MINIMUM_GAP) / 15) * 15);
+            }
+        }
+
+        return $schedule;
+    }
+
+    public function update(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'movie' => 'required', 'date' => 'required|date', 'time' => 'required',
+        ]);
+        if ($validator->fails()) return response()->json(['errors' => $validator->errors()]);
 
         $show = Shows::find($request->hiddenMovieID);
-        
-        if (!$show) {
-            return response()->json(['errors' => 'Show not found']);
-        }
-
-        $bookingCount = Bookings::where('shows_show_id', $show->show_id)->count();
-        if ($bookingCount > 0) {
-            return response()->json(['errors' => 'This show already has bookings and cannot be edited.']);
-        }
+        if (!$show) return response()->json(['errors' => 'Show not found']);
+        if (Bookings::where('shows_show_id', $show->show_id)->count() > 0) return response()->json(['errors' => 'Has bookings.']);
 
         $movie = Movies::find($request->movie);
-        if (!$movie) {
-            return response()->json(['errors' => 'Selected movie not found.']);
-        }
-
-        $timeParts = explode(':', $request->time);
-        $startMinutes = ((int)$timeParts[0]) * 60 + (int)$timeParts[1];
-        $endMinutes = $startMinutes + $movie->duration;
-
-        $bookedShows = DB::table('shows')
-            ->join('movies', 'movies.movie_id', '=', 'shows.movies_movie_id')
-            ->where('shows.date', $request->date)
-            ->where('shows.show_id', '!=', $show->show_id)
-            ->select('shows.time', 'movies.duration')
-            ->get();
-
-        $bookedRanges = [];
-        foreach ($bookedShows as $bookedShow) {
-            $bookedParts = explode(':', $bookedShow->time);
-            $bookedStart = ((int)$bookedParts[0]) * 60 + (int)$bookedParts[1];
-            $bookedRanges[] = ['start' => $bookedStart, 'end' => $bookedStart + $bookedShow->duration];
-        }
-
-        if ($this->hasConflict($startMinutes, $endMinutes, $bookedRanges, 15)) {
-            return response()->json(['errors' => 'Updated showtime conflicts with another existing show on ' . $request->date . '.']);
-        }
-    
-        $show->movies_movie_id = $request->movie;
-        $show->date = $request->date;
-        $show->time = $request->time;
-        $show->save();
+        $startMins = $this->convertTimeToMinutes($request->time);
         
-        return response()->json(['success' => 'Show Updated Successfully.']);
+        $bookedRanges = $this->loadBookedRanges($request->date, $show->show_id);
+        if ($this->hasConflict($startMins, $startMins + $movie->duration, $bookedRanges, self::MINIMUM_GAP)) {
+            return response()->json(['errors' => 'Time conflict.']);
+        }
+
+        $show->update(['movies_movie_id' => $request->movie, 'date' => $request->date, 'time' => $request->time]);
+        return response()->json(['success' => 'Updated Successfully.']);
     }
 
-    //Delete Show*******************************************************************************************
-    public function destroy(Request $request){
-        try {
-            $show = Shows::find($request->show_id);
-
-            if (!$show) {
-                return response()->json(['errors' => 'Show not found.']);
-            }
- 
-            $bookings = Bookings::where('shows_show_id', $show->show_id)->get();
-            
-            if ($bookings->count() > 0) {
-                return response()->json(['errors' => 'This show has bookings and cannot be deleted.']);
-            }
-
-            $show->delete();
-            
-            return response()->json(['success' => 'Show deleted successfully.']);
-            
-        } catch (\Exception $e) {
-            return response()->json(['errors' => 'An error occurred while deleting the show.']);
-        } 
+    public function destroy(Request $request)
+    {
+        $show = Shows::find($request->show_id);
+        if (!$show) return response()->json(['errors' => 'Not found.']);
+        if (Bookings::where('shows_show_id', $show->show_id)->exists()) return response()->json(['errors' => 'Has bookings.']);
+        
+        $show->delete();
+        return response()->json(['success' => 'Deleted successfully.']);
     }
 
-    //Get Available Showtimes For The Update Modal*****************************************************************
     public function getAvailableShowtimes(Request $request)
     {
-        $validated = $request->validate([
-            'date' => 'required|date_format:Y-m-d',
-            'movie_id' => 'nullable|exists:movies,movie_id',
-            'exclude_show_id' => 'nullable|exists:shows,show_id',
-        ]);
+        $date = $request->date;
+        $movieId = $request->movie_id;
+        $excludeShowId = $request->exclude_show_id;
+        
+        $bookedRanges = $this->loadBookedRanges($date, $excludeShowId);
+        $movieDuration = $movieId ? Movies::find($movieId)->duration : null;
 
-        $date = $validated['date'];
-        $movieId = $validated['movie_id'] ?? null;
-        $excludeShowId = $validated['exclude_show_id'] ?? null;
-
-        $bookedShows = DB::table('shows')
-            ->join('movies', 'movies.movie_id', '=', 'shows.movies_movie_id')
-            ->when($excludeShowId, function ($query) use ($excludeShowId) {
-                return $query->where('shows.show_id', '!=', $excludeShowId);
-            })
-            ->where('shows.date', $date)
-            ->select('shows.time', 'movies.duration')
-            ->get();
-
-        $bookedRanges = [];
-        foreach ($bookedShows as $bookedShow) {
-            $timeParts = explode(':', $bookedShow->time);
-            $start = ((int)$timeParts[0]) * 60 + (int)$timeParts[1];
-            $bookedRanges[] = ['start' => $start, 'end' => $start + $bookedShow->duration];
-        }
-
-        $movieDuration = null;
-        if ($movieId) {
-            $movie = Movies::find($movieId);
-            $movieDuration = $movie ? $movie->duration : null;
-        }
-
-        $showtimes = Showtimes::where('status', 1)
-            ->orderBy('time', 'asc')
-            ->get();
-
-        $availableShowtimes = [];
-        foreach ($showtimes as $showtime) {
+        $available = [];
+        foreach (Showtimes::where('status', 1)->orderBy('time', 'asc')->get() as $showtime) {
             $start = $this->convertTimeToMinutes($showtime->time);
-            $end = $movieDuration !== null ? $start + $movieDuration : $start + 15;
+            $end = $start + ($movieDuration ?? self::MINIMUM_GAP);
+            
+            if ($movieDuration !== null && $this->hasConflict($start, $end, $bookedRanges, self::MINIMUM_GAP)) continue;
+            if ($movieDuration === null && in_array($start, array_column($bookedRanges, 'start'))) continue;
 
-            if ($movieDuration !== null) {
-                if ($this->hasConflict($start, $end, $bookedRanges, 15)) {
-                    continue;
-                }
-            } else {
-                $bookedTimes = array_map(function ($range) {
-                    return $range['start'];
-                }, $bookedRanges);
-
-                if (in_array($start, $bookedTimes, true)) {
-                    continue;
-                }
-            }
-
-            $showtime->formatted_time = Carbon::createFromFormat('H:i:s', $showtime->time)->format('h:i A');
-            $availableShowtimes[] = $showtime;
+            $showtime->formatted_time = Carbon::parse($showtime->time)->format('h:i A');
+            $available[] = $showtime;
         }
 
-        return response()->json([
-            'success' => true,
-            'showtimes' => $availableShowtimes
-        ]);
+        return response()->json(['success' => true, 'showtimes' => $available]);
     }
 
-    //Shared Helper Functions*****************************************************************************
-
-    private function loadBookedRanges($dateString)
+    // --- Helpers ---
+   private function loadBookedRanges($date, $excludeId = null)
     {
-        $existingShows = DB::table('shows')
+        return DB::table('shows')
             ->join('movies', 'movies.movie_id', '=', 'shows.movies_movie_id')
-            ->where('shows.date', $dateString)
-            ->select('shows.time', 'movies.duration')
-            ->get();
-
-        $ranges = [];
-        foreach ($existingShows as $existingShow) {
-            $timeParts = explode(':', $existingShow->time);
-            $existingStart = ((int)$timeParts[0]) * 60 + (int)$timeParts[1];
-            $ranges[] = ['start' => $existingStart, 'end' => $existingStart + $existingShow->duration];
-        }
-
-        return $ranges;
+            ->where('shows.date', $date)
+            ->when($excludeId, function($q) use ($excludeId) {
+                return $q->where('shows.show_id', '!=', $excludeId);
+            })
+            ->get()
+            ->map(function ($show) {
+                $start = $this->convertTimeToMinutes($show->time);
+                return ['start' => $start, 'end' => $start + $show->duration];
+            })->toArray();
     }
 
     private function convertTimeToMinutes($time)
@@ -425,19 +274,11 @@ class ShowsController extends Controller
         return ((int)$parts[0] * 60) + (int)$parts[1];
     }
 
-    private function roundUpToQuarterHour($minutes)
-    {
-        return (int) (ceil($minutes / 15) * 15);
-    }
-
-    private function hasConflict($startTime, $endTime, $bookedRanges, $minimumGap)
+    private function hasConflict($start, $end, $bookedRanges, $minGap)
     {
         foreach ($bookedRanges as $range) {
-            if ($startTime < ($range['end'] + $minimumGap) && ($endTime + $minimumGap) > $range['start']) {
-                return true;
-            }
+            if ($start < ($range['end'] + $minGap) && ($end + $minGap) > $range['start']) return true;
         }
-
         return false;
     }
 }

@@ -87,6 +87,7 @@ Route::group(['middleware' => 'auth', 'prefix' => ''], function () {
             Route::get('/pendingPayments', 'PaymentController@pendingPayments')->name('pendingPayments');
             Route::get('/findBooking', 'TicketController@findBooking')->name('findBooking');
             Route::post('/findBooking', 'TicketController@findBookingcheck')->name('findBookingCheck');
+            Route::get('/bookingspershow/{id}', 'BookingController@bookingsPerShow')->name('bookingspershow');
 
             //Client Management In Admin
             Route::get('/clientManagement', 'ClientController@index')->name('clientManagement');

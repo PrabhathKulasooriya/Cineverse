@@ -287,4 +287,16 @@ class BookingController extends Controller
         }
     }
 
+    public function bookingsPerShow($show_id)
+    {
+        
+        $show = Shows::find($show_id);
+        $movie = Movies::find($show->movies_movie_id);
+        $bookings = Bookings::where('shows_show_id', $show->show_id)->get();
+
+        $title = 'Bookings for ' . ($movie ? $movie->name : 'Show');
+
+        return view('management.bookingsPerShow', compact('bookings', 'show', 'movie', 'title'));
+    }
+
 }

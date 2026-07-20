@@ -181,6 +181,7 @@ class BookingsSeeder extends Seeder
                     'customer_name' => $customerName,
                     'email' => $customerEmail,
                     'payment_status' => 'PAID',
+                    'total_seats' => $seatsToBook,
                     'created_at' => $bookingDate,
                     'updated_at' => $bookingDate,
                 ]);

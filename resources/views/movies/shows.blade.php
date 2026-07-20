@@ -118,6 +118,20 @@
                                                                 </button>
                                                             </a>
                                                         @endif
+
+                                                        @if(Auth::user()->user_role_iduser_role == 1 || Auth::user()->user_role_iduser_role == 3)
+
+                                                            <a href="{{ route('bookingspershow', ['show_id' => $show->show_id]) }}">
+                                                                <button type="button"
+                                                                        class="btn btn-sm btn-success waves-effect waves-light mr-2"
+                                                                        data-id="{{$show->show_id}}"
+                                                                        id="bookTicketBtn">
+                                                                    <i class="fa fa-ticket"></i>
+                                                                    View Bookings
+                                                                </button>
+                                                            </a>
+                                                        @endif
+                                                        
                                                         @if(Auth::user()->user_role_iduser_role == 1 || Auth::user()->user_role_iduser_role == 2)
 
                                                             @if($show->has_bookings)
