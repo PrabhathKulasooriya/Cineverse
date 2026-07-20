@@ -178,8 +178,6 @@
                                                         
                                                     </td>
                                                     <!--Options End-->
-                                                
-
                                                 </tr>
 
                                             @endforeach

@@ -74,13 +74,13 @@
                     </div>
                     <input type="hidden" name="_token" value="{{ Session::token() }}">
 
-                    <div class="form-group row m-t-20">
-                        <div class="col-sm-6">
+                    <div class="form-group row m-t-20 w-full text-right d-flex align-items-right justify-content-end">
+                        {{-- <div class="col-sm-6">
                             <div class="custom-control custom-checkbox">
                                 <input type="checkbox" class="custom-control-input" name="rememberme" id="customControlInline">
                                 <label class="custom-control-label" for="customControlInline">Remember me</label>
                             </div>
-                        </div>
+                        </div> --}}
 
                         <div class="col-sm-6 text-right">
                             <button class="btn btn-primary w-md waves-effect waves-light" type="submit">Sign In</button>
@@ -150,6 +150,11 @@
 
         if(!password){
             $('#passwordError').html('Password is required.');
+            return;
+        }
+
+        if(password.length < 6){
+            $('#passwordError').html('Password must be at least 6 characters.');
             return;
         }
         

@@ -98,7 +98,6 @@
                                 <th>MOVIE NAME</th>
                                 <th>SHOW DATE</th>
                                 <th>SHOW TIME</th>
-                                <th>AMOUNT</th>
                                 <th>CREATED AT</th>
                                 <th>SEATS</th>
                                 <th>OPTIONS</th>
@@ -118,7 +117,6 @@
                                         <td>{{$booking['movie_name']}}</td>
                                         <td>{{\Carbon\Carbon::parse($booking['show_date'])->format('d M Y')}}</td>
                                         <td>{{\Carbon\Carbon::parse($booking['show_time'])->format('h:i A')}}</td>
-                                        <td>LKR. {{number_format($booking['amount'], 2)}}</td>
                                         <td>{{\Carbon\Carbon::parse($booking['created_at'])->format('H:i A | d-M-Y ')}}</td>
                                         <td>
                                             @foreach($booking['seats'] as $seat)

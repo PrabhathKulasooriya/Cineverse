@@ -50,6 +50,7 @@ class TicketController extends Controller
       
 
     public function verifyTicket(Request $request){
+
         $validator = Validator::make($request->all(), [
             'bookingId' => 'required|numeric',
         ],[
@@ -62,13 +63,13 @@ class TicketController extends Controller
                 
         }
 
-        if(session()->has('booking')){
-            session()->forget('booking');
+        if(session()->has('bookingData')){
+             session()->forget('bookingData');
         }
         if(session()->has('seats')){
             session()->forget('seats');
         }
-
+        
         try{
             $booking = Bookings::where('booking_id', $request->bookingId)->first();
             
@@ -115,10 +116,10 @@ class TicketController extends Controller
                 ]);
 
             } else {
-                return redirect()->route('ticketVerification')->with('error', 'Ticket is not found!');
+                return redirect()->route('ticketVerification')->with('error', 'Booking not found!');
             }
         } catch (\Exception $e) {
-            return redirect()->route('ticketVerification')->with('error', 'Ticket is not found!');
+            return redirect()->route('ticketVerification')->with('error', 'Booking  not found!');
         }
     }
 

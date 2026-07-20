@@ -43,6 +43,26 @@
 <!-- PAGE CONTENT START -->
 <div class="page-content-wrapper">
     <div class="container-fluid">
+
+         <div class="row ticketpage-alert-container">
+                @if(session('success'))
+                        <div class="alert alert-success text-center position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
+                            <i class="fa fa-check-circle"></i> {{ session('success') }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    @endif
+
+                    @if(session('error'))
+                        <div class="alert alert-danger text-center position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
+                            <i class="fa fa-exclamation-circle"></i> {{ session('error') }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    @endif
+            </div>
        
         <div class="row mt-4">
             
@@ -146,7 +166,7 @@
                             </div>
                             @endif
 
-                            @if(auth()->user()->user_role_iduser_role == 1 || auth()->user()->user_role_iduser_role == 2 || auth()->user()->user_role_iduser_role == 4)
+                            
                             <div class="d-flex flex-column justify-content-center align-items-center mx-2 mt-3">
                                 <div class="d-flex flex-row justify-content-center mb-2">
                                     @if(auth()->user()->user_role_iduser_role == 1 || auth()->user()->user_role_iduser_role == 3 || auth()->user()->user_role_iduser_role == 4)
@@ -165,7 +185,7 @@
                                     </form>
                                 </div>
                             </div>
-                            @endif
+                           
                             
                             <div class="ticket-footer">
                                 <p class="mb-1">Please ensure you keep this ticket and bring it with you on the scheduled movie date</p>

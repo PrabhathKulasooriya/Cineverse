@@ -69,6 +69,7 @@
                                     <th>DATE</th>
                                     <th>TIME</th>
                                     <th>DAY</th>
+                                     <th class="text-center">OPTIONS</th>
                                 </tr>
                                 </thead>
 
@@ -88,6 +89,19 @@
                                                 <td>{{\Carbon\Carbon::parse($show->time)->format('h:i A')}}</td>
 
                                                 <td >{{\Carbon\Carbon::parse($show->date)->format('l')}}</td>
+
+                                                <td><a href="{{ route('bookingspershow', ['show_id' => $show->show_id]) }}">
+                                                                <button type="button"
+                                                                        class="btn btn-sm btn-success waves-effect waves-light mr-2"
+                                                                        data-id="{{$show->show_id}}"
+                                                                        id="bookTicketBtn">
+                                                                    <i class="fa fa-ticket"></i>
+                                                                    View Bookings
+                                                                </button>
+                                                            </a>
+                                                        </td>
+
+                                                
 
                                             </tr>
 
