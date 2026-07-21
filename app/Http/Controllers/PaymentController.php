@@ -18,17 +18,8 @@ use Exception;
 
 class PaymentController extends Controller
 {
-    public function cancel(Request $request)
+    public function cancel(Request $request, $bookingId)
     {
-        // Get booking data from session
-        $bookingData = session('manual_booking_data');
-        if (!$bookingData) {
-            return redirect()->back()->with('error', 'Booking data not found!');
-        }
-         
-        $movieId = $bookingData['movieId'];
-        $bookingId = $bookingData['booking_id'];
-
         if ($bookingId == null) {
             return redirect()->back()->with('error', 'Booking ID not found.');
         }
@@ -37,6 +28,7 @@ class PaymentController extends Controller
         if (!$booking) {
             return redirect()->back()->with('error', 'Booking not found.');
         }
+        
 
         if ($booking->payment_status == 'PAID') {
 
@@ -48,8 +40,10 @@ class PaymentController extends Controller
             $booking->delete();
             session()->forget('manual_booking_data');
             
-            return redirect("/bookmovie/{$movieId}")
+            return redirect("/bookmovie/{$booking->movies_movie_id}")
                         ->with('error', 'Payment was cancelled.');
+        }else {
+        return redirect()->back()->with('error', 'Booking cannot be cancelled.');
         }
     }
 

@@ -6,12 +6,23 @@
 @section('pageSpecificContent')
 
 <div class="payment-main">
-        @if(session('error'))
-            <div class="alert alert-danger text-center position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
-                <i class="fa fa-exclamation-circle"></i> {{ session('error') }}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            </div>
-        @endif
+                    @if(session('success'))
+                        <div class="alert alert-success text-center position-fixed fade show" style="top: 100px; right: 20px; z-index: 1000; min-width: 350px;">
+                            <i class="fa fa-check-circle"></i> {{ session('success') }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    @endif
+
+                    @if(session('error'))
+                        <div class="alert alert-danger text-center position-fixed fade show" style="top: 100px; right: 20px; z-index: 1000; min-width: 350px;">
+                            <i class="fa fa-exclamation-circle"></i> {{ session('error') }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    @endif
    {{-- payment-left --}}
     <div class="payment-left glass-panel">
 
@@ -142,13 +153,10 @@
         <div class="payment-right-inner glass-panel">
         {{-- Payment Methods Header --}}
         <div class="header payement-methods-header">
-            @if(Auth::check() && Auth::user()->user_role_iduser_role == 3)
-                <button class="toggle-method-btn active" id="cashTab">Cash</button>
-            @elseif(Auth::check() && Auth::user()->user_role_iduser_role == 1)
+            @if(Auth::check() && Auth::user()->user_role_iduser_role == 1)
                 <button class="toggle-method-btn active" id="cashTab">Cash</button>
                 <button class="toggle-method-btn" id="cardTab">Card Payments</button>
-            @else
-                <button class="toggle-method-btn active" id="cardTab">Card Payments</button>
+           
             @endif
         </div>
 
@@ -204,7 +212,7 @@
                     <button type="button" class="pay-button btn-pay" id="cashPayButton">
                         <i class="fa fa-money" aria-hidden="true"></i> Pay
                     </button>
-                    <a href="{{ route('cancel') }}" class="cancel-link">
+                    <a href="{{ route('cancel',['booking_id' => $bookingData['booking_id']]) }}" class="cancel-link">
                         <button type="button" class="pay-button btn-cancel">
                             <i class="fa fa-trash-o" aria-hidden="true"></i> Cancel Booking
                         </button>
@@ -295,7 +303,7 @@
                     <button type="button" class="pay-button btn-pay" id="payButton">
                         <i class="fa fa-credit-card-alt" aria-hidden="true"></i> Pay Now
                     </button>
-                    <a href="{{ route('cancel') }}" class="cancel-link">
+                    <a href="{{ route('cancel',['booking_id' => $bookingData['booking_id']]) }}" class="cancel-link">
                         <button type="button" class="pay-button btn-cancel">
                             <i class="fa fa-trash-o" aria-hidden="true"></i> Cancel Booking
                         </button>
@@ -314,7 +322,6 @@
 @section('pageSpecificScript')
 <script>
 
-// ── Hide the success/error alert after 3 seconds ───────────────────────────
 setTimeout(function () {
     var alertBox = document.querySelector(".alert");
     if (alertBox) {

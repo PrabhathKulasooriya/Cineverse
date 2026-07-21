@@ -15,14 +15,14 @@
 <div class="wrapper-page signin-page" >
 
                  @if(session('success'))
-                        <div class="alert alert-success text-center position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
+                        <div class="alert alert-success text-center position-fixed fade show" style="top: 100px; right: 20px; z-index: 1000; min-width: 350px;">
                             <i class="fa fa-check-circle"></i> {{ session('success') }}
                             <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         </div>
                 @endif          
 
                 @if(session('error'))
-                    <div class="alert alert-danger alert-dismissible position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
+                    <div class="alert alert-danger alert-dismissible position-fixed fade show" style="top: 100px; right: 20px; z-index: 1000; min-width: 350px;">
                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -31,7 +31,7 @@
                 @endif
 
                 @if(session('warning'))
-                    <div class="alert alert-warning alert-dismissible position-absolute fade show" style="top: 20px; right: 20px; z-index: 1050; min-width: 350px;">
+                    <div class="alert alert-warning alert-dismissible position-fixed fade show" style="top: 100px; right: 20px; z-index: 1000; min-width: 350px;">
                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>

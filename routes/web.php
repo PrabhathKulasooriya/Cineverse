@@ -34,7 +34,7 @@ Route::get('/paymentPage', 'PaymentController@paymentPage')->name('paymentpage')
 Route::post('/manualPayment', 'PaymentController@manualPayment')->name('manualPayment');
 
 Route::get('/success', 'PaymentController@success')->name('success');
-Route::get('/cancel', 'PaymentController@cancel')->name('cancel');
+Route::get('/cancel/{booking_id}', 'PaymentController@cancel')->name('cancel');
 Route::get('/cleanup-expired-bookings', ['PaymentController@cleanupExpiredBookings'])->name('cleanup.expired');
 
 Route::get('/ticketpage', 'BookingController@ticketPage')->name('ticketpage');

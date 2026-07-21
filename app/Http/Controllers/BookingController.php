@@ -10,7 +10,6 @@ use App\Seats;
 use App\SeatType;
 use App\BookedSeats;
 use App\Bookings;
-use App\Snack;
 use App\BookingSnack;
 use Exception;
 use App\Mail\TicketMail;
@@ -31,33 +30,48 @@ class BookingController extends Controller
     {
         $movie = Movies::find($movie_id);
 
-        if(!$movie){
+        if (!$movie) {
             return redirect()->route('home');
         }
 
         $bookingCutOff = now()->addMinutes(env('BOOKING_CUTOFF_MINUTES', 15));
-        $shows = Shows::where('movies_movie_id', $movie_id)
-                ->where(function ($query) use ($bookingCutOff) {
-                    $query->where('date', '>', now()->format('Y-m-d'))
-                        ->orWhere(function ($q) use ($bookingCutOff) {
-                            $q->where('date', '=', now()->format('Y-m-d'))
-                                ->where('time', '>=', $bookingCutOff->format('H:i:s'));
-                        });
-                })
-                ->where('date', '<=', now()->addDays(6)->format('Y-m-d'))
-                ->get();
 
-        if($shows->isEmpty()){
+        $availableDates = Shows::where('movies_movie_id', $movie_id)
+            ->where(function ($query) use ($bookingCutOff) {
+                $query->where('date', '>', now()->format('Y-m-d'))
+                    ->orWhere(function ($q) use ($bookingCutOff) {
+                        $q->where('date', '=', now()->format('Y-m-d'))
+                        ->where('time', '>=', $bookingCutOff->format('H:i:s'));
+                    });
+            })
+            ->select('date')
+            ->distinct()
+            ->orderBy('date', 'asc')
+            ->limit(7)
+            ->pluck('date');
+
+        if ($availableDates->isEmpty()) {
             return redirect()->route('home');
         }
         
+        $shows = Shows::where('movies_movie_id', $movie_id)
+            ->whereIn('date', $availableDates)
+            ->where(function ($query) use ($bookingCutOff) {
+                $query->where('date', '>', now()->format('Y-m-d'))
+                    ->orWhere(function ($q) use ($bookingCutOff) {
+                        $q->where('date', '=', now()->format('Y-m-d'))
+                        ->where('time', '>=', $bookingCutOff->format('H:i:s'));
+                    });
+            })
+            ->orderBy('date', 'asc')
+            ->orderBy('time', 'asc')
+            ->get();
+
         $movie->formatted_duration = $this->formatDuration($movie->duration);
         
-        if ($movie->status == 1){
-
-        return view('bookings.moviePage', compact('movie', 'shows'));
-        
-        }else{
+        if ($movie->status == 1) {
+            return view('bookings.moviePage', compact('movie', 'shows'));
+        } else {
             return redirect()->route('home');
         }
     }
@@ -108,7 +122,6 @@ class BookingController extends Controller
             
         } else {
             $customerId = null;
-            
         }
 
         try {
