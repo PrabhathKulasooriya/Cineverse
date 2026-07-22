@@ -70,7 +70,7 @@
                                         <td class="align-middle">{{ $snackName }}</td>
 
                                         <td class="align-middle">
-                                            <img src="{{ URL::asset('snackImages/' . $snackGroup->first()->image) }}" alt="{{ $snackName }}" height="50">
+                                            <img src="{{ URL::asset('snackImages/' . $snackGroup->first()->image) }}" alt="{{ $snackName }}" height="120">
                                         </td>
 
                                         <td class="align-middle">

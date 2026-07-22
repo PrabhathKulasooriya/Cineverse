@@ -44,7 +44,7 @@
                             <i class="fa fa-chevron-right fa-3x" ></i>
                     </button>
                     
-                     <div class="scroll-down next-section animate"><span>Scroll Down</span></div>
+                     <div class="scroll-down next-section animate "><span>Scroll Down</span></div>
                 </div>
             </div>
 
