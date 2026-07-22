@@ -13,7 +13,6 @@
 <link href="{{ URL::asset('assets/plugins/bootstrap-touchspin/css/jquery.bootstrap-touchspin.min.css')}}" rel="stylesheet"/>
 <link href="{{ URL::asset('assets/css/custom_checkbox.css')}}" rel="stylesheet" type="text/css"/>
 <link href="{{ URL::asset('assets/css/jquery.notify.css')}}" rel="stylesheet" type="text/css">
-<link href="{{ URL::asset('assets/css/mdb.css')}}" rel="stylesheet" type="text/css">
 <link rel="stylesheet" href="{{ asset('css/ticketPage.css') }}">
 
 <meta name="csrf-token" content="{{ csrf_token() }}"/>
@@ -242,15 +241,6 @@
     $(document).on("wheel", "input[type=number]", function (e) {
         $(this).blur();
     });
-
-    const verifyBtn = document.getElementById('verifyBtn');
-    const bookingVerificationForm = document.getElementById('bookingVerificationForm');
-
-    verifyBtn.addEventListener('click', function () {
-        preventDefault();
-        bookingVerificationForm.submit();
-    });
-
 
 </script>
 

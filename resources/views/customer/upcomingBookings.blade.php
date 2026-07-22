@@ -13,7 +13,6 @@
 <link href="{{ URL::asset('assets/plugins/bootstrap-touchspin/css/jquery.bootstrap-touchspin.min.css')}}" rel="stylesheet"/>
 <link href="{{ URL::asset('assets/css/custom_checkbox.css')}}" rel="stylesheet" type="text/css"/>
 <link href="{{ URL::asset('assets/css/jquery.notify.css')}}" rel="stylesheet" type="text/css">
-<link href="{{ URL::asset('assets/css/mdb.css')}}" rel="stylesheet" type="text/css">
 <link rel="stylesheet" href="{{ asset('css/ticketPage.css') }}">
 
 <meta name="csrf-token" content="{{ csrf_token() }}"/>
@@ -71,6 +70,7 @@
                             <button type="button" class="btn btn-primary float-right">
                                 Book New Tickets
                             </button>
+                        </a>    
                      </div>
             
 

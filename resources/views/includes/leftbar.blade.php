@@ -43,13 +43,12 @@
 
 
                     {{-- MOVIES --}}
-
-                    <li class="menu-title">Movies & Shows</li>
-                    
                     @if(\Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==1 || 
                     \Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==2 || 
                     \Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==3)
-
+                    
+                    <li class="menu-title">Movies & Shows</li>
+                
                         <li>
                             <a href="{{route('shows')}}" class="waves-effect">
                                 <i class="fa fa-window-maximize"></i>

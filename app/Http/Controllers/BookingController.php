@@ -264,11 +264,13 @@ class BookingController extends Controller
     private function cleanupExpiredBookings()
     {
         try {
-
             $possibleCleanups = Bookings::where('payment_status', 'PENDING')->get();
 
-            foreach ($possibleCleanups as $booking) {
+            $lastMinuteWindow = env('BOOKING_LAST_MINUTE_WINDOW', 60);
+            $shortExpire = env('BOOKING_EXPIRATION_MINUTES_SHORT', 5);
+            $standardExpire = env('BOOKING_EXPIRATION_MINUTES', 15);
 
+            foreach ($possibleCleanups as $booking) {
                 $show = Shows::find($booking->shows_show_id);
                 if (!$show) {
                     continue;
@@ -276,12 +278,13 @@ class BookingController extends Controller
 
                 $bookingTime = \Carbon\Carbon::parse($booking->created_at);
                 $showDateTime = \Carbon\Carbon::parse($show->date . ' ' . $show->time);
-                $minutesUntilShow = $showDateTime->diffInMinutes(now(), false);
+                
+                $minutesUntilShow = now()->diffInMinutes($showDateTime, false);
 
-                if($minutesUntilShow <= env('BOOKING_LAST_MINUTE_WINDOW', 60)) {
-                    $expireMinutes = env('BOOKING_EXPIRATION_MINUTES_SHORT', 5);
+                if ($minutesUntilShow <= $lastMinuteWindow) {
+                    $expireMinutes = $shortExpire;
                 } else {
-                    $expireMinutes = env('BOOKING_EXPIRATION_MINUTES', 15);
+                    $expireMinutes = $standardExpire;
                 }
 
                 $cutoffTime = now()->subMinutes($expireMinutes);

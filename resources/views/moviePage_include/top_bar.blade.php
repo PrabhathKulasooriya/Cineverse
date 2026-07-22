@@ -43,7 +43,7 @@
 
                                 {{-- customer view --}}
                                 @if(\Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==4)
-                                <li><a href="{{ URL::asset('/myAccount')}}">Account</a></li>
+                                <li><a href="{{ URL::asset('/myAccount')}}">My Account</a></li>
                                 @endif
                             @else
                                  <!-- If the user is not logged in -->

@@ -237,26 +237,37 @@ class MoviesController extends Controller
     // Duration conversion methods end
 
     //Search function*******************************************************************************************
-    public function search(Request $request){
+    public function search(Request $request)
+    {
         $query = $request->input('query');
-    
+
         if (!$query) {
             return redirect()->back();
         }
-    
+
         $searchTerm = "%" . strtoupper($query) . "%";
         
+        $bookingCutOff = now()->addMinutes(env('BOOKING_CUTOFF_MINUTES', 15));
+        $currentDate = now()->format('Y-m-d');
+        $currentTime = $bookingCutOff->format('H:i:s');
+
         $movies = Movies::where('status', 1)
-                          ->where(function ($query) use ($searchTerm) {
-                            $query->where('name', 'like', $searchTerm)
-                                  ->orWhere('category', 'like', $searchTerm)
-                                  ->orWhere('language', 'like', $searchTerm);
-                        })
-                        ->get();
-    
+            ->where(function ($query) use ($searchTerm) {
+                $query->where('name', 'like', $searchTerm)
+                    ->orWhere('category', 'like', $searchTerm)
+                    ->orWhere('language', 'like', $searchTerm);
+            })
+            ->whereHas('shows', function ($query) use ($currentDate, $currentTime) {
+                $query->where('date', '>', $currentDate)
+                    ->orWhere(function ($q) use ($currentDate, $currentTime) {
+                        $q->where('date', '=', $currentDate)
+                            ->where('time', '>=', $currentTime);
+                    });
+            })
+            ->get();
+
         return view('search', compact('movies', 'query'));
     }
-    
     //Search function end*******************************************************************************************
 
     

@@ -82,49 +82,59 @@ class ClientDataController extends Controller
                     $allBookingsData[] = $bookingData;
                     }
             
-            return view('customer.pastBookings', ['title' => 'Ticket Verification','bookings' => $allBookingsData ]);      
+            return view('customer.pastBookings', ['title' => 'Past Bookings','bookings' => $allBookingsData ]);      
         }else{
-            return view('customer.pastBookings', ['title' => 'Ticket Verification']);
+            return view('customer.pastBookings', ['title' => 'Past Bookings']);
         }}
 
-        public function pendingPayments()
-        {
-            $this->cleanupExpiredBookings();
+    public function pendingPayments()
+    {
+        $this->cleanupExpiredBookings();
+        $pendingBookings = Bookings::where('payment_status', 'PENDING')
+                                    ->where('master_user_idmaster_user', auth()->user()->idmaster_user)->get();
+
+        $pendingPaymentsData = [];
+
+        $lastMinuteWindow = env('BOOKING_LAST_MINUTE_WINDOW', 60);
+        $shortExpire = env('BOOKING_EXPIRATION_MINUTES_SHORT', 5);
+        $standardExpire = env('BOOKING_EXPIRATION_MINUTES', 15);
+
+        foreach ($pendingBookings as $booking) {
+            $movie = Movies::find($booking->movies_movie_id);
+            $show = Shows::find($booking->shows_show_id);     
+            $selectedSeatsId = BookedSeats::where('bookings_booking_id', $booking->booking_id)->pluck('seats_seat_id')->toArray();            
             
-            $pendingBookings = Bookings::where('payment_status', 'PENDING')
-                                        ->where('master_user_idmaster_user', auth()->user()->idmaster_user)->get();
-    
-            
-            $pendingPaymentsData = [];
-    
-            foreach ($pendingBookings as $booking) {
-               
-                $movie = Movies::find($booking->movies_movie_id);
-                $show = Shows::find($booking->shows_show_id);     
-                $selectedSeatsId = BookedSeats::where('bookings_booking_id', $booking->booking_id)->pluck('seats_seat_id')->toArray();            
-                
-                $pendingPaymentsData[] = [
-                    'booking_id' => $booking->booking_id,
-                    'movie_id' => $movie->movie_id,
-                    'show_id' => $show->show_id,
-                    'movie' => $movie->name,
-                    'date' => $show->date,
-                    'time' => $show->time,
-                    'amount'=>  $booking->amount,
-                    'payment_status' => $booking->payment_status,
-                    'selectedSeatsId' => $selectedSeatsId,
-                ];
-            }
-    
-            
-            return view('customer.pendingPayment', [
-                'title' => 'Pending Payments',
-                'pendingPayments' => $pendingPaymentsData,
-            ]);
+            // Calculate Expiration Time
+            $bookingTime = \Carbon\Carbon::parse($booking->created_at);
+            $showDateTime = \Carbon\Carbon::parse($show->date . ' ' . $show->time);
+
+            $minutesUntilShow = now()->diffInMinutes($showDateTime, false);
+            $expireMinutes = ($minutesUntilShow <= $lastMinuteWindow) ? $shortExpire : $standardExpire;
+
+            $expiresAt = $bookingTime->copy()->addMinutes($expireMinutes);
+
+            $pendingPaymentsData[] = [
+                'booking_id' => $booking->booking_id,
+                'movie_id' => $movie->movie_id,
+                'show_id' => $show->show_id,
+                'movie' => $movie->name,
+                'date' => $show->date,
+                'time' => $show->time,
+                'amount'=>  $booking->amount,
+                'payment_status' => $booking->payment_status,
+                'selectedSeatsId' => $selectedSeatsId,
+                'expires_at' => $expiresAt->toIso8601String()
+            ];
         }
 
+        return view('customer.pendingPayment', [
+            'title' => 'Pending Payments',
+            'pendingPayments' => $pendingPaymentsData,
+        ]);
+    }
 
-        public function payment(Request $request){
+
+    public function payment(Request $request){
                 if($request->bookingData == null){
                     return redirect()->route('customerPendingPayments')->with('error', 'Booking data not found!');
                 }
@@ -145,7 +155,7 @@ class ClientDataController extends Controller
                 
         }
 
-        public function cancelPendingPayments(Request $request){
+    public function cancelPendingPayments(Request $request){
             $bookingId = $request->bookingData;
         if($bookingId == null){
             return redirect()->back()->with('error', 'Booking ID not found.');
@@ -165,43 +175,46 @@ class ClientDataController extends Controller
         }
 
         //Cleanup Expired bookings*************************************************************************
-    private function cleanupExpiredBookings()
-    {
-        try {
+        private function cleanupExpiredBookings()
+        {
+            try {
+                $possibleCleanups = Bookings::where('payment_status', 'PENDING')->get();
 
-            $possibleCleanups = Bookings::where('payment_status', 'PENDING')->get();
+                $lastMinuteWindow = env('BOOKING_LAST_MINUTE_WINDOW', 60);
+                $shortExpire = env('BOOKING_EXPIRATION_MINUTES_SHORT', 5);
+                $standardExpire = env('BOOKING_EXPIRATION_MINUTES', 15);
 
-            foreach ($possibleCleanups as $booking) {
+                foreach ($possibleCleanups as $booking) {
+                    $show = Shows::find($booking->shows_show_id);
+                    if (!$show) {
+                        continue;
+                    }
 
-                $show = Shows::find($booking->shows_show_id);
-                if (!$show) {
-                    continue;
+                    $bookingTime = \Carbon\Carbon::parse($booking->created_at);
+                    $showDateTime = \Carbon\Carbon::parse($show->date . ' ' . $show->time);
+                    
+                    $minutesUntilShow = now()->diffInMinutes($showDateTime, false);
+
+                    if ($minutesUntilShow <= $lastMinuteWindow) {
+                        $expireMinutes = $shortExpire;
+                    } else {
+                        $expireMinutes = $standardExpire;
+                    }
+
+                    $cutoffTime = now()->subMinutes($expireMinutes);
+
+                    if ($bookingTime->lessThan($cutoffTime)) {
+                        BookedSeats::where('bookings_booking_id', $booking->booking_id)->delete();
+                        $booking->delete();
+                        Log::info('Cleaned up expired booking: ' . $booking->booking_id);
+                    }
                 }
 
-                $bookingTime = \Carbon\Carbon::parse($booking->created_at);
-                $showDateTime = \Carbon\Carbon::parse($show->date . ' ' . $show->time);
-                $minutesUntilShow = $showDateTime->diffInMinutes(now(), false);
-
-                if($minutesUntilShow <= env('BOOKING_LAST_MINUTE_WINDOW', 60)) {
-                    $expireMinutes = env('BOOKING_EXPIRATION_MINUTES_SHORT', 5);
-                } else {
-                    $expireMinutes = env('BOOKING_EXPIRATION_MINUTES', 15);
-                }
-
-                $cutoffTime = now()->subMinutes($expireMinutes);
-
-                if ($bookingTime->lessThan($cutoffTime)) {
-                    BookedSeats::where('bookings_booking_id', $booking->booking_id)->delete();
-                    $booking->delete();
-                    Log::info('Cleaned up expired booking: ' . $booking->booking_id);
-                }
+                return response()->json(['message' => 'Expired bookings cleaned up successfully']);
+            } catch (Exception $e) {
+                Log::error('Error cleaning up expired bookings: ' . $e->getMessage());
+                return response()->json(['error' => 'Failed to cleanup expired bookings'], 500);
             }
-
-            return response()->json(['message' => 'Expired bookings cleaned up successfully']);
-        } catch (Exception $e) {
-            Log::error('Error cleaning up expired bookings: ' . $e->getMessage());
-            return response()->json(['error' => 'Failed to cleanup expired bookings'], 500);
         }
-    }
         
 }

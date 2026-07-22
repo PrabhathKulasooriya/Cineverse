@@ -50,24 +50,28 @@ class PaymentController extends Controller
     public function cleanupExpiredBookings()
     {
         try {
-
             $possibleCleanups = Bookings::where('payment_status', 'PENDING')->get();
 
-            foreach ($possibleCleanups as $booking) {
+           
+            $lastMinuteWindow = env('BOOKING_LAST_MINUTE_WINDOW', 60);
+            $shortExpire = env('BOOKING_EXPIRATION_MINUTES_SHORT', 5);
+            $standardExpire = env('BOOKING_EXPIRATION_MINUTES', 15);
 
+            foreach ($possibleCleanups as $booking) {
                 $show = Shows::find($booking->shows_show_id);
                 if (!$show) {
                     continue;
                 }
-                
+
                 $bookingTime = \Carbon\Carbon::parse($booking->created_at);
                 $showDateTime = \Carbon\Carbon::parse($show->date . ' ' . $show->time);
-                $minutesUntilShow = $showDateTime->diffInMinutes(now(), false);
+                
+                $minutesUntilShow = now()->diffInMinutes($showDateTime, false);
 
-                if($minutesUntilShow <= env('BOOKING_LAST_MINUTE_WINDOW', 60)) {
-                    $expireMinutes = env('BOOKING_EXPIRATION_MINUTES_SHORT', 5);
+                if ($minutesUntilShow <= $lastMinuteWindow) {
+                    $expireMinutes = $shortExpire;
                 } else {
-                    $expireMinutes = env('BOOKING_EXPIRATION_MINUTES', 15);
+                    $expireMinutes = $standardExpire;
                 }
 
                 $cutoffTime = now()->subMinutes($expireMinutes);
@@ -309,11 +313,16 @@ class PaymentController extends Controller
 
     public function pendingPayments()
     {
+        $this->cleanupExpiredBookings();
         $pendingBookings = Bookings::where('payment_status', 'PENDING')->get();
         $pendingPaymentsData = [];
 
+        // Fetch env variables once outside the loop
+        $lastMinuteWindow = env('BOOKING_LAST_MINUTE_WINDOW', 60);
+        $shortExpire = env('BOOKING_EXPIRATION_MINUTES_SHORT', 5);
+        $standardExpire = env('BOOKING_EXPIRATION_MINUTES', 15);
+
         foreach ($pendingBookings as $booking) {
-           
             $movie = Movies::find($booking->movies_movie_id);
             $show = Shows::find($booking->shows_show_id);
             $user = User::find($booking->master_user_idmaster_user);
@@ -323,6 +332,15 @@ class PaymentController extends Controller
                 $userName = $user->first_name . " " . $user->last_name;
             }
 
+            // Calculate Expiration Time
+            $bookingTime = \Carbon\Carbon::parse($booking->created_at);
+            $showDateTime = \Carbon\Carbon::parse($show->date . ' ' . $show->time);
+            
+            $minutesUntilShow = now()->diffInMinutes($showDateTime, false);
+            $expireMinutes = ($minutesUntilShow <= $lastMinuteWindow) ? $shortExpire : $standardExpire;
+            
+            $expiresAt = $bookingTime->copy()->addMinutes($expireMinutes);
+
             $pendingPaymentsData[] = [
                 'booking_id' => $booking->booking_id,
                 'master_user_idmaster_user' => $booking->master_user_idmaster_user,
@@ -331,7 +349,8 @@ class PaymentController extends Controller
                 'time' => $show->time,
                 'userName' => $userName,
                 'amount' =>  $booking->amount,
-                'payment_status' => $booking->payment_status
+                'payment_status' => $booking->payment_status,
+                'expires_at' => $expiresAt->toIso8601String() // <--- Added this
             ];
         }
 

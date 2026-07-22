@@ -44,6 +44,7 @@ Route::get('/printTicket/{booking_id}', 'TicketController@printTicket')->name('p
 
 Route::get('/booking/time-remaining', 'PaymentController@timeRemaining')->name('timeRemaining');
 
+
 //Search Movies
 Route::get('/search', 'MoviesController@search')->name('search');
 
@@ -185,6 +186,7 @@ Route::group(['middleware' => 'auth', 'prefix' => ''], function () {
         Route::get('/upcomingBookings', 'ClientDataController@upcomingBookings')->name('upcomingBookings');
         Route::get('/pastBookings', 'ClientDataController@pastBookings')->name('pastBookings');
         Route::get('/customerPendingPayments', 'ClientDataController@pendingPayments')->name('customerPendingPayments');
+        Route::post('checkPendingExpiry', 'ClientDataController@checkPendingExpiry')->name('checkPendingExpiry');
 
         });
 

@@ -13,7 +13,6 @@
 <link href="{{ URL::asset('assets/plugins/bootstrap-touchspin/css/jquery.bootstrap-touchspin.min.css')}}" rel="stylesheet"/>
 <link href="{{ URL::asset('assets/css/custom_checkbox.css')}}" rel="stylesheet" type="text/css"/>
 <link href="{{ URL::asset('assets/css/jquery.notify.css')}}" rel="stylesheet" type="text/css">
-<link href="{{ URL::asset('assets/css/mdb.css')}}" rel="stylesheet" type="text/css">
 
 <meta name="csrf-token" content="{{ csrf_token() }}"/>
 
@@ -83,13 +82,14 @@
                                 <th>TIME</th>
                                 <th>USER</th>
                                 <th>AMOUNT</th>
+                                <th>TIME LEFT</th>
                                 <th>PAYMENT STATUS</th>
                                 <th>OPTIONS</th>
                             </tr>
                         </thead>
-            
+
+                        <!-- Table Body -->
                         <tbody>
-                            
                             @if(!empty($pendingPayments) )
                                 @foreach($pendingPayments as $pendingPayment)
                                     <tr>
@@ -99,31 +99,42 @@
                                         <td>{{\Carbon\Carbon::parse($pendingPayment['time'])->format('h:i A')}}</td> 
                                         <td>{{ $pendingPayment['userName'] }}</td> 
                                         <td>{{ $pendingPayment['amount'] }}</td> 
-                                        <td><p class="text-danger ">{{ $pendingPayment['payment_status'] }}</p></td> 
+                                        
+                                        <!-- Timer Element -->
+                                        <td>
+                                            <span class="text-danger p-2 countdown-timer" 
+                                                data-expires-at="{{ $pendingPayment['expires_at'] }}" 
+                                                data-booking-id="{{ $pendingPayment['booking_id'] }}">
+                                                --:--
+                                            </span>
+                                        </td>
+
+                                        <td><p class="text-danger mb-0">{{ $pendingPayment['payment_status'] }}</p></td> 
                                         <td class="d-flex">
-                                            <form action="{{ route('cancelPayment') }}" method="post" id="payNowForm">
+                                             @if(Auth::user()->idmaster_user == $pendingPayment['master_user_idmaster_user'])
+                                            <form action="{{ route('cancelPayment') }}" method="post">
                                                 @csrf
                                                 <input type="hidden" name="bookingData" value="{{$pendingPayment['booking_id']}}">
-                                                <button class="btn btn-sm btn-danger waves-effect" id="payNowBtn">
+                                                <button type="submit" class="btn btn-sm btn-danger waves-effect">
                                                     <i class="fa fa-trash" aria-hidden="true"></i> 
                                                 </button>
                                             </form>
-                                            @if(Auth::user()->idmaster_user == $pendingPayment['master_user_idmaster_user'])
-                                            <form action="{{ route('payPending') }}" method="post" id="payNowForm">
+                                            
+                                            <!-- Fixed: dynamic form and button IDs -->
+                                            <form action="{{ route('payPending') }}" method="post" id="payForm_{{ $pendingPayment['booking_id'] }}">
                                                 @csrf
                                                 <input type="hidden" name="bookingData" value="{{json_encode($pendingPayment)}}">
-                                                <button class="btn btn-sm btn-success waves-effect ml-2" id="payNowBtn" >
+                                                <button type="submit" class="btn btn-sm btn-success waves-effect ml-2" id="payBtn_{{ $pendingPayment['booking_id'] }}">
                                                     <i class="fa fa-usd" aria-hidden="true"></i> Pay Now
                                                 </button>
                                             </form>
                                             @endif
                                         </td>
-        
                                     </tr>
                                 @endforeach
                             @else
                                 <tr>
-                                    <td colspan="8" class="text-center">No pending payments found.</td>
+                                    <td colspan="9" class="text-center">No pending payments found.</td>
                                 </tr>
                             @endif
                         </tbody>
@@ -199,11 +210,83 @@
 
 <script>
     $(document).ready(function() {
+        // Fade out alerts
         setTimeout(function() {
             $(".alert").fadeOut("slow", function() {
                 $(this).remove();
             });
         }, 3000); 
+    });
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const timers = document.querySelectorAll('.countdown-timer');
+        let cleanupFired = false;
+
+        timers.forEach(timer => {
+            const expiresAtStr = timer.getAttribute('data-expires-at');
+            const expiresAt = new Date(expiresAtStr).getTime();
+            const bookingId = timer.getAttribute('data-booking-id');
+            const payBtn = document.getElementById('payBtn_' + bookingId);
+            
+            let timerInterval;
+
+            function formatTime(totalSeconds) {
+                let m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+                let s = (totalSeconds % 60).toString().padStart(2, '0');
+                return m + ':' + s;
+            }
+
+            function onExpired() {
+                clearInterval(timerInterval);
+                timer.textContent = "00:00";
+                timer.classList.replace('badge-warning', 'badge-danger');
+                
+                
+                if (payBtn) {
+                    payBtn.disabled = true;
+                    payBtn.classList.remove('btn-success');
+                    payBtn.classList.add('btn-secondary'); 
+                }
+                
+                triggerCleanup();
+            }
+
+            function updateTimer() {
+                let secondsLeft = Math.floor((expiresAt - Date.now()) / 1000);
+
+                if (secondsLeft <= 0) {
+                    onExpired();
+                    return;
+                }
+                timer.textContent = formatTime(secondsLeft);
+            }
+
+            // Paint initial time
+            updateTimer();
+
+            // Start interval if not expired
+            if (Math.floor((expiresAt - Date.now()) / 1000) > 0) {
+                timerInterval = setInterval(updateTimer, 1000);
+            }
+        });
+
+        // Background call to the backend cleanup route
+        function triggerCleanup() {
+            if (cleanupFired) return;
+            cleanupFired = true;
+
+            fetch("{{ route('cleanup.expired') }}", {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            }).then(response => {
+                console.log("Cleanup executed");
+                setTimeout(() => { cleanupFired = false; }, 10000);
+            }).catch(error => {
+                console.error("Cleanup failed", error);
+            });
+        }
     });
 </script>
 

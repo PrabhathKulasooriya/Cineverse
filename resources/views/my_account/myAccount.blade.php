@@ -10,7 +10,6 @@
 <link href="{{ URL::asset('assets/plugins/bootstrap-touchspin/css/jquery.bootstrap-touchspin.min.css')}}" rel="stylesheet"/>
 <link href="{{ URL::asset('assets/css/custom_checkbox.css')}}" rel="stylesheet" type="text/css"/>
 <link href="{{ URL::asset('assets/css/jquery.notify.css')}}" rel="stylesheet" type="text/css">
-<link href="{{ URL::asset('assets/css/mdb.css')}}" rel="stylesheet" type="text/css">
 
 <meta name="csrf-token" content="{{ csrf_token() }}"/>
 
@@ -153,7 +152,7 @@
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
             </div>
             <div class="modal-body">
-
+                <form id="changePasswordForm">
                 <div class="form-group">
                     <label>Current Password <span style="color:red">*</span></label>
                     <div class="input-group">
@@ -197,11 +196,11 @@
                 </div>
 
                 <div class="form-group">
-                    <button type="button" class="btn btn-primary float-right" onclick="changePassword()">
+                    <button type="submit" class="btn btn-primary float-right" >
                         Save
                     </button>
                 </div>
-
+                </form>
             </div>
         </div>
     </div>
@@ -287,7 +286,6 @@
 
     // Enable editing
     function enablefield() {
-        // Remove readonly from profile fields only (not hidden fields)
         $("#fName, #lName, #email, #contactNo").removeAttr('readonly');
 
         var profile = $("#hiddenUserId").val();
@@ -360,7 +358,12 @@
     });
 
 
-    // Change Password
+     // Change Password
+    $('#changePasswordForm').on('submit', function (event) {
+        event.preventDefault();
+        changePassword();
+    });
+
     function changePassword() {
         $("#currentPasswordError").html('');
         $("#newPasswordError").html('');

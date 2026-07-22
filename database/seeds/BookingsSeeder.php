@@ -34,9 +34,6 @@ class BookingsSeeder extends Seeder
             ['id' => 102, 'name' => 'KANTHI RATHNAYAKE', 'email' => 'kanthirathnayake@gmail.com'],
             ['id' => 107, 'name' => 'GITHMIN JAYAWARDHANA', 'email' => 'githmin@gmail.com'],
             ['id' => 114, 'name' => 'ISURU PRABHATH', 'email' => 'isurup@gmail.com'],
-            ['id' => 115, 'name' => 'TEST TEST', 'email' => 'test@gmail.com'],
-            ['id' => 118, 'name' => 'TEST TEST', 'email' => 'testtttttttt@gmail.com'],
-            ['id' => 119, 'name' => 'CINEVERSE CUSTOMER', 'email' => 'customer@gmail.com']
         ];
 
         // Allowed Ticket Counter Staff (Role 3) - MUST use CASH
@@ -46,8 +43,8 @@ class BookingsSeeder extends Seeder
         
         // --- MODIFIED DATE SELECTION LOGIC ---
         // Select dates between the 12th and 25th of the current month
-        $startDate = Carbon::now()->day(12)->format('Y-m-d');
-        $endDate = Carbon::now()->day(26)->format('Y-m-d');
+        $startDate = Carbon::now()->day(26)->format('Y-m-d');
+        $endDate = Carbon::now()->day(31)->format('Y-m-d');
 
         $shows = Shows::whereBetween('date', [$startDate, $endDate])->get();
 
@@ -72,7 +69,7 @@ class BookingsSeeder extends Seeder
             shuffle($availableSeats);
 
             // Determine theater occupancy: Never empty, never fully booked (25% to 95% full)
-            $targetOccupancy = rand(25, 95);
+            $targetOccupancy = rand(25, 90);
             
             // Start our count from the seats that are ALREADY booked
             $bookedCount = count($existingBookedSeats);
