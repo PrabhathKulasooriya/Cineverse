@@ -1,5 +1,7 @@
 @include('includes/header_start')
 
+<!--Morris Chart CSS -->
+<link rel="stylesheet" href="assets/plugins/morris/morris.css">
 <meta name="csrf-token" content="{{ csrf_token() }}" />
 <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
 
@@ -58,7 +60,7 @@
         <div class="container mt-4">
             <!-- Show Count & Screening Movies Section -->
             <div class="row mb-4">
-                <div class="col-md-6 mb-3 mb-md-0">
+                <div class="col-md-4 mb-3 mb-md-0">
                     <div class="card shadow-sm h-100 card-info-shows">
                         <div class="card-body">
                             <h5 class="card-title">Number of Shows Today:</h5>
@@ -66,15 +68,20 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-8">
                     <div class="card shadow-sm h-100 card-info-movies">
                         <div class="card-body">
-                            <h5 class="card-title">Screening Movies ({{ $movies->count() }}):</h5>
+                            <h5 class="card-title">On Screening Movies ({{ $movies->count() }}):</h5>
                             <ul class="list-unstyled mb-0">
                                 @forelse ($movies as $movie)
-                                    <li>{{ $movie->name }}</li>
+                                    <li class="mb-2 border-bottom pb-1">
+                                        <strong>{{ $movie->name }}</strong>
+                                        <span class="float-right text-muted small" style="float: right;">
+                                            <i class="fa fa-calendar"></i> Last Available Show: {{ $movie->last_show_date }}
+                                        </span>
+                                    </li>
                                 @empty
-                                    <li class="text-muted">No movies screening today.</li>
+                                    <li class="text-muted">No movies screening.</li>
                                 @endforelse
                             </ul>
                         </div>
@@ -102,7 +109,7 @@
                                     <tbody>
                                         @forelse ($shows as $show)
                                             <tr>
-                                                <td data-label="Show ID"><span class="badge">S-{{ $show->show_id }}</span></td>
+                                                <td data-label="Show ID"><span class="badge">SH-{{ $show->show_id }}</span></td>
                                                 <td data-label="Movie Name">{{ $show->movie_name ?? 'N/A' }}</td>
                                                 <td data-label="Time">{{ \Carbon\Carbon::parse($show->time)->format('h:i A') }}</td>
                                             </tr>
@@ -126,6 +133,12 @@
 </div> <!-- content -->
 
 @include('includes/footer_start')
+
+<!--Morris Chart-->
+<script src="assets/plugins/morris/morris.min.js"></script>
+<script src="assets/plugins/raphael/raphael-min.js"></script>
+
+<script src="assets/pages/dashborad.js"></script>
 
 <script>
     $(document).ready(function() {
