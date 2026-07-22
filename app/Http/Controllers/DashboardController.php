@@ -15,7 +15,9 @@ class DashboardController extends Controller
     {
         $today = now()->format('Y-m-d');
         
-        $shows = Shows::whereDate('date', '=', now()->toDateString())->get();
+        $shows = Shows::with('movies')
+              ->whereDate('date', '=', now()->toDateString())
+              ->get();
         
         $upcomingShows = Shows::whereDate('date', '>=', now()->toDateString())->get();
         $movieIdsWithShows = $upcomingShows->pluck('movies_movie_id')->unique();
@@ -32,12 +34,6 @@ class DashboardController extends Controller
         });
 
         $showtimes = Showtimes::where('status',1)->get();
-
-        $allMovies = Movies::all();
-        $shows = $shows->map(function ($show) use ($allMovies) {
-            $show->movie_name = $allMovies->where('movie_id', $show->movies_movie_id)->first()->name ?? 'No movie found';
-            return $show;
-        });
         
         $showCount = count($shows);
         

@@ -110,7 +110,7 @@
                                         @forelse ($shows as $show)
                                             <tr>
                                                 <td data-label="Show ID"><span class="badge">SH-{{ $show->show_id }}</span></td>
-                                                <td data-label="Movie Name">{{ $show->movie_name ?? 'N/A' }}</td>
+                                                <td data-label="Movie Name">{{ $show->movies->name ?? 'N/A' }}</td>
                                                 <td data-label="Time">{{ \Carbon\Carbon::parse($show->time)->format('h:i A') }}</td>
                                             </tr>
                                         @empty
