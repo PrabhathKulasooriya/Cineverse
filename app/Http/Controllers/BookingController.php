@@ -51,7 +51,8 @@ class BookingController extends Controller
             ->pluck('date');
 
         if ($availableDates->isEmpty()) {
-            return redirect()->route('home');
+            // return redirect()->route('home');
+            return view('bookings.moviePage', compact('movie'));
         }
         
         $shows = Shows::where('movies_movie_id', $movie_id)

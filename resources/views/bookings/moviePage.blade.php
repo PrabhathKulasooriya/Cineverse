@@ -80,7 +80,7 @@
             {{-- Bottm Section ***************************************************************************--}}
             <div class="bottom">
 
-                @if($shows->isEmpty())
+                @if(empty($shows) || $shows->isEmpty())
                         <div class="container-noshows">
                             <span>This Movie Has No Scheduled Screenings</span>
                             <p>Screenings will be available soon. Please check back later.</p>
@@ -223,7 +223,7 @@ document.querySelector('#movie-trailer-link').addEventListener('click', function
         let isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
         // Group shows by date
-        const allShows = @json($shows);
+        const allShows = @json($shows ?? []);
         const groupedShows = allShows.reduce((acc, show) => {
             const date = new Date(show.date).toISOString().split('T')[0];
             if (!acc[date]) acc[date] = [];

@@ -37,15 +37,6 @@
             <div class="card m-b-20">
                 <div class="card-body">
 
-                    <div class="row">
-                        <div class="col-lg-12" align="right">
-                            <button class="btn btn-primary w-md waves-effect waves-light" type="button"
-                                    data-toggle="modal" data-target="#changePasswordModal">
-                                Change Password
-                            </button>
-                        </div>
-                    </div>
-
                     <div align="center">
                         <img src="{{ URL::asset('assets/images/users/avatar-1.png')}}" height="90"/>
                     </div>
@@ -117,8 +108,16 @@
                             </div>
 
                             
-                            <div class="row">
-                                <div class="col-lg-12" align="right">
+                            <div class=" col-lg-12 d-flex flex-row justify-content-end" align="right">
+
+                                <div class="mr-4" id="change-password" >
+                                    <button class="btn btn-primary w-md waves-effect waves-light" type="button"
+                                                data-toggle="modal" data-target="#changePasswordModal">
+                                            Change Password
+                                    </button>
+                                </div>
+
+                                <div class="" >
                                     <button class="btn btn-primary w-md waves-effect waves-light"
                                             id="updateBtn" type="button" onclick="enablefield()">
                                         Edit Profile
@@ -129,6 +128,7 @@
                                         Save
                                     </button>
                                 </div>
+                                
                             </div>
 
                         </form>
@@ -299,6 +299,7 @@
 
         $("#saveBtn").show();
         $("#updateBtn").hide();
+        $("#change-password").hide();
     }
 
 

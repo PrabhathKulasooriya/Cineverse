@@ -29,7 +29,8 @@ public function index(){
 
     $movieIds = $movies->pluck('movie_id'); 
 
-    $imageSlider = ImageSlider::whereIn('movies_movie_id', $movieIds)->get();
+    $imageSlider = ImageSlider::where('status', 1)->whereIn('movies_movie_id', $movieIds)->get();
+    // $imageSlider = ImageSlider::all();
 
     $title = 'Cineverse';
 

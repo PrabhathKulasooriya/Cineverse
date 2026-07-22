@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Movies;
 use App\User;
 use App\Showtimes;
+use App\Imageslider;
 
 use Illuminate\Http\Request;
 
@@ -60,6 +61,20 @@ class StatusController extends Controller
             else {
                 $table->status = 1;
             }
+            $table->update();
+        }
+
+        if ($table = "imageslider"){
+
+            $table = Imageslider::find($id);
+            if ($table->status == 1) {
+                $table->status = 0;
+            }
+
+            else {
+                $table->status = 1;
+            }
+
             $table->update();
         }
 

@@ -77,7 +77,7 @@
                                     <li class="mb-2 border-bottom pb-1">
                                         <strong>{{ $movie->name }}</strong>
                                         <span class="float-right text-muted small" style="float: right;">
-                                            <i class="fa fa-calendar"></i> Last Available Show: {{ $movie->last_show_date }}
+                                            <i class="fa fa-calendar"></i> Available Until : {{ $movie->last_show_date }}
                                         </span>
                                     </li>
                                 @empty

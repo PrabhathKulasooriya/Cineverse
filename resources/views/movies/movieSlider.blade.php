@@ -82,6 +82,7 @@
                                     <tr>
                                         <th>MOVIE NAME</th>
                                         <th>POSTER</th>
+                                        <th>STATUS</th>
                                         <th>OPTIONS</th>
                                     </tr>
                                 </thead>
@@ -95,6 +96,34 @@
                                             <tr>
                                                 <td>{{ $sliderImage->movie_name }}</td>
                                                 <td><img src="{{ URL::asset('sliderImages/'.$sliderImage->image) }}" style="width: 200px; "></td>
+                                                @if($sliderImage->status == 1)
+                                                    <td>
+                                                        <p>
+                                                            <input type="checkbox"
+                                                                   onchange="adMethod('{{ $sliderImage->idimageSlider}}','imageslider')"
+                                                                   id="{{"c".$sliderImage->idimageSlider}}" checked
+                                                                   switch="none"/>
+                                                            <label for="{{"c".$sliderImage->idimageSlider}}"
+                                                                   data-on-label="On"
+                                                                   data-off-label="Off"></label>
+                                                        </p>
+                                                    </td>
+
+
+                                                @else
+                                                    <td>
+                                                        <p>
+                                                            <input type="checkbox"
+                                                                   onchange="adMethod('{{ $sliderImage->idimageSlider}}','imageslider')"
+                                                                   id="{{"c".$sliderImage->idimageSlider}}"
+                                                                   switch="none"/>
+                                                            <label for="{{"c".$sliderImage->idimageSlider}}"
+                                                                   data-on-label="On"
+                                                                   data-off-label="Off"></label>
+                                                        </p>
+                                                    </td>
+
+                                                @endif
                                                 <td style="display:flex; flex-direction:row; gap: 5px;">
                                                      <button class="btn btn-warning edit-movie-btn" 
                                                              data-toggle="modal" 
@@ -321,6 +350,13 @@
         $('input').val(''); 
         $('select').prop('selectedIndex', 0);
     });
+
+
+    function adMethod(dataID, tableName) {
+        $.post('activateDeactivate', {id: dataID, table: tableName}, function (data) {
+            
+        });
+    }
     
 </script>
 
