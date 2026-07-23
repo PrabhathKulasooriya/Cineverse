@@ -512,9 +512,6 @@
                 document.getElementById('stopScanBtn').style.display = 'inline-block';
                 document.getElementById('ticketVerificationForm').style.display = 'block';
 
-                // Note: Removed the DOM manipulation that hides the ticket and action buttons. 
-                // The ticket will stay visible, and the scanner will naturally push the action buttons down.
-
                 scanningActive = true;
                 requestAnimationFrame(scanVideoFrame);
             })
@@ -546,7 +543,6 @@
         }
 
         if (qrVideoElement.readyState === qrVideoElement.HAVE_ENOUGH_DATA) {
-            // 1. DOWNSCALE FOR PERFORMANCE
             // Instead of processing millions of pixels, restrict it to a 400x400 square.
             // This makes jsQR run instantly without freezing the browser.
             var scanSize = 400; 
@@ -554,20 +550,18 @@
             qrCanvasElement.width = scanSize;
             qrCanvasElement.height = scanSize;
             
-            // Draw the center of the video scaled down to the canvas
             var minDimension = Math.min(qrVideoElement.videoWidth, qrVideoElement.videoHeight);
             var startX = (qrVideoElement.videoWidth - minDimension) / 2;
             var startY = (qrVideoElement.videoHeight - minDimension) / 2;
             
             qrCanvasContext.drawImage(
                 qrVideoElement, 
-                startX, startY, minDimension, minDimension, // Source crop
-                0, 0, scanSize, scanSize                      // Destination canvas
+                startX, startY, minDimension, minDimension, 
+                0, 0, scanSize, scanSize                      
             );
 
             var imageData = qrCanvasContext.getImageData(0, 0, scanSize, scanSize);
             
-            // 2. ENABLE INVERSION ATTEMPTS
             // This helps detect QR codes displayed on phone screens with dark mode enabled.
             var qrResult = jsQR(imageData.data, imageData.width, imageData.height, {
                 inversionAttempts: "attemptBoth",
@@ -579,9 +573,6 @@
             }
         }
 
-        // 3. THROTTLE THE LOOP
-        // Give the CPU a break. Running this 4-5 times a second is plenty fast for a user, 
-        // and prevents the phone from overheating or lagging.
         setTimeout(function() {
             requestAnimationFrame(scanVideoFrame);
         }, 200);
@@ -651,11 +642,28 @@
             data: formData,
             success: function (response) {
                 $('#changeEntryModal').modal('hide');
-                $.notify(response.message || 'Entry confirmed successfully.', 'success');
 
-                setTimeout(function () {
-                    location.reload();
-                }, 1000);
+                notify({
+                    type: "success",
+                    title: 'Entry Confirmed',
+                    autoHide: true,
+                    delay: 2500,
+                    position: {x: "right", y: "top"},
+                    icon: '<img src="{{ URL::asset('assets/images/correct.png')}}" />',
+                    message: response.message,
+                });
+
+                $('#actionButtonsSection .action-block').eq(0)
+                    .find('.font-weight-bold').eq(0).text(response.available_seats);
+
+                $('#actionButtonsSection .action-block').eq(0)
+                    .find('.font-weight-bold').eq(1).text(response.entered_count);
+
+                $('#confirm-entry-btn').data('availableentries', response.available_seats);
+                
+                if (response.available_seats <= 0) {
+                    $('#confirm-entry-btn').replaceWith('<p class="text-danger mb-0 font-weight-bold">All entries confirmed.</p>');
+                }
             },
             error: function (xhr) {
                 var errorMessage = 'Something went wrong. Please try again.';
@@ -720,12 +728,35 @@
             },
             success: function (response) {
                 $('#confirmSnackModal').modal('hide');
-                $.notify(response.message || 'Snacks confirmed successfully.', 'success');
 
-                setTimeout(function () {
-                    location.reload();
-                }, 1000);
-            },
+                notify({
+                    type: "success",
+                    title: 'Snacks Received',
+                    autoHide: true,
+                    delay: 2500,
+                    position: {x: "right", y: "top"},
+                    icon: '<img src="{{ URL::asset('assets/images/correct.png')}}" />',
+                    message: response.message,
+                });
+
+                response.items.forEach(function (item) {
+                var row = $('.snack-item-row[data-booking-snack-id="' + item.booking_snack_id + '"]');
+
+                row.find('.ticket-label').text('Received: ' + item.received_quantity);
+                row.find('.snack-order-price').text('Remaining: ' + item.remaining);
+                row.attr('data-max', item.remaining);
+                row.find('.received-input').val(item.remaining);
+            });
+
+            var snackBlock = $('#ticketDetailsSection').length
+                ? $('.action-block').eq(1)
+                : null;
+
+            if (response.available_snacks <= 0) {
+                $('.action-block').eq(1).find('button[data-target="#confirmSnackModal"]')
+                    .replaceWith('<p class="text-danger mb-0 font-weight-bold">All snacks collected.</p>');
+            }
+        },
             error: function (xhr) {
                 var errorMessage = 'Something went wrong. Please try again.';
 
@@ -741,37 +772,77 @@
     //Download Ticket****************************************************************
     function triggerDownload() {
 
-    const elementsToHide = [
-        '.btn-download',
-        '.btn-ticket-page', 
-        '.alert',
-        '.ticket-success-container',
-        'nav',
-        'header',
-        'footer',
-        '.navbar'
-    ];
-    
-    elementsToHide.forEach(selector => {
-        const elements = document.querySelectorAll(selector);
-        elements.forEach(el => {
-            el.style.display = 'none';
-        });
-    });
-    
-    
-    window.print();
-    
-    
-    setTimeout(() => {
+        const elementsToHide = [
+            '.btn-download',
+            '.btn-ticket-page', 
+            '.alert',
+            '.ticket-success-container',
+            'nav',
+            'header',
+            'footer',
+            '.navbar'
+        ];
+        
         elementsToHide.forEach(selector => {
             const elements = document.querySelectorAll(selector);
             elements.forEach(el => {
-                el.style.display = '';
+                el.style.display = 'none';
             });
         });
-    }, 500);
-}
+        
+        
+        window.print();
+        
+        
+        setTimeout(() => {
+            elementsToHide.forEach(selector => {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(el => {
+                    el.style.display = '';
+                });
+            });
+        }, 500);
+    }
+
+    //Send Email***************************************************************************
+    $('#emailTicketForm').on('submit', function (e) {
+        e.preventDefault();
+
+        var form = $(this);
+        var submitBtn = form.find('button[type="submit"]');
+        var originalHtml = submitBtn.html();
+
+        submitBtn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Sending...');
+
+        $.ajax({
+            url: form.attr('action'),
+            method: 'POST',
+            data: form.serialize(),
+            success: function (response) {
+                notify({
+                    type: "success",
+                    title: 'Email Send',
+                    autoHide: true,
+                    delay: 2500,
+                    position: {x: "right", y: "top"},
+                    icon: '<img src="{{ URL::asset('assets/images/correct.png')}}" />',
+                    message: response.message,
+                });
+            },
+            error: function (xhr) {
+                var errorMessage = 'Something went wrong. Please try again.';
+
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                }
+
+                $.notify(errorMessage, 'error');
+            },
+            complete: function () {
+                submitBtn.prop('disabled', false).html(originalHtml);
+            }
+        });
+    });
 
 
 

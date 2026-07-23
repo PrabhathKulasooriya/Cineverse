@@ -38,13 +38,17 @@ class TicketController extends Controller
     //Ticket Verification *****************************************************************************************************
     public function ticketVerification(){
 
-        $booking = session('bookingData');
-        $seats = session('seats');
+        if(session()->has('bookingData')){
+             session()->forget('bookingData');
+        }
+        if(session()->has('seats')){
+            session()->forget('seats');
+        }
         
         return view('management.ticketVerification', [
             'title' => 'Ticket Verification',
-            'booking' => $booking,
-            'seats' => $seats,
+            'booking' => null,
+            'seats' => null,
         ]);   
     }
       
@@ -111,9 +115,11 @@ class TicketController extends Controller
                 session(['bookingData' => $bookingData]);
                 session(['seats' => $seats]);
                 
-                return redirect()->route('ticketVerification')->with([
-                    'success' => 'Ticket verified successfully!',
-                ]);
+                return view('management.ticketVerification', [
+                    'title' => 'Ticket Verification',
+                    'booking' => $bookingData,
+                    'seats' => $seats,
+                ])->with('success', 'Ticket verified successfully!');
 
             } else {
                 return redirect()->route('ticketVerification')->with('error', 'Booking not found!');
@@ -195,58 +201,58 @@ class TicketController extends Controller
         $booking_id = $request->booking_id;
 
         if(!$booking_id){
-            return redirect()->back()->with('error', 'Booking ID is required');
+            return response()->json(['message' => 'Booking ID is required'], 422);
         }
 
-        $booking = Bookings::where('booking_id', $booking_id)->first();
-        if (!$booking) {
-            return redirect()->back()->with('error', 'Booking not found');
+        try {
+            $booking = Bookings::where('booking_id', $booking_id)->first();
+            if (!$booking) {
+                return response()->json(['message' => 'Booking not found'], 404);
+            }
+
+            $movie = Movies::find($booking->movies_movie_id);
+            $show = Shows::find($booking->shows_show_id);
+
+            if (!$movie || !$show) {
+                return response()->json(['message' => 'Movie or show not found'], 404);
+            }
+
+            $seat_ids = BookedSeats::where('bookings_booking_id', $booking_id)->get();
+            $seats = Seats::whereIn('seat_id', $seat_ids->pluck('seats_seat_id')->toArray())->get();
+
+            $bookingSnacks = BookingSnack::where('booking_id', $booking_id)
+                            ->with('snack')
+                            ->get();
+            $snackTotal = $bookingSnacks->sum(function ($item) {
+                return $item->price * $item->quantity;
+            });
+
+            $booking['movie_name'] = $movie->name;
+            $booking['show_time']  = $show->time;
+            $booking['show_date']  = $show->date;
+
+            $qr = QrCode::create($booking['booking_id']);
+            $writer = new PngWriter();
+            $result = $writer->write($qr);
+            $qrCodePngBase64 = base64_encode($result->getString());
+
+            $email = $booking->email;
+            if (!$email) {
+                return response()->json(['message' => 'No email address associated with this booking'], 422);
+            }
+
+            $bookingArray = $booking->toArray();
+            $bookingArray['booking_snacks'] = $bookingSnacks;
+            $bookingArray['snacks_amount'] = $snackTotal;
+
+            Mail::to($email)->send(new TicketMail($bookingArray, $seats, $qrCodePngBase64, 'PNG'));
+
+            return response()->json(['message' => 'Ticket successfully sent to ' . $email . '!']);
+
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to send ticket email. Please try again.'], 500);
         }
-
-        $movie = Movies::find($booking->movies_movie_id);
-        $show = Shows::find($booking->shows_show_id);
-
-        if (!$movie || !$show) {
-            return redirect()->back()->with('error', 'Movie or show not found');
-        }
-
-        $seat_ids = BookedSeats::where('bookings_booking_id', $booking_id)->get();
-        $seats = Seats::whereIn('seat_id', $seat_ids->pluck('seats_seat_id')->toArray())->get();
-
-        $bookingSnacks = BookingSnack::where('booking_id', $booking_id)
-                        ->with('snack')
-                        ->get();
-        $snackTotal = $bookingSnacks->sum(function ($item) {
-            return $item->price * $item->quantity;
-        });
-
-        $booking['movie_name'] = $movie->name;
-        $booking['show_time']  = $show->time;
-        $booking['show_date']  = $show->date;
-
-        $qr = QrCode::create($booking['booking_id']);
-        $writer = new PngWriter();
-        $result = $writer->write($qr);
-        $qrCodePngBase64 = base64_encode($result->getString());
-
-        $email = $booking->email;
-        if (!$email) {
-            return redirect()->back()->with('error', 'No email address associated with this booking');
-        }
-
-        $bookingArray = $booking->toArray();
-        $bookingArray['booking_snacks'] = $bookingSnacks;
-        $bookingArray['grandTotal'] = $booking->amount + $snackTotal;
-
-        Mail::to($email)->send(new TicketMail($bookingArray, $seats, $qrCodePngBase64, 'PNG'));
-
-        return redirect()->route('ticketVerification')->with([
-            'success' => 'Ticket successfully sent to ' . $email . '!',
-            'booking' => $bookingArray,
-            'seats'   => $seats
-        ]);
     }
-
     public function downloadTicket($booking_id){
         if(!$booking_id){
             session()->flash('error', 'No booking id found!');
@@ -395,7 +401,11 @@ class TicketController extends Controller
                     }
                 }
 
-                return response()->json(['success' => 'Entry confirmed successfully!']);
+                return response()->json([
+                        'message' => 'Entry confirmed successfully!',
+                        'entered_count' => $bookingData['entered_count'],
+                        'available_seats' => $bookingData['available_seats'],
+                    ]);
                
             } else {
                 return redirect()->route('ticketVerification')->with('error', 'Booking not found!');
@@ -408,51 +418,71 @@ class TicketController extends Controller
 //Confirm Snack *****************************************************************************************************
     public function confirmSnack(Request $request)
     {
-        $items = $request->input('items');
+        $validator = Validator::make($request->all(), [
+            'booking_id' => 'required|numeric',
+            'items' => 'required|array|min:1',
+            'items.*.booking_snack_id' => 'required|numeric',
+            'items.*.quantity' => 'required|numeric|min:0',
+        ]);
 
-        foreach ($items as $item) {
-
-            $bookingSnack = BookingSnack::find($item['booking_snack_id']);
-
-            if (!$bookingSnack) {
-                continue; 
-            }
-
-            $newReceivedQuantity = $bookingSnack->received_quantity + $item['quantity'];
-
-        
-            if ($newReceivedQuantity > $bookingSnack->quantity) {
-                $newReceivedQuantity = $bookingSnack->quantity;
-            }
-
-            $bookingSnack->received_quantity = $newReceivedQuantity;
-            $bookingSnack->save();
+        if ($validator->fails()) {
+            return response()->json(['message' => $validator->errors()->first()], 422);
         }
 
-        if(session()->has('bookingData')){
-            $bookingData = session('bookingData');
-            $booking_id = $bookingData['booking_id'];
+        try {
+            $items = $request->input('items');
 
-            $snacks = BookingSnack::where('booking_id', $booking_id)
+            foreach ($items as $item) {
+                $bookingSnack = BookingSnack::find($item['booking_snack_id']);
+
+                if (!$bookingSnack) {
+                    continue;
+                }
+
+                $newReceivedQuantity = $bookingSnack->received_quantity + $item['quantity'];
+
+                if ($newReceivedQuantity > $bookingSnack->quantity) {
+                    $newReceivedQuantity = $bookingSnack->quantity;
+                }
+
+                $bookingSnack->received_quantity = $newReceivedQuantity;
+                $bookingSnack->save();
+            }
+
+            $bookingId = $request->input('booking_id');
+
+            $snacks = BookingSnack::where('booking_id', $bookingId)
                         ->with('snack')
                         ->get();
 
-            $snacksAmount = $snacks->sum(function ($item) {
-                return $item->price * $item->quantity;
-            });
+           $availableSnacks = $snacks->sum(function ($item) {
+                    return $item->quantity - $item->received_quantity;
+                });
 
-            $availableSnacks = $snacks->sum(function ($item) {
-                return $item->quantity - $item->received_quantity;
-            });
+            if (session()->has('bookingData')) {
+                $bookingData = session('bookingData');
+                if ($bookingData['booking_id'] == $bookingId) {
+                    $bookingData['booking_snacks'] = $snacks;
+                    $bookingData['available_snacks'] = $availableSnacks;
+                    session(['bookingData' => $bookingData]);
+                }
+            }
 
-            $bookingData['booking_snacks'] = $snacks;
-            $bookingData['snacks_amount'] = $snacksAmount;
-            $bookingData['available_snacks'] = $availableSnacks;
+            return response()->json([
+                'message' => 'Snack collection updated successfully.',
+                'available_snacks' => $availableSnacks,
+                'items' => $snacks->map(function ($item) {
+                    return [
+                        'booking_snack_id' => $item->idbooking_snacks,
+                        'received_quantity' => $item->received_quantity,
+                        'remaining' => $item->quantity - $item->received_quantity,
+                    ];
+                }),
+            ]);
 
-            session(['bookingData' => $bookingData]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'An error occurred while confirming snack collection!'], 500);
         }
-
-        return response()->json(['message' => 'Snack collection updated successfully.']);
     }
     
 }

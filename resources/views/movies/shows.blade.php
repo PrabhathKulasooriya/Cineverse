@@ -240,7 +240,11 @@
                     </div>
 
                     <hr>
+                    <span class="text-danger">*</span>
                     <small class="text-muted">Exact times depend on the movies picked below - these are rough guides only.</small>
+                    <br>
+                    <span class="text-danger">*</span>
+                    <small class="text-muted">If a show has already created for the specific date and time, it will be skipped.</small>
                     <br><br>
 
                     @if(isset($showtimes) && $showtimes->count() > 0)
