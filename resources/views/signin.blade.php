@@ -15,14 +15,14 @@
 <div class="wrapper-page signin-page" >
 
                  @if(session('success'))
-                        <div class="alert alert-success text-center position-fixed fade show" style="top: 100px; right: 20px; z-index: 1000; min-width: 350px;">
+                        <div class="alert alert-success text-center position-fixed fade show" style="top:80px; right: 20px; z-index: 1000; min-width: 350px;">
                             <i class="fa fa-check-circle"></i> {{ session('success') }}
                             <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         </div>
                 @endif          
 
                 @if(session('error'))
-                    <div class="alert alert-danger alert-dismissible position-fixed fade show" style="top: 100px; right: 20px; z-index: 1000; min-width: 350px;">
+                    <div class="alert alert-danger alert-dismissible position-fixed fade show" style="top:80px; right: 20px; z-index: 1000; min-width: 350px;">
                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -88,6 +88,14 @@
                     </div>
 
                 </form>
+
+                <div class="form-group m-t-10 mb-0 row">
+                        <div class="col-12 m-t-20 text-center">
+                            <a href="{{ route('password.request') }}" class="text-muted">
+                                <i class="fa fa-lock mr-1"></i> Forgot your password?
+                            </a>
+                        </div>
+                    </div>
             </div>
 
         </div>

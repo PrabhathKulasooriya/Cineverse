@@ -221,6 +221,46 @@
 
     .verify-logout:hover { color: #b22222; text-decoration: none; }
 
+    .auth-input {
+        width: 100%;
+        padding: 12px 15px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.3s;
+    }
+    .auth-input:focus {
+        border-color: #b22222;
+    }
+    .auth-input[readonly] {
+        background-color: #f8f9fa;
+        color: #6c757d;
+        cursor: not-allowed;
+    }
+    .auth-error {
+        color: #b22222;
+        font-size: 12px;
+        display: block;
+        margin-top: -10px;
+        margin-bottom: 10px;
+        text-align: left;
+    }
+
+    .auth-input::placeholder {
+    color: #6c757d; /* A standard Bootstrap placeholder gray */
+    opacity: 1; /* Ensures Firefox doesn't make it too transparent */
+}
+
+    /* For older browsers */
+    .auth-input:-ms-input-placeholder {
+        color: #6c757d;
+    }
+    .auth-input::-ms-input-placeholder {
+        color: #6c757d;
+    }
+
     @media screen and (max-width: 768px) {
         .verify-page-main {
             margin-top: 150px;

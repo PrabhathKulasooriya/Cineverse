@@ -106,14 +106,12 @@
                                                     <i class="fa fa-edit"></i>
                                                 </button>
 
-                                                <form action="{{ route('destroySnack') }}" method="POST" class="m-0">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <input type="hidden" name="snack_name" value="{{ $snackName }}">
-                                                    <button type="submit" class="btn btn-sm btn-danger">
-                                                        <i class="fa fa-trash"></i>
-                                                    </button>
-                                                </form>
+                                                <button class="btn btn-sm btn-danger delete-snack-btn" 
+                                                        data-toggle="modal" 
+                                                        data-target="#deleteSnackModal" 
+                                                        data-snackname="{{ $snackName }}">
+                                                    <i class="fa fa-trash"></i>
+                                                </button>
                                             </div>
                                         </td>
                                         @endif
@@ -202,6 +200,33 @@
     </div>
 </div>
 
+{{-- ======================== DELETE SNACK MODAL ======================== --}}
+<div class="modal fade" id="deleteSnackModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Confirm Deletion</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong><span id="deleteSnackNameDisplay"></span></strong>?</p>
+                <p class="text-muted mb-0"><small>This will remove all sizes for this snack from the menu. Past bookings will not be affected.</small></p>
+            </div>
+            <div class="modal-footer">
+                <form action="{{ route('destroySnack') }}" method="POST" class="m-0">
+                    @csrf
+                    @method('DELETE')
+                    <input type="hidden" name="snack_name" id="deleteSnackNameInput">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 @include('includes/footer_start')
 
 <script src="{{ URL::asset('assets/plugins/datatables/jquery.dataTables.min.js')}}"></script>
@@ -251,6 +276,12 @@ $(document).ready(function () {
         $(this).find('input[type=text], input[type=number], input[type=file]').val('');
         $('#addSizeRows').html(generateSizeRow());
     });
+
+    $(document).on('click', '.delete-snack-btn', function () {
+    const snackName = $(this).data('snackname');
+    $('#deleteSnackNameDisplay').text(snackName);
+    $('#deleteSnackNameInput').val(snackName);
+});
 
     window.toggleSnack = id => $.post('{{ route("toggleSnackAvailable") }}', { id: id });
 });

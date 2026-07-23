@@ -35,7 +35,7 @@
 
             <div class="row ticketpage-alert-container">
                 @if(session('success'))
-                        <div class="alert alert-success text-center position-fixed fade show" style="top: 100px; right: 20px; z-index: 1000; min-width: 350px;">
+                        <div class="alert alert-success text-center position-fixed fade show" style="top: 80px; right: 20px; z-index: 1000; min-width: 350px;">
                             <i class="fa fa-check-circle"></i> {{ session('success') }}
                             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
@@ -44,7 +44,7 @@
                     @endif
 
                     @if(session('error'))
-                        <div class="alert alert-danger text-center position-fixed fade show" style="top: 100px; right: 20px; z-index: 1000; min-width: 350px;">
+                        <div class="alert alert-danger text-center position-fixed fade show" style="top: 80px; right: 20px; z-index: 1000; min-width: 350px;">
                             <i class="fa fa-exclamation-circle"></i> {{ session('error') }}
                             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>

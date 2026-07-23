@@ -111,7 +111,7 @@
 
                                         <td><p class="text-danger mb-0">{{ $pendingPayment['payment_status'] }}</p></td> 
                                         <td class="d-flex">
-                                             @if(Auth::user()->idmaster_user == $pendingPayment['master_user_idmaster_user'])
+                                             @if(Auth::user()->idmaster_user == $pendingPayment['master_user_idmaster_user'] || auth()->user()->user_role_iduser_role == 1)
                                             <form action="{{ route('cancelPayment') }}" method="post">
                                                 @csrf
                                                 <input type="hidden" name="bookingData" value="{{$pendingPayment['booking_id']}}">
@@ -119,7 +119,8 @@
                                                     <i class="fa fa-trash" aria-hidden="true"></i> 
                                                 </button>
                                             </form>
-                                            
+                                            @endif
+                                            @if(Auth::user()->idmaster_user == $pendingPayment['master_user_idmaster_user'])
                                             <!-- Fixed: dynamic form and button IDs -->
                                             <form action="{{ route('payPending') }}" method="post" id="payForm_{{ $pendingPayment['booking_id'] }}">
                                                 @csrf

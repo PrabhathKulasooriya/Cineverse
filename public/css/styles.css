@@ -501,16 +501,17 @@ code {
 }
 
 .alert-success {
-  color: #2196F3;
-  background-color: #b2dbfb;
+  color: #155724;
+  background-color: #d4edda;
+  border-color: #c3e6cb;
 }
 
 .alert-success .alert-link {
-  color: #0c7cd5;
+  color: #0a3622;           
 }
 
 .alert-success hr {
-  border-top-color: #0c7cd5;
+  border-top-color: #badbcc; 
 }
 
 .alert-info {
@@ -3741,7 +3742,7 @@ body.fixed-left .side-menu.left {
 .btn-primary:hover {
     background-color: #FFD700 !important;
     border: 1px solid #B22222 !important;
-    border-radius: 15px !important;
+    border-radius: 10px !important;
     transform: scale(1.1) !important;
     
 }
@@ -3751,7 +3752,7 @@ body.fixed-left .side-menu.left {
     background-color: #FFD700 !important;
     color: #B22222 !important;
     border-radius: 15px !important;
-    transform: scale(1.2) !important; 
+    transform: scale(1.05) !important; 
 }
 
 

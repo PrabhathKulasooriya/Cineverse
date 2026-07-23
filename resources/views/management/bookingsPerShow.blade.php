@@ -207,37 +207,33 @@
 
     //change sorting of datatable
     $.fn.dataTable.ext.type.order['id-num-pre'] = function (d) {
-            var match = d.match(/\d+/);
-            return match ? parseInt(match[0], 10) : 0;
-        };
-        
-        $.fn.dataTable.ext.type.detect.unshift(function (d) {
-            return (typeof d === 'string' && d.match(/^\d{1,2}-\d{1,2}-\d{4}$/)) ? 'custom-date' : null;
-        });
+        var match = d.match(/\d+/);
+        return match ? parseInt(match[0], 10) : 0;
+    };
 
-        $.fn.dataTable.ext.type.order['custom-date-pre'] = function (d) {
-            if (!d) return 0;
-            var parts = d.split('-');
-            return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
-        };
+    $.fn.dataTable.ext.type.detect.unshift(function (d) {
+        return (typeof d === 'string' && d.match(/^\d{1,2}-\d{1,2}-\d{4}$/)) ? 'custom-date' : null;
+    });
 
-        $(document).ready(function () {
-            if ($.fn.DataTable.isDataTable('#datatable')) {
-                $('#datatable').DataTable().destroy();
-            }
-            
-            $('#datatable').DataTable({
-                "order": [2, 'asc'],
-                "columnDefs": [
-                    { "orderable": false, "targets": [ 4,5,6,-1] },
-                    { "type": "id-num", "targets": 0 },
-                    { "type": "custom-date", "targets": 2 }
-                ]
-            });
-        });
-
+    $.fn.dataTable.ext.type.order['custom-date-pre'] = function (d) {
+        if (!d) return 0;
+        var parts = d.split('-');
+        return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
+    };
 
     $(document).ready(function () {
+        if ($.fn.DataTable.isDataTable('#datatable')) {
+            $('#datatable').DataTable().destroy();
+        }
+
+        $('#datatable').DataTable({
+            "order": [3, 'desc'], 
+            "columnDefs": [
+                { "orderable": false, "targets": [-1] }, 
+                { "type": "id-num", "targets": 0 }
+            ]
+        });
+
         $('form').parsley();
 
         $.ajaxSetup({
@@ -245,21 +241,11 @@
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
-
     });
 
     $(document).on("wheel", "input[type=number]", function (e) {
         $(this).blur();
     });
-
-    const verifyBtn = document.getElementById('verifyBtn');
-    const bookingVerificationForm = document.getElementById('bookingVerificationForm');
-
-    verifyBtn.addEventListener('click', function () {
-        preventDefault();
-        bookingVerificationForm.submit();
-    });
-
 
 </script>
 

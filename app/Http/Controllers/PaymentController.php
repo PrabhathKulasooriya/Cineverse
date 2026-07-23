@@ -127,7 +127,7 @@ class PaymentController extends Controller
         $seconds = $secondsRemaining % 60;
         $formattedTimeLeft = sprintf('%02d:%02d', $minutes, $seconds);
 
-        $snacks = Snack::orderBy('name')->get()->groupBy('name');
+        $snacks = Snack::where('is_deleted', 0)->orderBy('name')->get()->groupBy('name');
         
         return view('bookings.paymentPage', compact('bookingData', 'snacks', 'secondsRemaining', 'formattedTimeLeft', 'expiresAt'));
     }

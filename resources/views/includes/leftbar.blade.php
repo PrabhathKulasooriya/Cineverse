@@ -144,7 +144,7 @@
                     
                         <li>
                             <a href="{{ route('findBooking') }}" class="waves-effect">
-                                <i class="fa fa-search" aria-hidden="true"></i><span>Find Booking</span>
+                                <i class="fa fa-search" aria-hidden="true"></i><span>Find User Bookings</span>
                             </a>
                         </li>
 

@@ -53,39 +53,38 @@ class ClientDataController extends Controller
         }
     }
 
-    public function pastBookings(){$userID = auth()->user()->idmaster_user;
-        $bookings = Bookings::where('master_user_idmaster_user',$userID)
-                    ->whereHas('show', function($query) {
-                        $query->whereRaw(
-                            "STR_TO_DATE(CONCAT(date, ' ', time), '%Y-%m-%d %H:%i:%s') <= ?", [now()] );
-                    })
-                    ->get();
-        $allBookingsData = [];
-                if($bookings->isNotEmpty()) {
-                foreach($bookings as $booking) {
-                    $bookedSeats = BookedSeats::with('seat') 
-                                    ->where('bookings_booking_id', $booking->booking_id)
-                                    ->get();
-    
-                    $seats = $bookedSeats->pluck('seat'); 
-                    
-                    $movie = Movies::find($booking->movies_movie_id);
-                    $show = Shows::find($booking->shows_show_id);
-                    
-                    $bookingData = $booking->toArray();
-                    
-                    $bookingData['movie_name'] = $movie->name;
-                    $bookingData['show_time'] = $show->time;
-                    $bookingData['show_date'] = $show->date;
-                    $bookingData['seats'] = $seats;
-                    
-                    $allBookingsData[] = $bookingData;
-                    }
+    public function pastBookings()
+    {
+        $userID = auth()->user()->idmaster_user;
+
+        $bookings = Bookings::with(['movie', 'show', 'bookedSeats.seat'])
+            ->where('master_user_idmaster_user', $userID)
+            ->whereHas('show', function($query) {
+                $query->whereRaw("STR_TO_DATE(CONCAT(date, ' ', time), '%Y-%m-%d %H:%i:%s') <= ?", [now()]);
+            })
+            ->get(); 
             
-            return view('customer.pastBookings', ['title' => 'Past Bookings','bookings' => $allBookingsData ]);      
-        }else{
-            return view('customer.pastBookings', ['title' => 'Past Bookings']);
-        }}
+        $allBookingsData = [];
+
+        if ($bookings->isNotEmpty()) {
+            foreach($bookings as $booking) {
+                $bookingData = $booking->toArray();
+                
+                $bookingData['movie_name'] = $booking->movie->name ?? null;
+                $bookingData['show_time']  = $booking->show->time ?? null;
+                $bookingData['show_date']  = $booking->show->date ?? null;
+                
+                $bookingData['seats'] = $booking->bookedSeats->pluck('seat');
+                
+                $allBookingsData[] = $bookingData;
+            }
+        }
+
+        return view('customer.pastBookings', [
+            'title' => 'Past Bookings',
+            'bookings' => $allBookingsData
+        ]);
+    }
 
     public function pendingPayments()
     {

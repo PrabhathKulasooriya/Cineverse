@@ -23,6 +23,12 @@ Route::post('/signin', 'SecurityController@login')->name('login');
 Route::get('/clientSignup', 'SecurityController@signup')->middleware('guest')->name('clientSignup');
 Route::post('/saveClient', 'ClientController@saveClient')->middleware('guest')->name('saveClient');
 
+//Password reset routes
+Route::get('/forgot-password', 'PasswordResetController@showForgotForm')->name('password.request');
+Route::post('/forgot-password', 'PasswordResetController@sendResetLink')->name('password.email');
+
+Route::get('/reset-password/{token}', 'PasswordResetController@showResetForm')->name('password.reset');
+Route::post('/reset-password', 'PasswordResetController@updatePassword')->name('password.update');
 
 
 //Booking Routes
@@ -134,6 +140,10 @@ Route::group(['middleware' => 'auth', 'prefix' => ''], function () {
             Route::get('/monthly-revenue/export', 'ReportController@monthlyRevenueReportPdf')->name('monthlyRevenueReport.pdf');
             Route::get('/movie-income', 'ReportController@movieIncomeReport')->name('movieIncomeReport');
             Route::get('/movie-income/export', 'ReportController@movieIncomeReportPdf')->name('movieIncomeReport.pdf');
+
+            //Rollback Entry and Snacks
+            Route::post('/rollbackEntry', 'TicketController@rollbackEntry')->name('rollbackEntry');
+            Route::post('/rollbackSnack', 'TicketController@rollbackSnack')->name('rollbackSnack');
             
 
         });

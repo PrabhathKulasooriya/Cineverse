@@ -334,6 +334,7 @@
 </div>
 <!-- Update Client Modal End-->
 
+
 @include('includes/footer_start')
 
 <!-- Plugins js -->
@@ -409,7 +410,7 @@
         $('#datatable').DataTable({
             "order": [], // Disable initial sorting
             "columnDefs": [
-                { "orderable": false, "targets": [2, 4, 5, 6] },
+                { "orderable": false, "targets": [0, 1, 2] },
                 {"type":"id-num","targets":0}
             ]
         });

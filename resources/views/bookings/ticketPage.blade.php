@@ -179,11 +179,13 @@
         @else
             <div class="ticket-container">
                 <div class="ticket-header">
-                    <h2><i class="fa fa-exclamation-triangle"></i> No Ticket Found</h2>
+                    <h2><i class="fa fa-exclamation-triangle"></i> No Booking Found</h2>
                 </div>
                 <div class="ticket-body text-center">
-                    <p class="text-white">No booking information available.</p>
-                    <a href="{{ url('/') }}" class="btn btn-primary">Book a Ticket</a>
+
+                    <p class="text-white">Payment cancelled.No booking information available.</p>
+                    <p class="text-white">Contact Cineverse Customer Support for more information</p>
+                    <a href="{{ url('/') }}" class="btn btn-primary">Back to Home</a>
                 </div>
             </div>
         @endif

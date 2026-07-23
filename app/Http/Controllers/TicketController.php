@@ -37,19 +37,10 @@ class TicketController extends Controller
 
     //Ticket Verification *****************************************************************************************************
     public function ticketVerification(){
+        if(session()->has('bookingData')){ session()->forget('bookingData'); }
+        if(session()->has('seats')){ session()->forget('seats'); }
 
-        if(session()->has('bookingData')){
-             session()->forget('bookingData');
-        }
-        if(session()->has('seats')){
-            session()->forget('seats');
-        }
-        
-        return view('management.ticketVerification', [
-            'title' => 'Ticket Verification',
-            'booking' => null,
-            'seats' => null,
-        ]);   
+        return view('management.ticketVerification', ['title' => 'Ticket Verification']);
     }
       
 
@@ -403,7 +394,7 @@ class TicketController extends Controller
 
                 return response()->json([
                         'message' => 'Entry confirmed successfully!',
-                        'entered_count' => $bookingData['entered_count'],
+                        'entered_count' => $booking->entered_count,
                         'available_seats' => $bookingData['available_seats'],
                     ]);
                
@@ -431,12 +422,17 @@ class TicketController extends Controller
 
         try {
             $items = $request->input('items');
+            $validQuantity = false;
 
             foreach ($items as $item) {
                 $bookingSnack = BookingSnack::find($item['booking_snack_id']);
 
                 if (!$bookingSnack) {
                     continue;
+                }
+
+                if($item['quantity']>0){
+                    $validQuantity = true;
                 }
 
                 $newReceivedQuantity = $bookingSnack->received_quantity + $item['quantity'];
@@ -468,8 +464,130 @@ class TicketController extends Controller
                 }
             }
 
-            return response()->json([
+            if($validQuantity == true){
+                return response()->json([
                 'message' => 'Snack collection updated successfully.',
+                'available_snacks' => $availableSnacks,
+                'items' => $snacks->map(function ($item) {
+                    return [
+                        'booking_snack_id' => $item->idbooking_snacks,
+                        'received_quantity' => $item->received_quantity,
+                        'remaining' => $item->quantity - $item->received_quantity,
+                    ];
+                }),
+            ]);
+            }else{
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Select at least one to Confirm',
+                    'available_snacks' => $availableSnacks,
+                    'items' => $snacks->map(function ($item) {
+                        return [
+                            'booking_snack_id' => $item->idbooking_snacks,
+                            'received_quantity' => $item->received_quantity,
+                            'remaining' => $item->quantity - $item->received_quantity,
+                        ];
+                    }),
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'An error occurred while confirming snack collection!'], 500);
+        }
+    }
+
+//Rollback Snacks or Entry*******************************************************************************************
+    public function rollbackEntry(Request $request){
+
+        if(auth()->user()->user_role_iduser_role != 1){
+            return response()->json(['message' => 'You are not authorized to perform this action.'], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'booking_id' => 'required|numeric',
+            'rollbackCount' => 'required|numeric|min:1',
+        ],[
+            'booking_id.required' => 'Booking ID is required',
+            'rollbackCount.required' => 'Rollback count is required',
+            'rollbackCount.min' => 'Rollback count must be at least 1',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => $validator->errors()->first()], 422);
+        }
+
+        try{
+            $booking = Bookings::where('booking_id', $request->booking_id)->first();
+
+            if(!$booking){
+                return response()->json(['message' => 'Booking not found!'], 404);
+            }
+
+            if($request->rollbackCount > $booking->entered_count){
+                return response()->json(['message' => 'Rollback count exceeds confirmed entries!'], 422);
+            }
+
+            $booking->entered_count -= $request->rollbackCount;
+            $booking->save();
+
+            return response()->json([
+                'message' => 'Entry rolled back successfully!',
+                'entered_count' => $booking->entered_count,
+                'available_seats' => $booking->total_seats - $booking->entered_count,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'An error occurred while rolling back entry!'], 500);
+        }
+    }
+
+    public function rollbackSnack(Request $request){
+        if(auth()->user()->user_role_iduser_role != 1){
+            return response()->json(['message' => 'You are not authorized to perform this action.'], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'items' => 'required|array|min:1',
+            'items.*.booking_snack_id' => 'required|numeric',
+            'items.*.quantity' => 'required|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => $validator->errors()->first()], 422);
+        }
+
+        try {
+            $items = $request->input('items');
+
+            foreach ($items as $item) {
+                $bookingSnack = BookingSnack::find($item['booking_snack_id']);
+
+                if (!$bookingSnack) {
+                    continue;
+                }
+
+                $newReceivedQuantity = $bookingSnack->received_quantity - $item['quantity'];
+
+                if ($newReceivedQuantity < 0) {
+                    $newReceivedQuantity = 0;
+                }
+
+                $bookingSnack->received_quantity = $newReceivedQuantity;
+                $bookingSnack->save();
+            }
+
+            $bookingId = $request->input('booking_id');
+
+            $snacks = BookingSnack::where('booking_id', $bookingId)
+                        ->with('snack')
+                        ->get();
+
+            $availableSnacks = $snacks->sum(function ($item) {
+                return $item->quantity - $item->received_quantity;
+            });
+
+            return response()->json([
+                'message' => 'Snack collection rolled back successfully.',
                 'available_snacks' => $availableSnacks,
                 'items' => $snacks->map(function ($item) {
                     return [
@@ -481,7 +599,7 @@ class TicketController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            return response()->json(['message' => 'An error occurred while confirming snack collection!'], 500);
+            return response()->json(['message' => 'An error occurred while rolling back snacks!'], 500);
         }
     }
     

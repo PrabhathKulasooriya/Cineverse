@@ -9,18 +9,16 @@ use Illuminate\Support\Facades\File;
 
 class SnacksController extends Controller
 {
-    // ==========================================
+
     // GET ALL SNACKS (Grouped for Display)
-    // ==========================================
     public function index()
     {
-        $snacks = Snack::orderBy('name')->get()->groupBy('name');   
+        $snacks = Snack::where('is_deleted', 0)->orderBy('name')->get()->groupBy('name');   
         return view('management.snacks', compact('snacks'), ['title' => 'Manage Snacks']);
     }
 
-    // ==========================================
+
     // SAVE SNACK
-    // ==========================================
     public function store(Request $request)
     {
         $request->validate([
@@ -54,9 +52,7 @@ class SnacksController extends Controller
         return redirect()->route('snacks')->with('success', 'Snack saved successfully!');
     }
 
-    // ==========================================
     // UPDATE SNACK
-    // ==========================================
     public function update(Request $request)
     {
         $request->validate([
@@ -122,10 +118,8 @@ class SnacksController extends Controller
         $snacks = Snack::where('name', $request->snack_name)->get();
         if ($snacks->isEmpty()) return redirect()->route('snacks')->with('error', 'Snack not found.');
 
-        $imagePath = public_path('snackImages/' . $snacks->first()->image);
-        if (File::exists($imagePath)) File::delete($imagePath);
+        Snack::where('name', $request->snack_name)->update(['is_deleted' => 1]);
 
-        Snack::where('name', $request->snack_name)->delete();
         return redirect()->route('snacks')->with('success', 'Snack deleted successfully!');
     }
 
