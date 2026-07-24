@@ -59,7 +59,10 @@
                             <h2><i class="fa fa-video-camera" aria-hidden="true"></i>  Now Showing</h2>
                         </div>
 
-                        <div class="services-section">
+                        <div class="services-section d-flex flex-row">
+                            <button type="button" class="movie-slider-btn movie-prev-btn" id="moviePrevBtn" aria-label="Previous Movies">
+                                <i class="fa fa-chevron-left"></i>
+                            </button>
                             <div class="services-list owl-carousel ">
                                 @foreach ($movies as $movie )
                     
@@ -77,6 +80,9 @@
 
                                 @endforeach
                             </div>
+                            <button type="button" class="movie-slider-btn movie-next-btn" id="movieNextBtn" aria-label="Next Movies">
+                                <i class="fa fa-chevron-right"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -296,11 +302,17 @@ window.addEventListener('load', function () {
         });
     }
 });
+
+$(document).ready(function() {
+    $(document).on('click', '#moviePrevBtn', function() {
+        $('.services-list').trigger('prev.owl.carousel');
+    });
+    $(document).on('click', '#movieNextBtn', function() {
+        $('.services-list').trigger('next.owl.carousel');
+    });
+});
 </script>
 {{-- Slider Scripts End --}}
 
-
-
-</script>
 @endsection
 
