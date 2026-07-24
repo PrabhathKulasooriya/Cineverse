@@ -10,6 +10,15 @@ class Shows extends Model
     protected $table = 'shows';
     protected $primaryKey = 'show_id';
 
+    protected $fillable = [
+        'show_id',
+        'movies_movie_id',
+        'date',
+        'time',
+        'created_at',
+        'updated_at'
+    ];
+
     public function movies()
      {
         return $this->belongsTo(Movies::class,'movies_movie_id', 'movie_id');

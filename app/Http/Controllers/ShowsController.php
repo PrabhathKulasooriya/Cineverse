@@ -197,24 +197,29 @@ class ShowsController extends Controller
     public function update(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'movie' => 'required', 'date' => 'required|date', 'time' => 'required',
+            'hiddenMovieID' => 'required',
+            'movie' => 'required|exists:movies,movie_id',
+            'date' => 'required|date',
+            'time' => 'required',
         ]);
         if ($validator->fails()) return response()->json(['errors' => $validator->errors()]);
 
         $show = Shows::find($request->hiddenMovieID);
-        if (!$show) return response()->json(['errors' => 'Show not found']);
-        if (Bookings::where('shows_show_id', $show->show_id)->count() > 0) return response()->json(['errors' => 'Has bookings.']);
+        if (!$show) return response()->json(['errors' => 'Show not found.']);
+        if (Bookings::where('shows_show_id', $show->show_id)->count() > 0) return response()->json(['errors' => 'This show has bookings and cannot be edited.']);
 
         $movie = Movies::find($request->movie);
+        if (!$movie) return response()->json(['errors' => 'Selected movie not found.']);
+
         $startMins = $this->convertTimeToMinutes($request->time);
         
         $bookedRanges = $this->loadBookedRanges($request->date, $show->show_id);
         if ($this->hasConflict($startMins, $startMins + $movie->duration, $bookedRanges, self::MINIMUM_GAP)) {
-            return response()->json(['errors' => 'Time conflict.']);
+            return response()->json(['errors' => 'Time conflict with another show.']);
         }
 
         $show->update(['movies_movie_id' => $request->movie, 'date' => $request->date, 'time' => $request->time]);
-        return response()->json(['success' => 'Updated Successfully.']);
+        return response()->json(['success' => 'Show updated successfully.']);
     }
 
     public function destroy(Request $request)

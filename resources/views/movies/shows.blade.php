@@ -142,7 +142,7 @@
                                                                 </button>
                                                             @else
                                                                 <button type="button"
-                                                                        class="btn btn-sm btn-warning  waves-effect waves-light mr-2"
+                                                                        class="btn btn-sm btn-warning waves-effect waves-light mr-2 editShowBtn"
                                                                         data-toggle="modal"
 
                                                                         data-id="{{$show->show_id}}"
@@ -150,7 +150,6 @@
                                                                         data-time="{{$show->time}}"
                                                                         data-movie="{{$show->movies_movie_id}}"
 
-                                                                        id="updateShowID"
                                                                         data-target="#updateShowModal">
                                                                         <i class="fa fa-edit"></i>
                                                                 </button>
@@ -561,98 +560,53 @@
 
 
         //Update Show Start
-        $(document).on('click', '#updateShowID', function () {
-
-            
+        $(document).on('click', '.editShowBtn', function () {
             var id = $(this).data("id");
             var date = $(this).data("date");
             var time = $(this).data("time");
             var movieId = $(this).data("movie");
 
-
             $("#hiddenMovieID").val(id);
             $("#updateDate").val(date);
-            
-            $("#updateMovie").val(movieId).change();
-            $("#updateTime").val(time).change();
-            
+            $("#updateMovie").val(movieId);
+            $("#updateTime").data('current-time', time);
 
+            loadAvailableShowtimes(date, 'updateTime', time, id, movieId);
         });
 
         function updateShow() {
-
-
             $('#updateMovieError').html('');
             $("#updateDateError").html('');
             $("#updateTimeError").html('');
 
+            var hiddenMovieID = $("#hiddenMovieID").val();
+            var movie = $("#updateMovie").val();
+            var date = $("#updateDate").val();
+            var time = $("#updateTime").val();
 
-            var hiddenMovieID=$("#hiddenMovieID").val();
-            var movie=$("#updateMovie").val();
-            var date=$("#updateDate").val();
-            var time=$("#updateTime").val();
-
-            $.post('{{ route('updateShow') }}',{
-
-                hiddenMovieID:hiddenMovieID,
-                movie:movie,
-                date:date,
-                time:time,
-
-            },function (data) {
-
+            $.post('{{ route('updateShow') }}', {
+                hiddenMovieID: hiddenMovieID,
+                movie: movie,
+                date: date,
+                time: time,
+                _token: $('meta[name="csrf-token"]').attr('content')
+            }, function (data) {
 
                 if (data.errors != null) {
-
-                    if(data.errors.movie){
-                        var p = document.getElementById('updateMovieError');
-                        p.innerHTML = data.errors.movie[0];
+                    if (typeof data.errors === 'object') {
+                        if (data.errors.movie) {
+                            $('#updateMovieError').html(data.errors.movie[0]);
+                        }
+                        if (data.errors.date) {
+                            $('#updateDateError').html(data.errors.date[0]);
+                        }
+                        if (data.errors.time) {
+                            $('#updateTimeError').html(data.errors.time[0]);
+                        }
                     }
 
-                    if(data.errors.date){
-                        var p = document.getElementById('updateDateError');
-                        p.innerHTML = data.errors.date[0];
-                    }
-
-
-                    if(data.errors.time){
-                        var p = document.getElementById('updateTimeError');
-                        p.innerHTML = data.errors.time[0];
-                    }
-
-
-                }
-
-                //On Success
-                if(data.success != null){
                     notify({
-                        type: "success", //alert | success | error | warning | info
-                        title: 'Show UPDATED',
-                        autoHide: true, //true | false
-                        delay: 2500, //number ms
-                        position: {
-                            x: "right",
-                            y: "top"
-                        },
-                        icon: '<img src="{{ URL::asset('assets/images/correct.png')}}" />',
-                        message: data.success,
-                    });
-                    $('input').val('');
-                    setTimeout(function () {
-                        $('#updateShowModal').modal('hide');
-                    }, 200);
-
-                    setTimeout(function () {
-                        location.reload();
-                    }, 1000);
-
-
-                }
-
-                //On errors
-                if(data.errors != null){
-                    notify({
-                        type: "error", //alert | success | error | warning | info
+                        type: "error",
                         title: 'Show NOT UPDATED',
                         autoHide: false,
                         position: {
@@ -660,10 +614,33 @@
                             y: "top"
                         },
                         icon: '<img src="{{ URL::asset('assets/images/wrong.png')}}" />',
-                        message: typeof data.errors === 'string' ? data.errors : JSON.stringify(data.errors),
+                        message: typeof data.errors === 'string' ? data.errors : 'Please check form errors.',
                     });
                 }
-            })
+
+                //On Success
+                if (data.success != null) {
+                    notify({
+                        type: "success",
+                        title: 'Show UPDATED',
+                        autoHide: true,
+                        delay: 2500,
+                        position: {
+                            x: "right",
+                            y: "top"
+                        },
+                        icon: '<img src="{{ URL::asset('assets/images/correct.png')}}" />',
+                        message: data.success,
+                    });
+                    setTimeout(function () {
+                        $('#updateShowModal').modal('hide');
+                    }, 200);
+
+                    setTimeout(function () {
+                        location.reload();
+                    }, 1000);
+                }
+            });
         }
         //Update Show End
 
@@ -855,6 +832,7 @@
             // Update the input with the selected date
             updateDateInput.value = e.format('yyyy-mm-dd');
             document.getElementById('updateDateError').innerText = "";
+            $(updateDateInput).trigger('change');
         });
     });
 
@@ -988,35 +966,6 @@
             var movieId = $(this).val();
             loadAvailableShowtimes(selectedDate, 'updateTime', currentTime, excludeShowId, movieId);
         });
-        
-        // For the update modal, we need to fetch available showtimes when it opens
-        $('#updateShowModal').on('show.bs.modal', function() {
-            var selectedDate = $('#updateDate').val();
-            var currentTime = $("#updateTime").data('current-time');
-            var excludeShowId = $('#hiddenMovieID').val();
-            var movieId = $('#updateMovie').val();
-            if (selectedDate) {
-                loadAvailableShowtimes(selectedDate, 'updateTime', currentTime, excludeShowId, movieId);
-            } else {
-                resetShowtimeSelect('updateTime');
-            }
-        });
-    });
-
-    $(document).on('click', '#updateShowID', function() {
-        var id = $(this).data("id");
-        var date = $(this).data("date");
-        var time = $(this).data("time");
-        var movieId = $(this).data("movie");
-
-        $("#hiddenMovieID").val(id);
-        $("#updateDate").val(date);
-        $("#updateMovie").val(movieId).change();
-        
-        
-        $("#updateTime").data('current-time', time);
-        
-        $("#updateDate").trigger('change');
     });
 
     </script>
