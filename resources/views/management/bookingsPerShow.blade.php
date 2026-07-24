@@ -87,7 +87,7 @@
                             <tr>
                                 <th>BOOKING ID</th>
                                 <th>CUSTOMER Name</th>
-                                <th>BOOKING</th>
+                                <th>BOOKING EMAIL</th>
                                 <th>CREATED AT</th>
                                 <th>OPTIONS</th>
                                 

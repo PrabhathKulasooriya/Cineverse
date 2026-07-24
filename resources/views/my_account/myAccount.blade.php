@@ -343,15 +343,10 @@
                         icon: '<img src="{{ URL::asset('assets/images/correct.png') }}" />',
                         message: data.success,
                     });
-                    if(data.isEmailChanged) {
-                        setTimeout(function () {
-                            window.location.href='{{ route('signin') }}';
-                        }, 2000)
-                    }else{
+
                        setTimeout(function () {
                         location.reload();
                     }, 1000); 
-                    }
                     
                 }
             }

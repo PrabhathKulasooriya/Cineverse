@@ -62,7 +62,7 @@
                         <div class="services-section">
                             <div class="services-list owl-carousel ">
                                 @foreach ($movies as $movie )
-                            
+                    
                                 <div class="animate movie-card-list" data-animate="fadeInUp">
                                     <div class="movie-card">
                                         <img src="{{URL::asset('movieImages/'.$movie->image) }}" alt="" style='width:250px' class="movie-card-image">

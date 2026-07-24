@@ -31,7 +31,7 @@ class TicketController extends Controller
         $seatType = SeatType::find($request->hiddenSeatTypeId);
         $seatType->price = $request->price;
         $seatType->save();
-        return redirect()->route('ticketPrices');
+        return redirect()->route('ticketSettings')->with('success', 'Ticket price updated successfully.');
     }
 
 
