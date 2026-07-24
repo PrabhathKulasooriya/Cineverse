@@ -28,14 +28,14 @@
 
             <div class="card m-b-20 today-card" style="border: 2px solid #B22222;">
                 <div class="card-body">
-                    <h5 class="section-heading text-danger">Today's Snack Need</h5>
+                    <h5 class="section-heading text-danger">Today's Snack Need (PreBookings)</h5>
                     @include('reports.partials.snackDemandTable', ['shows' => $todaySnackDemand, 'emptyText' => 'No snack pre-orders for today.'])
                 </div>
             </div>
 
             <div class="card m-b-20" style="border: none; box-shadow: none;">
                 <div class="card-body">
-                    <h5 class="section-heading">Snacks Needed for Upcoming Days (Daily Summary)</h5>
+                    <h5 class="section-heading">Snacks Needed for Upcoming Days (Daily Summary - PreBookings)</h5>
                     @include('reports.partials.dailySnackDemandTable', ['days' => $upcomingSnackDemand, 'emptyText' => 'No snack pre-orders for the coming week.'])
                 </div>
             </div>
