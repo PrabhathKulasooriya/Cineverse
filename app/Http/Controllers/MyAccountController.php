@@ -86,10 +86,6 @@ class MyAccountController extends Controller
         $updateUser->save();
 
         if($isEmailChanged){
-            Auth::logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-
             return response()->json(['success'=>'Account Details Updated Successfully! Please verify your email!','isEmailChanged'=>true]);
         }
         

@@ -199,7 +199,7 @@ window.addEventListener('load', function () {
     
     // Function to initialize a slider
     function initializeSlider(container) {
-        if (!container) return null; // Exit if container doesn't exist
+        if (!container) return null; 
         
         // Create a new slider container
         const slider = document.createElement('div');

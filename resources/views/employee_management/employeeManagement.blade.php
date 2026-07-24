@@ -57,7 +57,7 @@
                                     <th>USER ID</th>
                                     <th>USER ROLE</th>
                                     <th>NAME</th>
-                                    <th>CONTACT NUMBER</th>
+                                    <th>EMAIL</th>
                                     <th>STATUS</th>
                                     <th>OPTIONS</th>
                                 </tr>
@@ -70,33 +70,38 @@
                                                 <td>REG-{{$user->idmaster_user}}</td>
                                                 <td>{{$user->UserRole->role_name}}</td>
                                                 <td>{{$user->first_name}} {{$user->last_name}}</td>
-                                                <td>{{$user->contact_number}}</td>
+                                                <td>{{$user->email}}</td>
 
-                                                @if($user->status == 1)
-                                                    <td>
-                                                        <p>
-                                                            <input type="checkbox"
-                                                                   onchange="adMethod('{{ $user->idmaster_user}}','master_user')"
-                                                                   id="{{"c".$user->idmaster_user}}" checked
-                                                                   switch="none"/>
-                                                            <label for="{{"c".$user->idmaster_user}}"
-                                                                   data-on-label="On"
-                                                                   data-off-label="Off"></label>
-                                                        </p>
-                                                    </td>
+                                                @if($user->idmaster_user == "1")
+                                                <td>
+
+                                                </td>
+                                                @elseif($user->status == 1)
+                                                        <td class="text-center">
+                                                            <p>
+                                                                <input type="checkbox"
+                                                                    onchange="adMethod('{{ $user->idmaster_user}}','master_user')"
+                                                                    id="{{"c".$user->idmaster_user}}" checked
+                                                                    switch="none"/>
+                                                                <label for="{{"c".$user->idmaster_user}}"
+                                                                    data-on-label="On"
+                                                                    data-off-label="Off"></label>
+                                                            </p>
+                                                        </td>
                                                 @else
-                                                    <td>
-                                                        <p>
-                                                            <input type="checkbox"
-                                                                   onchange="adMethod('{{ $user->idmaster_user}}','master_user')"
-                                                                   id="{{"c".$user->idmaster_user}}"
-                                                                   switch="none"/>
-                                                            <label for="{{"c".$user->idmaster_user}}"
-                                                                   data-on-label="On"
-                                                                   data-off-label="Off"></label>
-                                                        </p>
-                                                    </td>
+                                                        <td>
+                                                            <p>
+                                                                <input type="checkbox"
+                                                                    onchange="adMethod('{{ $user->idmaster_user}}','master_user')"
+                                                                    id="{{"c".$user->idmaster_user}}"
+                                                                    switch="none"/>
+                                                                <label for="{{"c".$user->idmaster_user}}"
+                                                                    data-on-label="On"
+                                                                    data-off-label="Off"></label>
+                                                            </p>
+                                                        </td>
                                                 @endif
+                                                
 
                                                 <td>
                                                     <p>

@@ -528,16 +528,16 @@ code {
 }
 
 .alert-warning {
-  color: #FFC107;
-  background-color: #ffeaaa;
+  color: #7a4f00; 
+  background-color: #fff3e0; 
 }
 
 .alert-warning .alert-link {
-  color: #d39e00;
+  color: #4d3200; 
 }
 
 .alert-warning hr {
-  border-top-color: #d39e00;
+  border-top-color: #ffcc80; 
 }
 
 .alert-danger {
