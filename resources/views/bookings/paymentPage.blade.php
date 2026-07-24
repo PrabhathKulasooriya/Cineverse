@@ -187,7 +187,7 @@
                 
                 <div class="form-element">
                     <span class="child">
-                        <label>Email <span class="required">*</span></label>
+                        <label>Email @if(Auth::check() && in_array(Auth::user()->user_role_iduser_role, [1, 2, 3])) <small class="text-muted">(Optional)</small> @else <span class="required">*</span> @endif</label>
                         <input type="email" id="cashEmail" name="email" placeholder="your@email.com" oninput="this.value = this.value.toLowerCase();">
                     </span>
                     <small class="text-danger error-msg" id="cashEmailError"></small>
@@ -276,9 +276,9 @@
                 
                 <div class="form-element">
                     <span class="child">
-                        <label>Email Address <span class="required">*</span></label>
+                        <label>Email Address @if(Auth::check() && in_array(Auth::user()->user_role_iduser_role, [1, 2, 3])) <small class="text-muted">(Optional)</small> @else <span class="required">*</span> @endif</label>
                         <input type="email" id="email" name="email" placeholder="your@email.com"
-                            @if(Auth::check()) value="{{ Auth::user()->email }}" @endif
+                            @if(Auth::check() && Auth::user()->user_role_iduser_role == 4) value="{{ Auth::user()->email }}" @endif
                             oninput="this.value = this.value.toLowerCase();">
                     </span>
                     <small class="text-danger error-msg" id="emailError"></small>
@@ -626,7 +626,14 @@ if (payButton) {
             hasError = true;
         }
 
-        if (!email.includes('@') || email.split('@')[1].length < 3 || email.split('.').length < 2) {
+        var isStaffUser = {{ (Auth::check() && in_array(Auth::user()->user_role_iduser_role, [1, 2, 3])) ? 'true' : 'false' }};
+
+        if (email !== "") {
+            if (!email.includes('@') || email.split('@')[1].length < 3 || email.split('.').length < 2) {
+                document.getElementById('emailError').innerText = "Enter a valid email address.";
+                hasError = true;
+            }
+        } else if (!isStaffUser) {
             document.getElementById('emailError').innerText = "Enter a valid email address.";
             hasError = true;
         }
@@ -648,6 +655,7 @@ if (cashPayButton) {
         var cashName = document.getElementById('cashName').value.trim();
         var cashEmail = document.getElementById('cashEmail').value.trim();
         var hasCashError = false;
+        var isStaffUser = {{ (Auth::check() && in_array(Auth::user()->user_role_iduser_role, [1, 2, 3])) ? 'true' : 'false' }};
 
         document.getElementById('cashNameError').innerText = "";
         document.getElementById('cashEmailError').innerText = "";
@@ -657,7 +665,12 @@ if (cashPayButton) {
             hasCashError = true;
         }
 
-        if (!cashEmail.includes('@') || cashEmail.split('@')[1].length < 3 || cashEmail.split('.').length < 2) {
+        if (cashEmail !== "") {
+            if (!cashEmail.includes('@') || cashEmail.split('@')[1].length < 3 || cashEmail.split('.').length < 2) {
+                document.getElementById('cashEmailError').innerText = "Enter a valid email address.";
+                hasCashError = true;
+            }
+        } else if (!isStaffUser) {
             document.getElementById('cashEmailError').innerText = "Enter a valid email address.";
             hasCashError = true;
         }

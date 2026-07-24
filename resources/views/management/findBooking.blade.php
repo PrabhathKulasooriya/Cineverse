@@ -159,8 +159,8 @@
             <!--Data Table End-->
 
             @else
-                <div>
-                    <h3><i class="fa fa-exclamation-triangle"></i> No bookings found.</h3>                   
+                <div class="d-flex flex-column w-100 align-items-center"> 
+                    <h5><i class="fa fa-exclamation-triangle"></i> Enter an Email Address to Find Bookings</h5>                 
                 </div>
             @endif
     

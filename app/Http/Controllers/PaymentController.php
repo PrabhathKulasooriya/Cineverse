@@ -157,6 +157,8 @@ class PaymentController extends Controller
     {
         $paymentMethod = $request->input('paymentMethod');
         $validator = null; 
+        $isStaffUser = auth()->check() && in_array(auth()->user()->user_role_iduser_role, [1, 2, 3]);
+        $emailRule = $isStaffUser ? ['nullable', 'email', 'max:255'] : ['required', 'email', 'max:255'];
     
         if ($paymentMethod == 'CARD') {
             $validator = Validator::make($request->all(), [
@@ -175,11 +177,7 @@ class PaymentController extends Controller
                     'string',
                     'digits_between:3,4',
                 ],
-                'email' => [
-                    'required',
-                    'email',
-                    'max:255',
-                ],
+                'email' => $emailRule,
                 'name' => [
                     'required',
                     'string',
@@ -212,11 +210,7 @@ class PaymentController extends Controller
     
         } elseif ($paymentMethod == 'CASH') {
             $validator = Validator::make($request->all(), [
-                'email' => [
-                    'required',
-                    'email',
-                    'max:255',
-                ],
+                'email' => $emailRule,
                 'name' => [
                     'required',
                     'string',
@@ -264,10 +258,16 @@ class PaymentController extends Controller
                 }
             }
             
+            $rawEmail = $request->input('email');
+            $customerEmail = !empty($rawEmail) ? trim($rawEmail) : null;
+            if ($isStaffUser && auth()->check() && auth()->user()->email && strtolower($customerEmail) === strtolower(auth()->user()->email)) {
+                $customerEmail = null;
+            }
+
             $bookingData['grandTotal'] = $grandTotal;
             $bookingData['snack_amount'] = ($grandTotal-$bookingData['amount']);
             $bookingData['payment_status'] = 'PAID';
-            $bookingData['customer_email'] = $request->email;
+            $bookingData['customer_email'] = $customerEmail;
             $bookingData['customer_name'] = strtoupper($request->name);
             $bookingData['payment_method'] = strtoupper($paymentMethod);
 
@@ -285,13 +285,13 @@ class PaymentController extends Controller
 
             $booking->payment_status = 'PAID';
             $booking->customer_name = strtoupper($request->name);
-            $booking->email = $request->email;
+            $booking->email = $customerEmail;
             $booking->master_user_idmaster_user = $user_id;
             $booking->save();
 
             $payment = new Payments();
             $payment->bookings_booking_id = $bookingData['booking_id'];
-            $payment->email = $request->email;
+            $payment->email = $customerEmail;
             $payment->amount = $grandTotal;
             $payment->method = strtoupper($paymentMethod);
             $payment->save();

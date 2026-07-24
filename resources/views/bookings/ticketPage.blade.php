@@ -124,44 +124,50 @@
 
                 <div class="text-center">
 
-                    @if(Auth::check() &&( Auth::user()->user_role_iduser_role == 1 || Auth::user()->user_role_iduser_role == 3))
+                    @if(Auth::check() && (Auth::user()->user_role_iduser_role == 1 || Auth::user()->user_role_iduser_role == 3))
                     
-                        <div class="d-flex flex-row justify-content-between">
+                        <div class="d-flex flex-row justify-content-center flex-wrap">
                         <form action="{{ route('verifyTicket') }}" method="post" >
                             @csrf
-                            <input type="hidden" name="bookingId" value="{{$booking['booking_id']}}">
-                            <button class="btn btn-ticket-page mx-2" type="submit">
-                                <i class="fa fa-download" aria-hidden="true"></i> Confirm entry
+                            <input type="hidden" name="bookingId" value="{{ $booking['booking_id'] }}">
+                            <button class="btn btn-ticket-page mx-1 my-1" type="submit">
+                                <i class="fa fa-check-square-o" aria-hidden="true"></i> Confirm entry
                             </button>
                         </form>
 
-                        <a href="{{route('printTicket', ['booking_id' => $booking['booking_id']])}}" target="_blank">
-                            <button class="btn btn-ticket-page mx-2">
-                                <i class="fa fa-download" aria-hidden="true"></i> Print Ticket
+                        <a href="{{ route('printTicket', ['booking_id' => $booking['booking_id']]) }}" target="_blank">
+                            <button class="btn btn-ticket-page mx-1 my-1" type="button">
+                                <i class="fa fa-print" aria-hidden="true"></i> Print Ticket
                             </button>
                         </a>
                         </div> 
                         
-                        <div class="">
-                        <a href="{{route('shows')}}" >
-                            <button class="btn btn-ticket-page mx-2">
-                                <i class="fa fa-download" aria-hidden="true"></i> Back to all shows
+                        <div class="d-flex flex-row justify-content-center flex-wrap mt-1">
+                        <a href="{{ route('shows') }}" >
+                            <button class="btn btn-ticket-page mx-1 my-1" type="button">
+                                <i class="fa fa-arrow-left" aria-hidden="true"></i> Back to all shows
                             </button>
                         </a>
 
                         <a href="{{ route('seatSelection', ['show_id' => $booking['showId']]) }}"> 
-                            <button class="btn btn-ticket-page mx-2">
-                                <i class="fa fa-download" aria-hidden="true"></i> Book Again
+                            <button class="btn btn-ticket-page mx-1 my-1" type="button">
+                                <i class="fa fa-ticket" aria-hidden="true"></i> Book Again
                             </button>
                         </a>
                         </div>
                     @else
-                        
-                        <a href="{{route('downloadTicket', ['booking_id' => $booking['booking_id']])}}" target="_blank">
-                            <button class="btn btn-ticket-page ">
-                                <i class="fa fa-download" aria-hidden="true"></i> Get Ticket
-                            </button>
-                        </a>
+                        <div class="d-flex flex-row justify-content-center flex-wrap">
+                            <a href="{{ route('printTicket', ['booking_id' => $booking['booking_id']]) }}" target="_blank">
+                                <button class="btn btn-ticket-page mx-1 my-1" type="button">
+                                    <i class="fa fa-print" aria-hidden="true"></i> Print Ticket
+                                </button>
+                            </a>
+                            <a href="{{ route('downloadTicket', ['booking_id' => $booking['booking_id']]) }}" target="_blank">
+                                <button class="btn btn-ticket-page mx-1 my-1" type="button">
+                                    <i class="fa fa-download" aria-hidden="true"></i> Download PDF
+                                </button>
+                            </a>
+                        </div>
                     @endif
                 </div>
 
@@ -191,6 +197,10 @@
         @endif
 
     </div>
+
+    @if(isset($autoPrint) && $autoPrint && isset($booking) && isset($booking['booking_id']))
+        <iframe id="printTicketIframe" src="{{ route('printTicket', ['booking_id' => $booking['booking_id']]) }}" style="display:none; visibility:hidden; width:0; height:0; border:0;"></iframe>
+    @endif
 @endsection
 
 @section('pageSpecificScript')
@@ -201,6 +211,25 @@
                     $(this).remove();
                 });
             }, 3000); 
+
+            @if(isset($autoPrint) && $autoPrint && isset($booking['booking_id']))
+                var printFrame = document.getElementById('printTicketIframe');
+                if (printFrame) {
+                    var triggerPrint = function() {
+                        try {
+                            printFrame.contentWindow.focus();
+                            printFrame.contentWindow.print();
+                        } catch (e) {
+                            window.open("{{ route('printTicket', ['booking_id' => $booking['booking_id']]) }}", '_blank');
+                        }
+                    };
+                    if (printFrame.contentDocument && printFrame.contentDocument.readyState === 'complete') {
+                        triggerPrint();
+                    } else {
+                        printFrame.onload = triggerPrint;
+                    }
+                }
+            @endif
         });
     </script>
 @endsection

@@ -223,17 +223,24 @@ class BookingController extends Controller
         $result = $writer->write($qr);
         $qrCodePngBase64 = base64_encode($result->getString());
         
-        try {
-            Mail::to($booking['customer_email'])->send(new TicketMail($booking, $seats, $qrCodePngBase64, 'PNG'));
-        } catch (\Exception $e) {
-            Log::error('Mail sending failed: ' . $e->getMessage());
-            session()->flash('error', 'Booking successful, but we couldn’t send the email.');
-            return view('bookings.ticketPage', compact('booking'));
+        $customerEmail = !empty($booking['customer_email']) ? trim($booking['customer_email']) : null;
+        $autoPrint = false;
+
+        if ($customerEmail) {
+            try {
+                Mail::to($customerEmail)->send(new TicketMail($booking, $seats, $qrCodePngBase64, 'PNG'));
+                session()->flash('success', 'Payment successful! Ticket sent to your email.');
+            } catch (\Exception $e) {
+                Log::error('Mail sending failed: ' . $e->getMessage());
+                session()->flash('error', 'Booking successful, but we couldn’t send the email.');
+                return view('bookings.ticketPage', compact('booking', 'autoPrint'));
+            }
+        } else {
+            $autoPrint = true;
+            session()->flash('success', 'Payment successful!');
         }
 
-
-        session()->flash('success', 'Payment successful! Ticket sent to your email.');
-        return view('bookings.ticketPage', compact('booking'));
+        return view('bookings.ticketPage', compact('booking', 'autoPrint'));
     }
     
     // If no booking found, show empty ticket page

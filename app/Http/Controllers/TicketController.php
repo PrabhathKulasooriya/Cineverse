@@ -339,13 +339,14 @@ class TicketController extends Controller
             $bookingArray['booking_snacks'] = $bookingSnacks;
             $bookingArray['grandTotal'] = $booking->amount + $snackTotal;
 
-            $ticketMail = new TicketMail($bookingArray, $seats, $qrCodePngBase64, 'PNG');
-            $mailContent = $ticketMail->render();
-            $pdf = PDF::loadHTML($mailContent);
-            $pdf->setPaper('A4', 'portrait');
-            return $pdf->stream('ticket.pdf');
+            return view('emails.ticket', [
+                'booking' => $bookingArray,
+                'seats' => $seats,
+                'qrCode' => $qrCodePngBase64,
+                'autoPrint' => true
+            ]);
             } catch (\Exception $e) {
-                session()->flash('error', 'An error occurred while downloading the ticket!');
+                session()->flash('error', 'An error occurred while printing the ticket!');
                 return back();
             }
     }

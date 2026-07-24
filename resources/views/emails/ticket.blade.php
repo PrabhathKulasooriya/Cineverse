@@ -63,13 +63,15 @@
         }
         .seat-badge {
             display: inline-block;
-            background: #B22222;
-            color: #fff;
+            background: #B22222 !important;
+            color: #ffffff !important;
             padding: 5px 10px;
             margin: 3px 3px 3px 0;
             border-radius: 10px;
             font-size: 12px;
             font-weight: bold;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
 
         /* Snack styles */
@@ -164,6 +166,34 @@
         .ticket-amount {
             font-size: 20px;
             font-weight: bold;
+        }
+        @page {
+            size: auto;
+            margin: 5mm;
+        }
+        @media print {
+            html, body {
+                background: #fff !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                display: flex !important;
+                justify-content: center !important;
+            }
+            .ticket-container {
+                border: 2px dashed #333 !important;
+                box-shadow: none !important;
+                max-width: 400px !important;
+                width: 400px !important;
+                margin: 0 auto !important;
+                padding: 15px !important;
+                box-sizing: border-box !important;
+            }
+            .seat-badge {
+                background: #B22222 !important;
+                color: #ffffff !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
         }
     </style>
 </head>
@@ -275,5 +305,12 @@
             <p>Contact: info@cineverse.com | Call: 0115123456</p>
         </div>
     </div>
+    @if(isset($autoPrint) && $autoPrint)
+    <script>
+        window.onload = function() {
+            window.print();
+        };
+    </script>
+    @endif
 </body>
 </html>
