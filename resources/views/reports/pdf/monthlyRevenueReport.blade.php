@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Monthly Revenue Report</title>
+    <title>Revenue Report</title>
     <style>
         body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #222; }
         h1, h2, h3 { margin: 0; padding: 0; }
@@ -20,7 +20,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>Monthly Revenue Report</h1>
+        <h1>Revenue Report</h1>
         <p>Reporting Period: {{ $startDate }} to {{ $endDate }}</p>
     </div>
 
@@ -42,7 +42,7 @@
     <table>
         <thead>
             <tr>
-                <th>Month</th>
+                <th>{{ !empty($isDaily) ? 'Date' : 'Month' }}</th>
                 <th class="text-right">Seat Revenue (LKR)</th>
                 <th class="text-right">Snack Revenue (LKR)</th>
                 <th class="text-right">Total Revenue (LKR)</th>

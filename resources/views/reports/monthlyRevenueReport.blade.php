@@ -11,7 +11,7 @@
         </button>
     </li>
     <li class="hide-phone list-inline-item app-search">
-        <h3 class="page-title">Monthly Revenue Report</h3>
+        <h3 class="page-title">Revenue Report</h3>
     </li>
 </ul>
 <div class="clearfix"></div>
@@ -79,7 +79,7 @@
                         <table class="table table-striped table-bordered mt-4">
                             <thead>
                                 <tr>
-                                    <th>MONTH</th>
+                                    <th>{{ !empty($isDaily) ? 'DATE' : 'MONTH' }}</th>
                                     <th>SEAT REVENUE (LKR)</th>
                                     <th>SNACK REVENUE (LKR)</th>
                                     <th>TOTAL REVENUE (LKR)</th>
@@ -127,21 +127,27 @@
                     data: chartSeatData,
                     borderColor: '#B22222',
                     backgroundColor: 'rgba(178, 34, 34, 0.1)',
-                    fill: true
+                    fill: true,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
                 },
                 {
                     label: 'Snack Revenue',
                     data: chartSnackData,
                     borderColor: '#FFD700',
                     backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                    fill: true
+                    fill: true,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
                 },
                 {
                     label: 'Total Revenue',
                     data: chartTotalData,
                     borderColor: '#2C2C2C',
                     backgroundColor: 'rgba(44, 44, 44, 0.05)',
-                    fill: true
+                    fill: true,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
                 }
             ]
         },

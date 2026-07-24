@@ -40,18 +40,18 @@ class ReportController extends Controller
             $startDate = Carbon::now()->subMonths(11)->startOfMonth()->format('Y-m-d');
         }
 
-        $monthlyTotals = DB::table('payments')
-            ->join('bookings', 'payments.bookings_booking_id', '=', 'bookings.booking_id')
-            ->select(
-                DB::raw("DATE_FORMAT(payments.created_at, '%Y-%m') as month"),
-                DB::raw('SUM(bookings.amount) as seat_revenue'),
-                DB::raw('SUM(payments.amount) as total_revenue')
-            )
-            ->where('bookings.payment_status', 'PAID')
-            ->whereBetween('payments.created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->groupBy('month')
-            ->orderBy('month', 'asc')
-            ->get();
+        $start = Carbon::parse($startDate)->startOfDay();
+        $end = Carbon::parse($endDate)->endOfDay();
+
+        if ($start->gt($end)) {
+            $temp = $startDate;
+            $startDate = $endDate;
+            $endDate = $temp;
+            $start = Carbon::parse($startDate)->startOfDay();
+            $end = Carbon::parse($endDate)->endOfDay();
+        }
+
+        $isDaily = ($start->format('Y-m') === $end->format('Y-m')) || ($start->diffInDays($end) <= 31);
 
         $chartLabels = [];
         $chartSeatData = [];
@@ -61,29 +61,96 @@ class ReportController extends Controller
         $grandSeatTotal = 0;
         $grandSnackTotal = 0;
 
-        foreach ($monthlyTotals as $row) {
-            $seatRevenue = $row->seat_revenue ? $row->seat_revenue : 0;
-            $totalRevenue = $row->total_revenue ? $row->total_revenue : 0;
-            $snackRevenue = $totalRevenue - $seatRevenue;
+        if ($isDaily) {
+            $rawTotals = DB::table('payments')
+                ->join('bookings', 'payments.bookings_booking_id', '=', 'bookings.booking_id')
+                ->select(
+                    DB::raw("DATE_FORMAT(payments.created_at, '%Y-%m-%d') as period_key"),
+                    DB::raw('SUM(bookings.amount) as seat_revenue'),
+                    DB::raw('SUM(payments.amount) as total_revenue')
+                )
+                ->where('bookings.payment_status', 'PAID')
+                ->whereBetween('payments.created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+                ->groupBy('period_key')
+                ->get()
+                ->keyBy('period_key');
 
-            $chartLabels[] = Carbon::createFromFormat('Y-m', $row->month)->format('M Y');
-            $chartSeatData[] = round($seatRevenue, 2);
-            $chartSnackData[] = round($snackRevenue, 2);
-            $chartTotalData[] = round($totalRevenue, 2);
+            $current = $start->copy();
+            while ($current->lte($end)) {
+                $key = $current->format('Y-m-d');
+                $label = $current->format('d M Y');
 
-            $tableRows[] = [
-                'month' => Carbon::createFromFormat('Y-m', $row->month)->format('M Y'),
-                'seat_revenue' => $seatRevenue,
-                'snack_revenue' => $snackRevenue,
-                'total_revenue' => $totalRevenue
-            ];
+                $row = $rawTotals->get($key);
+                $seatRevenue = ($row && $row->seat_revenue) ? (float)$row->seat_revenue : 0;
+                $totalRevenue = ($row && $row->total_revenue) ? (float)$row->total_revenue : 0;
+                $snackRevenue = max(0, $totalRevenue - $seatRevenue);
 
-            $grandSeatTotal += $seatRevenue;
-            $grandSnackTotal += $snackRevenue;
+                $chartLabels[] = $label;
+                $chartSeatData[] = round($seatRevenue, 2);
+                $chartSnackData[] = round($snackRevenue, 2);
+                $chartTotalData[] = round($totalRevenue, 2);
+
+                $tableRows[] = [
+                    'month' => $label,
+                    'period' => $label,
+                    'seat_revenue' => $seatRevenue,
+                    'snack_revenue' => $snackRevenue,
+                    'total_revenue' => $totalRevenue
+                ];
+
+                $grandSeatTotal += $seatRevenue;
+                $grandSnackTotal += $snackRevenue;
+
+                $current->addDay();
+            }
+        } else {
+            $rawTotals = DB::table('payments')
+                ->join('bookings', 'payments.bookings_booking_id', '=', 'bookings.booking_id')
+                ->select(
+                    DB::raw("DATE_FORMAT(payments.created_at, '%Y-%m') as period_key"),
+                    DB::raw('SUM(bookings.amount) as seat_revenue'),
+                    DB::raw('SUM(payments.amount) as total_revenue')
+                )
+                ->where('bookings.payment_status', 'PAID')
+                ->whereBetween('payments.created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+                ->groupBy('period_key')
+                ->get()
+                ->keyBy('period_key');
+
+            $current = $start->copy()->startOfMonth();
+            $endMonth = $end->copy()->startOfMonth();
+
+            while ($current->lte($endMonth)) {
+                $key = $current->format('Y-m');
+                $label = $current->format('M Y');
+
+                $row = $rawTotals->get($key);
+                $seatRevenue = ($row && $row->seat_revenue) ? (float)$row->seat_revenue : 0;
+                $totalRevenue = ($row && $row->total_revenue) ? (float)$row->total_revenue : 0;
+                $snackRevenue = max(0, $totalRevenue - $seatRevenue);
+
+                $chartLabels[] = $label;
+                $chartSeatData[] = round($seatRevenue, 2);
+                $chartSnackData[] = round($snackRevenue, 2);
+                $chartTotalData[] = round($totalRevenue, 2);
+
+                $tableRows[] = [
+                    'month' => $label,
+                    'period' => $label,
+                    'seat_revenue' => $seatRevenue,
+                    'snack_revenue' => $snackRevenue,
+                    'total_revenue' => $totalRevenue
+                ];
+
+                $grandSeatTotal += $seatRevenue;
+                $grandSnackTotal += $snackRevenue;
+
+                $current->addMonth();
+            }
         }
 
         return [
-            'title' => 'Monthly Revenue Report',
+            'title' => 'Revenue Report',
             'tableRows' => $tableRows,
             'chartLabels' => $chartLabels,
             'chartSeatData' => $chartSeatData,
@@ -94,7 +161,8 @@ class ReportController extends Controller
             'grandTotal' => $grandSeatTotal + $grandSnackTotal,
             'startDate' => $startDate,
             'endDate' => $endDate,
-            'isCustomRange' => $isCustomRange
+            'isCustomRange' => $isCustomRange,
+            'isDaily' => $isDaily
         ];
     }
 
