@@ -157,14 +157,14 @@
                         </div>
                     @else
                         <div class="d-flex flex-row justify-content-center flex-wrap">
-                            <a href="{{ route('printTicket', ['booking_id' => $booking['booking_id']]) }}" target="_blank">
+                            {{-- <a href="{{ route('printTicket', ['booking_id' => $booking['booking_id']]) }}" target="_blank">
                                 <button class="btn btn-ticket-page mx-1 my-1" type="button">
                                     <i class="fa fa-print" aria-hidden="true"></i> Print Ticket
                                 </button>
-                            </a>
+                            </a> --}}
                             <a href="{{ route('downloadTicket', ['booking_id' => $booking['booking_id']]) }}" target="_blank">
                                 <button class="btn btn-ticket-page mx-1 my-1" type="button">
-                                    <i class="fa fa-download" aria-hidden="true"></i> Download PDF
+                                    <i class="fa fa-download" aria-hidden="true"></i> Download Ticket
                                 </button>
                             </a>
                         </div>
