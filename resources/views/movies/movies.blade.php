@@ -101,9 +101,9 @@
                                         <th>CATEGORY</th>
                                         <th>DURATION</th>
                                         <th>LANGUAGE</th>
-                                        <th>POSTER</th>
                                         <th>RATING</th>
                                         <th>REL_DATE</th>
+                                        <th>OTHER</th>
                                         @if(Auth::user()->user_role_iduser_role == 1 || Auth::user()->user_role_iduser_role == 2)
                                         <th>STATUS</th>
                                         <th>OPTIONS</th>
@@ -131,22 +131,20 @@
                                                 </td>
                                                 <td>{{$movie->formatted_duration}}</td>
                                                 <td>{{$movie->language}}</td>
-
+                                                <td>{{$movie->rating}}</td>
+                                                <td>{{\Carbon\Carbon::parse($movie->release_date)->format('d-m-Y')}}</td>
                                                 <td>
-                                                    <button type="button" class="btn btn-secondary  float-right"
+                                                    <button type="button" class="btn btn-secondary float-right"
                                                         id="viewPosterBtn"
                                                         data-toggle="modal"
                                                         data-name = "{{$movie->name}}"
                                                         data-trailer="{{$movie->trailer}}"
                                                         data-poster="{{$movie->image}}"
+                                                        data-description="{{$movie->description}}"
                                                         data-target="#viewPosterModal" >
-                                                        View Poster
+                                                        View Details
                                                     </button>
-                                                </td>
-
-                                                <td>{{$movie->rating}}</td>
-                                                <td>{{\Carbon\Carbon::parse($movie->release_date)->format('d-m-Y')}}</td>
-
+                                                 </td>
 
                                                 @if(Auth::user()->user_role_iduser_role == 1 || Auth::user()->user_role_iduser_role == 2)
                                                  <!--Status Start-->
@@ -194,6 +192,7 @@
                                                             data-rating="{{$movie->rating}}"
                                                             data-date="{{$movie->release_date}}"
                                                             data-trailer="{{$movie->trailer}}"
+                                                            data-description="{{$movie->description}}"
 
                                                             id="edit-movie-btn"     
                                                             data-target="#editMovieModal">
@@ -312,6 +311,12 @@
                         </div>
  
                         <div class="form-group">
+                            <label>Description</label>
+                            <textarea class="form-control" name="description" id="description" rows="3" placeholder="Movie Description"></textarea>
+                            <span class="text-danger" id="descriptionError"></span>
+                        </div>
+
+                        <div class="form-group">
                             <label>Trailer <span style="color:red">*</span></label>
                             <input type="text" class="form-control" name="trailer"
                                    id="trailer" placeholder="Movie Trailer"/>
@@ -409,6 +414,12 @@
                     </div>
  
                     <div class="form-group">
+                        <label>Description</label>
+                        <textarea class="form-control" name="description" id="description" rows="3" placeholder="Movie Description"></textarea>
+                        <span class="text-danger" id="descriptionError"></span>
+                    </div>
+
+                    <div class="form-group">
                         <label>Trailer <span style="color:red">*</span></label>
                         <input type="text" class="form-control" name="trailer" id="trailer" placeholder="Movie Trailer"/>
                         <span class="text-danger" id="trailerError"></span>
@@ -452,6 +463,11 @@
                     <img class="img-fluid" id="poster" src="" alt="Poster" style="max-width: 65%; height: auto; " />
                 </div>
                 
+                <div class="form-group text-left" id="movieDescriptionGroup" style="width: 85%; margin: 15px auto;">
+                    <label class="font-weight-bold" style="color: #333;">Description:</label>
+                    <p id="movieDescription" style="white-space: pre-line; color: #555; font-size: 14px; background: #f8f9fa; padding: 10px; border-radius: 5px; border: 1px solid #e9ecef; margin-bottom: 0;"></p>
+                </div>
+
                 <div class="form-group">
                     <a href="" id="trailer" target="_blank" class="btn btn-secondary">Watch Trailer</a>
                 </div>
@@ -739,11 +755,13 @@
         var name = $(this).data('name');
         var poster = $(this).data('poster');
         var trailer = $(this).data('trailer');
+        var description = $(this).data('description');
         var fullpath = imageBaseUrl + '/' + poster;
 
         $("#viewPosterModal #viewPosterHeader").text(name);
         $("#viewPosterModal #trailer").attr('href',trailer);
         $("#viewPosterModal #poster").attr('src',fullpath);
+        $("#viewPosterModal #movieDescription").text(description && description.trim() !== '' ? description : 'No description available.');
     });
 
     
@@ -754,7 +772,7 @@
     });
 
     $('#addMovieModal').on('hidden.bs.modal', function () {
-        $(this).find('input[type=text], input[type=number], input[type=date]').val('');
+        $(this).find('input[type=text], input[type=number], input[type=date], textarea').val('');
         $(this).find('input[type=file]').val('');
         $(this).find('.text-danger').html('');
         $('#movieError').html(''); 
@@ -778,6 +796,7 @@
         var rating = $(this).data('rating');
         var date = $(this).data('date');
         var trailer = $(this).data('trailer');
+        var description = $(this).data('description');
 
         $("#editMovieModal #hiddenMovieId").val(movieId);
         $("#editMovieModal #name").val(name);
@@ -785,6 +804,7 @@
         $("#editMovieModal #rating").val(rating);
         $("#editMovieModal #date").val(date);
         $("#editMovieModal #trailer").val(trailer);
+        $("#editMovieModal #description").val(description);
 
         loadCategoryCards('#editMovieModal', category);
         loadDurationValue($('#editMovieModal #duration'), duration);

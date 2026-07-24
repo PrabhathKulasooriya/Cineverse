@@ -78,6 +78,7 @@ class MoviesController extends Controller
         $saveMovie->trailer = $request->trailer;
         $saveMovie->rating = $request->rating;
         $saveMovie->release_date = $request->date;
+        $saveMovie->description = $request->description;
         $saveMovie->image = $filename;
         $saveMovie->status = 1;
         $saveMovie->screening_status = 1;
@@ -101,6 +102,7 @@ class MoviesController extends Controller
             'rating' => 'required|numeric|min:0|max:10',
             'trailer' => 'required',
             'date' => 'required|date',
+            'description' => 'nullable|string',
             'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:4096',
         ], [
             'name.required' => 'Name should be provided!',
@@ -150,6 +152,7 @@ class MoviesController extends Controller
         $movie->rating = $request->rating;
         $movie->release_date = $request->date;
         $movie->trailer = $request->trailer;
+        $movie->description = $request->description;
         $movie->image = $filename;
 
         $movie->save();

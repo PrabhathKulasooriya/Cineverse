@@ -50,7 +50,11 @@
                         <span class="dot">&bull;</span>
                         <span class="movie-language">{{$movie->language}}</span>
                         <span class="dot">&bull;</span>
-                        <span class="movie-category">{{$movie->category}}</span>
+                        <span class="movie-categories">
+                            @foreach(array_map('trim', explode(',', $movie->category)) as $cat)
+                                <span class="category-tag">{{ $cat }}</span>
+                            @endforeach
+                        </span>
                     </div>
                     <div>
                         <span>{{ \Carbon\Carbon::parse($movie->release_date)->format('l, d  F  Y') }}</span>
@@ -62,16 +66,24 @@
                     <img src="{{ URL::asset('movieImages/'.$movie->image) }}" alt="{{$movie->name}}">
                 </div>
 
-                <!-- Section 3: Movie Trailer Button -->
-                <div class="movie-trailer">
-                    <div class="movie-ratings">
-                        <i class="fa fa-imdb fa-3x" aria-hidden="true"></i>
-                        <span> <i class='fa fa-star' aria-hidden='true'></i> {{$movie->rating}} / 10</span>
+                <!-- Section 3: Movie Rating, Trailer & Description Container -->
+                <div class="movie-trailer-container">
+                    <div class="movie-trailer-top-row">
+                        <div class="movie-ratings">
+                            <i class="fa fa-imdb fa-3x" aria-hidden="true"></i>
+                            <span> <i class='fa fa-star' aria-hidden='true'></i> {{$movie->rating}} / 10</span>
+                        </div>
+                        <a href="{{ $movie->trailer }}" class="movie-trailer-link" id="movie-trailer-link" target="_blank" rel="noopener noreferrer">
+                            <i class="fa fa-play fa-3x" aria-hidden="true"></i>
+                            <span>Watch Trailer</span>
+                        </a>
                     </div>
-                    <a href="{{ $movie->trailer }}" class="movie-trailer-link" id="movie-trailer-link" target="_blank" rel="noopener noreferrer">
-                        <i class="fa fa-play fa-3x" aria-hidden="true"></i>
-                        <span>Watch Trailer</span>
-                    </a>
+
+                    @if(!empty($movie->description))
+                    <div class="movie-description-box">
+                        <p>{{ $movie->description }}</p>
+                    </div>
+                    @endif
                 </div>
             </div>
               
