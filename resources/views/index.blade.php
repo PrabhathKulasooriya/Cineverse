@@ -22,17 +22,25 @@
 
                     <div class="slider-container2">
                     @foreach($imageSlider as $image)
-                        <a href="{{ route('bookmovie', ['movie_id' => $image->movies_movie_id]) }}">
-                        <img src="{{ URL::asset('sliderImages/' . $image['image']) }}" alt="Slider Image" class="slider-image-background">                 
-                        </a>
+                        @if(!empty($image->movies_movie_id))
+                            <a href="{{ route('bookmovie', ['movie_id' => $image->movies_movie_id]) }}">
+                                <img src="{{ URL::asset('sliderImages/' . $image->image) }}" alt="Slider Image" class="slider-image-background">                 
+                            </a>
+                        @else
+                            <img src="{{ URL::asset('sliderImages/' . $image->image) }}" alt="Slider Image" class="slider-image-background">
+                        @endif
                     @endforeach
                      </div>
 
                     <div class="slider-container">
                         @foreach($imageSlider as $image)
-                            <a href="{{ route('bookmovie', ['movie_id' => $image->movies_movie_id]) }}">
-                                <img src="{{ URL::asset('sliderImages/' . $image['image']) }}" alt="Slider Image" class="slider-image">                 
-                            </a>
+                            @if(!empty($image->movies_movie_id))
+                                <a href="{{ route('bookmovie', ['movie_id' => $image->movies_movie_id]) }}">
+                                    <img src="{{ URL::asset('sliderImages/' . $image->image) }}" alt="Slider Image" class="slider-image">                 
+                                </a>
+                            @else
+                                <img src="{{ URL::asset('sliderImages/' . $image->image) }}" alt="Slider Image" class="slider-image">
+                            @endif
                         @endforeach
                      </div>
 

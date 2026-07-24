@@ -47,6 +47,22 @@
             <div class="card m-b-20">
                 <div class="card-body">
 
+                    @if(session('success'))
+                        <div class="alert alert-success text-center position-fixed fade show" style="top: 100px; right: 20px; z-index: 1000; min-width: 350px;">
+                            <i class="fa fa-check-circle"></i> {{ session('success') }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        </div>
+                    @endif
+
+                    @if(session('error'))
+                        <div class="alert alert-danger text-center position-fixed fade show" style="top: 100px; right: 20px; z-index: 1000; min-width: 350px;">
+                            <i class="fa fa-exclamation-circle"></i> {{ session('error') }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    @endif
+
                     <div class="row">
 
                         <div class="col-lg-8">
@@ -94,7 +110,13 @@
                                         @foreach($imageSlider as $sliderImage)
 
                                             <tr>
-                                                <td>{{ $sliderImage->movie_name }}</td>
+                                                <td>
+                                                    @if(!empty($sliderImage->movie_name))
+                                                        {{ $sliderImage->movie_name }}
+                                                    @else
+                                                        <span class="badge badge-secondary">General Slider (No Movie)</span>
+                                                    @endif
+                                                </td>
                                                 <td><img src="{{ URL::asset('sliderImages/'.$sliderImage->image) }}" style="width: 200px; "></td>
                                                 @if($sliderImage->status == 1)
                                                     <td>
@@ -157,9 +179,9 @@
 
                                                          <div class="modal-body">
                                                               <div class="form-group">
-                                                                <label>Movie Name <span style="color:red">*</span> </label>
-                                                                    <select class="form-control" name="movie_id" id="movie_id" required>
-                                                                        <option value="" disabled>-- Select a Movie --</option>
+                                                                <label>Movie Name <span class="text-muted">(Optional)</span></label>
+                                                                    <select class="form-control" name="movie_id" id="edit_movie_id_{{ $sliderImage->idimageSlider }}">
+                                                                        <option value="" @if(empty($sliderImage->movies_movie_id)) selected @endif>-- No Movie (General Slider) --</option>
                                                                         @foreach ($movies as $movie) 
                                                                             <option value="{{ $movie->movie_id }}" @if ($movie->movie_id == $sliderImage->movies_movie_id) selected @endif>
                                                                                 {{ $movie->name }}
@@ -169,14 +191,14 @@
                                                                     <span class="text-danger" id="nameError"></span>
                                                               </div>
                                                          
-                                                             <div class="form-group">
-                                                                 <label>Image (Optional)</label>
-                                                                 <input type="file" class="form-control" name="image" accept="image/*" />
-                                                             </div>
-                                                         
-                                                             <div class="form-group">
-                                                                 <button type="submit" class="btn btn-primary float-right">Update Movie</button>
+                                                              <div class="form-group">
+                                                                  <label>Image (Optional)</label>
+                                                                  <input type="file" class="form-control" name="image" accept="image/*" />
                                                               </div>
+                                                         
+                                                              <div class="form-group">
+                                                                  <button type="submit" class="btn btn-primary float-right">Update Slider Image</button>
+                                                               </div>
                                                            </div>
                                                        </form>
                                                     </div>
@@ -238,9 +260,9 @@
                         @csrf
 
                         <div class="form-group">
-                            <label>Movie Name <span style="color:red">*</span> </label>
-                            <select class="form-control" name="movie_id" id="movie_id" required>
-                                <option value="" disabled selected>-- Select a Movie --</option>
+                            <label>Movie Name <span class="text-muted">(Optional)</span></label>
+                            <select class="form-control" name="movie_id" id="add_movie_id">
+                                <option value="" selected>-- No Movie (General Slider) --</option>
                                 @foreach ($movies as $movie) 
                                     <option value="{{ $movie->movie_id }}"> {{ $movie->name }} </option>
                                 @endforeach
@@ -249,14 +271,15 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Image <span style="color:red">*</span> </label>
-                            <input type="file" class="form-control" name="image" id="image" accept="image/*"/>
+                            <label>Image(s) <span style="color:red">*</span></label>
+                            <input type="file" class="form-control" name="images[]" id="image" accept="image/*" multiple required/>
+                            <small class="form-text text-muted">You can select single or multiple images.</small>
                             <span class="text-danger" id="imageError"></span>
                         </div>
 
                         <div class="form-group">
-                            <button type="submit"  class="btn btn-primary float-right" >
-                                 Save Movie
+                            <button type="submit" class="btn btn-primary float-right">
+                                 Save Slider Image(s)
                             </button>
                         </div>
 
@@ -268,6 +291,7 @@
     </div>
 </div>
 <!-- Add Image Modal End-->
+->
 
 
 
@@ -322,6 +346,12 @@
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
+
+        setTimeout(function() {
+            $(".alert").fadeOut("slow", function() {
+                $(this).remove();
+            });
+        }, 3000);
 
     });
 
