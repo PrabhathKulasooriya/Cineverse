@@ -215,20 +215,21 @@ window.addEventListener('load', function () {
     function initializeSlider(container) {
         if (!container) return null; 
         
-        // Create a new slider container
         const slider = document.createElement('div');
         slider.classList.add('slider');
         
-        // Get all link elements that contain images
-        const linkElements = container.querySelectorAll('a');
-        const slideCount = linkElements.length;
+        // Grab both <a> wrappers AND bare <img> tags, in document order
+        const slideElements = container.querySelectorAll(':scope > a, :scope > img');
+        const slideCount = slideElements.length;
         
         if (slideCount === 0) return null;
         
-        // Clone the link elements (which contain the images)
-        linkElements.forEach(link => {
-            const clone = link.cloneNode(true);
-            const img = clone.querySelector('img');
+        slideElements.forEach(el => {
+            const clone = el.cloneNode(true);
+
+            // if the clone itself is the <img> (no <a> wrapper), style it directly
+            // otherwise style the <img> inside the <a>
+            const img = clone.tagName === 'IMG' ? clone : clone.querySelector('img');
             if (img) {
                 img.style.width = '100%';
                 img.style.height = 'calc(100vh - 80px)';
