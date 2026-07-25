@@ -243,7 +243,7 @@
                     <small class="text-muted">Exact times depend on the movies picked below - these are rough guides only.</small>
                     <br>
                     <span class="text-danger">*</span>
-                    <small class="text-muted">If a show has already created for the specific date and time, it will be skipped.</small>
+                    <small class="text-muted">All enabled slots require a movie. If any show has a time conflict or precedes a movie's release date, creation will be cancelled.</small>
                     <br><br>
 
                     @if(isset($showtimes) && $showtimes->count() > 0)
@@ -252,8 +252,8 @@
                             @if($showtime->status == 1)
                                 @php $slotNumber++; @endphp
                                 <div class="form-group">
-                                    <label>Slot {{ $slotNumber }} <span class="text-muted">({{ \Carbon\Carbon::parse($showtime->time)->format('h:i A') }})</span></label>
-                                    <select class="form-control" name="movie{{ $slotNumber }}" id="rangeMovie{{ $slotNumber }}">
+                                    <label>Slot {{ $slotNumber }} <span class="text-muted">({{ \Carbon\Carbon::parse($showtime->time)->format('h:i A') }})</span> <span style="color:red">*</span></label>
+                                    <select class="form-control" name="movie{{ $slotNumber }}" id="rangeMovie{{ $slotNumber }}" required>
                                         <option value="" selected>-- Select a Movie --</option>
                                         @foreach ($movies as $movie)
                                             <option value="{{ $movie->movie_id }}"> {{ $movie->name }} </option>
@@ -540,7 +540,20 @@
                 }
 
                 if(data.errors != null){
-                    var errorMessage = typeof data.errors === 'string' ? data.errors : JSON.stringify(data.errors);
+                    var errorMessage = '';
+                    if (typeof data.errors === 'string') {
+                        errorMessage = data.errors;
+                    } else if (typeof data.errors === 'object') {
+                        var msgArray = [];
+                        $.each(data.errors, function(key, val) {
+                            if (Array.isArray(val)) {
+                                msgArray.push(val.join(' '));
+                            } else {
+                                msgArray.push(val);
+                            }
+                        });
+                        errorMessage = msgArray.join('<br/>');
+                    }
                     notify({
                         type: "error",
                         title: 'Shows NOT CREATED',
