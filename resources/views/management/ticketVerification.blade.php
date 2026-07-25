@@ -160,8 +160,15 @@
                             
                             <div class="d-flex flex-column justify-content-center align-items-center mx-2 mt-3">
                                 <div class="d-flex flex-row justify-content-center mb-2">
-                                    @if(auth()->user()->user_role_iduser_role == 1 || auth()->user()->user_role_iduser_role == 3 || auth()->user()->user_role_iduser_role == 4)
+                                    @if(auth()->user()->user_role_iduser_role == 1 || auth()->user()->user_role_iduser_role == 3 || auth()->user()->user_role_iduser_role == 3)
                                         <a href="{{route('printTicket', ['booking_id' => $booking['booking_id']])}}" target="_blank" style="text-decoration: none;">
+                                            <button class="btn btn-ticket-page mx-2">
+                                                <i class="fa fa-download" aria-hidden="true"></i> Get Ticket
+                                            </button>
+                                        </a>
+                                    @endif
+                                    @if(auth()->user()->user_role_iduser_role == 4)
+                                        <a href="{{route('downloadTicket', ['booking_id' => $booking['booking_id']])}}" target="_blank" style="text-decoration: none;">
                                             <button class="btn btn-ticket-page mx-2">
                                                 <i class="fa fa-download" aria-hidden="true"></i> Get Ticket
                                             </button>
