@@ -18,6 +18,18 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $table = 'master_user';
     protected $primaryKey = 'idmaster_user';
 
+    protected $fillable = [
+        'first_name',
+        'last_name',
+        'contact_number',
+        'email',
+        'pending_email',
+        'password',
+        'status',
+        'user_role_iduser_role',
+        'email_verified_at',
+    ];
+
     public function UserRole() {
         return $this->belongsTo(UserRole::class, 'user_role_iduser_role');
     }
@@ -28,6 +40,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'verification.verify', now()->addMinutes(60), ['id' => $this->getKey()]
         );
 
-        Mail::to($this->email)->send(new VerifyMail($url));
+        $recipient = !empty($this->pending_email) ? $this->pending_email : $this->email;
+
+        Mail::to($recipient)->send(new VerifyMail($url));
     }
 }

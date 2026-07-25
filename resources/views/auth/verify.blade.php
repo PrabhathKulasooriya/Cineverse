@@ -31,9 +31,17 @@
 
             <h2 class="verify-title">Verify Your Email Address</h2>
             <p class="verify-desc">
-                We sent a verification link to your inbox.<br>
-                Click it to activate your account and start booking.
-                The verify link will be expire in 1 hour.
+                @if(Auth::check() && Auth::user()->pending_email)
+                    We sent a verification link to <strong>{{ Auth::user()->pending_email }}</strong>.<br>
+                    Please click it to verify your new email address.
+                @elseif(Auth::check() && Auth::user()->email)
+                    We sent a verification link to <strong>{{ Auth::user()->email }}</strong>.<br>
+                    Click it to activate your account and start booking.
+                @else
+                    We sent a verification link to your inbox.<br>
+                    Click it to activate your account and start booking.
+                @endif
+                The verification link will expire in 1 hour.
             </p>
 
             <hr class="verify-divider">

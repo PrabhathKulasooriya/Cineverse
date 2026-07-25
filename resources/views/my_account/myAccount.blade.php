@@ -99,9 +99,14 @@
                                         <input type="email" class="form-control" id="email"
                                                autocomplete="off" name="email"
                                                placeholder="Email" readonly
-                                               value="{{$users->email}}"
+                                               value="{{$users->pending_email ?? $users->email}}"
                                                oninput="this.value = this.value.toLowerCase();">
                                         <small class="text-danger" id="emailError"></small>
+                                        @if (!empty($users->pending_email))
+                                            <small class="text-warning d-block mt-1">
+                                                <i class="fa fa-info-circle"></i> Pending verification for: <strong>{{ $users->pending_email }}</strong>. Current active login email: <strong>{{ $users->email }}</strong>
+                                            </small>
+                                        @endif
                                     </div>
 
                                 </div>
@@ -293,7 +298,7 @@
         $.post('getUserDetails', {profile: profile}, function (data) {
             $("#fName").val(data.first_name);
             $("#lName").val(data.last_name);
-            $("#email").val(data.email);
+            $("#email").val(data.pending_email ? data.pending_email : data.email);
             $("#contactNo").val(data.contact_number);
         });
 

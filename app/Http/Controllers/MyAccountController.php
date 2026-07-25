@@ -70,27 +70,42 @@ class MyAccountController extends Controller
             return response()->json(['errors' => 'User not found!']);
         }
 
-        $oldEmail = $updateUser->email;
+        $oldEmail = strtolower($updateUser->email);
         $newEmail = strtolower($request['email']);
-        $isEmailChanged = $oldEmail != $newEmail;
+        $isEmailChanged = ($oldEmail != $newEmail);
 
-        $updateUser->email = $newEmail;
+        if ($isEmailChanged) {
+            // Check if new email is already used by another user in email or pending_email
+            $existingUser = User::where('idmaster_user', '!=', $updateUser->idmaster_user)
+                ->where(function ($query) use ($newEmail) {
+                    $query->where('email', $newEmail)
+                          ->orWhere('pending_email', $newEmail);
+                })->exists();
+
+            if ($existingUser) {
+                return response()->json(['errors' => ['email' => ['This email address is already taken.']]]);
+            }
+
+            $updateUser->pending_email = $newEmail;
+        } else {
+            // If user sets email back to current email, clear pending_email
+            $updateUser->pending_email = null;
+        }
+
         $updateUser->first_name = strtoupper($request['fName']);
         $updateUser->last_name = strtoupper($request['lName']);
         $updateUser->contact_number = $request['contactNo'];
 
-        if($isEmailChanged){
-            $updateUser->email_verified_at = null;
-        }
-
         $updateUser->save();
 
-        if($isEmailChanged){
-            return response()->json(['success'=>'Account Details Updated Successfully! Please verify your email!','isEmailChanged'=>true]);
+        if ($isEmailChanged) {
+            return response()->json([
+                'success' => 'Account Details Updated Successfully! Logging in with your new email (' . $newEmail . ') will trigger the verification link.',
+                'isEmailChanged' => true
+            ]);
         }
-        
 
-        return response()->json(['success'=>'Account Details Updated Successfully!','isEmailChanged'=>false]);
+        return response()->json(['success' => 'Account Details Updated Successfully!', 'isEmailChanged' => false]);
     }
 
 

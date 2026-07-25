@@ -55,7 +55,7 @@ class ClientController extends Controller
             return back()->with('errors', $validator->errors())->withInput();
         }
 
-        $existingUser = User::where('email', $request['email'])->first();
+        $existingUser = User::where('email', $request['email'])->orWhere('pending_email', $request['email'])->first();
         if ($existingUser) {
             return back()->with('error', 'Email already exists!')->withInput();
         }
@@ -117,7 +117,7 @@ public function saveClientByAdmin(Request $request){
             return response()->json(['errors' =>$validator->errors()]);
         }
 
-        $existingUser = User::where('email', $request['email'])->first();
+        $existingUser = User::where('email', $request['email'])->orWhere('pending_email', $request['email'])->first();
         if ($existingUser) {
             return response()->json(['errors' => 'Email already exists!']);
         }

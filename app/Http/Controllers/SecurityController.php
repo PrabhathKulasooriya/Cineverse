@@ -27,26 +27,34 @@ class SecurityController extends Controller
             'password' => 'required|min:6' 
         ]);
 
-        
-        if (Auth::attempt(['email' => $request->email, 'password' => $request->password, 'status' => 1])) {
-            
+        $inputEmail = strtolower($request->email);
+
+        // 1. Attempt login with primary email
+        if (Auth::attempt(['email' => $inputEmail, 'password' => $request->password, 'status' => 1])) {
             $user = Auth::user();
 
-            // Check if verified
             if (!$user->hasVerifiedEmail()) {
                 $user->sendEmailVerificationNotification();
                 return redirect()->route('verification.notice');
             }
             
-            if($user->user_role_iduser_role == 4){
+            if ($user->user_role_iduser_role == 4) {
                 return redirect()->intended('/')->with('success', 'Login Successful!');
-            }else{
+            } else {
                 return redirect()->route('dashboard')->with('success', 'Login Successful!');
             }
         }
 
-        
-        $user = User::where('email', $request->email)->first();
+        // 2. Check if user is trying to log in using their pending_email
+        $pendingUser = User::where('pending_email', $inputEmail)->where('status', 1)->first();
+        if ($pendingUser && Hash::check($request->password, $pendingUser->password)) {
+            Auth::login($pendingUser);
+            $pendingUser->sendEmailVerificationNotification();
+            return redirect()->route('verification.notice')->with('info', 'Your new email address (' . $pendingUser->pending_email . ') is pending verification.');
+        }
+
+        // 3. Check for suspended user
+        $user = User::where('email', $inputEmail)->orWhere('pending_email', $inputEmail)->first();
         if ($user && Hash::check($request->password, $user->password) && $user->status == 0) {
             return back()->with('warning', 'User has been suspended! Contact Cineverse Support.');
         }
