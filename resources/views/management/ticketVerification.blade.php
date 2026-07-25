@@ -163,7 +163,7 @@
                                     @if(auth()->user()->user_role_iduser_role == 1 || auth()->user()->user_role_iduser_role == 3 || auth()->user()->user_role_iduser_role == 3)
                                         <a href="{{route('printTicket', ['booking_id' => $booking['booking_id']])}}" target="_blank" style="text-decoration: none;">
                                             <button class="btn btn-ticket-page mx-2">
-                                                <i class="fa fa-download" aria-hidden="true"></i> Get Ticket
+                                                <i class="fa fa-download" aria-hidden="true"></i> Print Ticket
                                             </button>
                                         </a>
                                     @endif
