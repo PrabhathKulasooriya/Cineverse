@@ -26,7 +26,7 @@ class ShowsController extends Controller
         $fullyBookedDates = $showsPerDate->where('count', '>=', $enabledSlotsCount)->pluck('date')->toArray();
 
         $shows = Shows::whereRaw("STR_TO_DATE(CONCAT(date, ' ', time), '%Y-%m-%d %H:%i:%s') >= ?", [now()->subHours(2)])->get();
-        $movies = Movies::where('status', 1)->where('screening_status', 1)->where('release_date', '<=', Carbon::today()->toDateString())->get();
+        $movies = Movies::where('status', 1)->where('screening_status', 1)->get();
         $showtimes = Showtimes::orderBy('time', 'asc')->get();
         $enabledShowtimes = $showtimes->where('status', 1)->values();
         $bookedShowIds = DB::table('bookings')->pluck('shows_show_id')->unique()->toArray();
