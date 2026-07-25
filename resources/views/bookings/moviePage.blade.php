@@ -71,7 +71,7 @@
                     <div class="movie-trailer-top-row">
                         <div class="movie-ratings">
                             <i class="fa fa-imdb fa-3x" aria-hidden="true"></i>
-                            <span> <i class='fa fa-star' aria-hidden='true'></i> {{$movie->rating}} / 10</span>
+                            <span> <i class='fa fa-star' aria-hidden='true'></i> {{ $movie->rating !== null && $movie->rating !== '' ? $movie->rating . ' / 10' : 'N/A' }}</span>
                         </div>
                         <a href="{{ $movie->trailer }}" class="movie-trailer-link" id="movie-trailer-link" target="_blank" rel="noopener noreferrer">
                             <i class="fa fa-play fa-3x" aria-hidden="true"></i>

@@ -131,7 +131,7 @@
                                                 </td>
                                                 <td>{{$movie->formatted_duration}}</td>
                                                 <td>{{$movie->language}}</td>
-                                                <td>{{$movie->rating}}</td>
+                                                <td>{{ $movie->rating !== null && $movie->rating !== '' ? $movie->rating : 'N/A' }}</td>
                                                 <td>{{\Carbon\Carbon::parse($movie->release_date)->format('d-m-Y')}}</td>
                                                 <td>
                                                     <button type="button" class="btn btn-secondary float-right"
@@ -297,7 +297,7 @@
  
                     <div>
                         <div class="form-group">
-                            <label>Rating <span style="color:red">*</span></label>
+                            <label>Rating</label>
                             <input type="number" step="0.1" max="10" min="0" class="form-control" name="rating"
                                    id="rating" placeholder="Movie Rating 1-10"/>
                             <span class="text-danger" id="ratingError"></span>
@@ -401,7 +401,7 @@
                     </div>
  
                     <div class="form-group">
-                        <label>Rating <span style="color:red">*</span></label>
+                        <label>Rating</label>
                         <input type="number" step="0.1" class="form-control" name="rating" id="rating"
                                placeholder="Movie Rating" max="10" min="0"/>
                         <span class="text-danger" id="ratingError"></span>
@@ -565,7 +565,7 @@
     var availableCategories = [
     "Action", "Adventure", "Animation", "Comedy", "Crime", "Documentary", 
     "Drama", "Family", "Fantasy", "Horror", "Musical", "Mystery", 
-    "Romance", "Sci-Fi", "Thriller"
+    "Romance", "Sci-Fi", "SuperHero", "Thriller"
 ];
 
     function fillCategorySelect(selectElement) {
@@ -841,7 +841,13 @@
         if (categoryValue === '') { $('#addMovieModal #categoryError').html('Please select at least one category.'); hasError = true; }
         if (!isDurationValid(durationInput)) { $('#addMovieModal #durationError').html('Please enter a valid duration.'); hasError = true; }
         if (language === '') { $('#addMovieModal #languageError').html('Language is required.'); hasError = true; }
-        if (rating === '') { $('#addMovieModal #ratingError').html('Rating is required.'); hasError = true; }
+        if (rating !== '') {
+            var numRating = parseFloat(rating);
+            if (isNaN(numRating) || numRating < 0 || numRating > 10) {
+                $('#addMovieModal #ratingError').html('Rating must be between 0 and 10.');
+                hasError = true;
+            }
+        }
         if (date === '') { $('#addMovieModal #dateError').html('Release date is required.'); hasError = true; }
         if (trailer === '') { $('#addMovieModal #trailerError').html('Trailer is required.'); hasError = true; }
         if (image === '') { $('#addMovieModal #imageError').html('Image is required.'); hasError = true; }
@@ -901,7 +907,13 @@
         if (categoryValue === '') { $('#editMovieModal #categoryError').html('Please select at least one category.'); hasError = true; }
         if (!isDurationValid(durationInput)) { $('#editMovieModal #durationError').html('Please enter a valid duration.'); hasError = true; }
         if (language === '') { $('#editMovieModal #languageError').html('Language is required.'); hasError = true; }
-        if (rating === '') { $('#editMovieModal #ratingError').html('Rating is required.'); hasError = true; }
+        if (rating !== '') {
+            var numRating = parseFloat(rating);
+            if (isNaN(numRating) || numRating < 0 || numRating > 10) {
+                $('#editMovieModal #ratingError').html('Rating must be between 0 and 10.');
+                hasError = true;
+            }
+        }
         if (date === '') { $('#editMovieModal #dateError').html('Release date is required.'); hasError = true; }
         if (trailer === '') { $('#editMovieModal #trailerError').html('Trailer is required.'); hasError = true; }
 

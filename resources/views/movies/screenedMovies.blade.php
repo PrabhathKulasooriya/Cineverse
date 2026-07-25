@@ -114,7 +114,7 @@
                                                     </button>
                                                 </td>
 
-                                                <td>{{$movie->rating}}</td>
+                                                <td>{{ $movie->rating !== null && $movie->rating !== '' ? $movie->rating : 'N/A' }}</td>
                                                 <td>{{\Carbon\Carbon::parse($movie->release_date)->format('d-m-Y')}}</td>
 
 

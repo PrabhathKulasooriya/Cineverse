@@ -33,7 +33,7 @@ class MoviesController extends Controller
             'duration' => 'required',
             'language' => 'required',
             'trailer' => 'required',
-            'rating' => 'required',
+            'rating' => 'nullable|numeric|min:0|max:10',
             'date' => 'required|date',
             'image' => 'required|file|mimes:jpeg,png,jpg,gif,svg|max:4096',
         ], [
@@ -44,7 +44,9 @@ class MoviesController extends Controller
             'duration.required' => 'Duration should be provided!',
             'language.required' => 'Language should be provided!',
             'trailer.required' => 'Trailer should be provided!',
-            'rating.required' => 'Rating should be provided!',
+            'rating.numeric' => 'Rating must be a number.',
+            'rating.min' => 'Rating must be between 0 and 10.',
+            'rating.max' => 'Rating must be between 0 and 10.',
             'date.required' => 'Please select a date.',
             'date.date' => 'Please enter a valid date.',
             'image.required' => 'Image should be provided!',
@@ -76,7 +78,7 @@ class MoviesController extends Controller
         $saveMovie->duration = $duration;
         $saveMovie->language = strtoupper($request->language);
         $saveMovie->trailer = $request->trailer;
-        $saveMovie->rating = $request->rating;
+        $saveMovie->rating = $request->filled('rating') ? $request->rating : null;
         $saveMovie->release_date = $request->date;
         $saveMovie->description = $request->description;
         $saveMovie->image = $filename;
@@ -99,7 +101,7 @@ class MoviesController extends Controller
             'category' => 'required|string',
             'duration' => 'required',
             'language' => 'required',
-            'rating' => 'required|numeric|min:0|max:10',
+            'rating' => 'nullable|numeric|min:0|max:10',
             'trailer' => 'required',
             'date' => 'required|date',
             'description' => 'nullable|string',
@@ -112,7 +114,6 @@ class MoviesController extends Controller
             'duration.required' => 'Duration should be provided!',
             'language.required' => 'Language should be provided!',
             'trailer.required' => 'Trailer should be provided!',
-            'rating.required' => 'Rating should be provided!',
             'rating.numeric' => 'Rating must be a number.',
             'rating.min' => 'Rating must be between 0 and 10.',
             'rating.max' => 'Rating must be between 0 and 10.',
@@ -149,7 +150,7 @@ class MoviesController extends Controller
         $movie->category = strtoupper($request->category);
         $movie->duration = $duration;
         $movie->language = strtoupper($request->language);
-        $movie->rating = $request->rating;
+        $movie->rating = $request->filled('rating') ? $request->rating : null;
         $movie->release_date = $request->date;
         $movie->trailer = $request->trailer;
         $movie->description = $request->description;
