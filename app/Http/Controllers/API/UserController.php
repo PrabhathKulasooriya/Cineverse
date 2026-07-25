@@ -42,7 +42,7 @@ class UserController extends Controller
             'title' => 'required',
             'fName' => 'required',
             'lName' => 'required',
-            'contactNo' => 'required',
+            'contactNo' => 'required|min:10|max:10|regex:/^07\d{8}$/',
             'utype' => 'required',
             'username' => 'required|email',
             'pass2' => 'required|min:8',
@@ -58,6 +58,7 @@ class UserController extends Controller
             'fName.required' => 'This value should be provided!',
             'lName.required' => 'This value should be provided!',
             'contactNo.required' => 'This value should be provided!',
+            'contactNo.regex' => 'Enter a valid phone number (e.g. 07XXXXXXXX).',
             'utype.required' => 'This value should be provided!',
             'username.required' => 'Username should be provided!',
             'pass2.min' => 'The Password must be at least 8 characters.',
@@ -148,14 +149,15 @@ class UserController extends Controller
             'uFName' => 'required',
             'uLName' => 'required',
 
-            'uContactNo' => 'required',
-            'uUsername' => 'required',
+            'uContactNo' => 'required|min:10|max:10|regex:/^07\d{8}$/',
+            'uUsername' => 'required|email',
 
         ], [
             'uTitle.required' => 'Title should be provided!',
             'uFName.required' => 'First name should be provided!',
             'uLName.required' => 'First name should be provided!',
             'uContactNo.required' => 'Contact No should be provided!',
+            'uContactNo.regex' => 'Enter a valid phone number (e.g. 07XXXXXXXX).',
             'uUsername.required' => 'User Name should be provided!',
         ]);
         if ($rules->fails()) {

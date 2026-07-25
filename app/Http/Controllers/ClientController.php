@@ -29,7 +29,7 @@ class ClientController extends Controller
             'fName' => 'required|max:115',
             'lName' => 'required|max:115',
             'contactNo' => 'required|max:10|min:10|regex:/^07\d{8}$/',
-            'email' => 'required',
+            'email' => 'required|email',
             'password' => 'required|min:6',
 
         ], [
@@ -42,9 +42,10 @@ class ClientController extends Controller
             'contactNo.required' => 'Contact No should be provided!',
             'contactNo.max' => 'Contact No must be include 10 numbers.',
             'contactNo.min' => 'Contact No must be include 10 numbers.',
-            'contactNo.regex' => 'Enter a valid phone number.',
+            'contactNo.regex' => 'Enter a valid phone number (e.g. 07XXXXXXXX).',
 
             'email.required' => 'Email should be provided!',
+            'email.email' => 'Please provide a valid email address!',
 
             'password.required' => 'Password should be provided.',
             'password.min' => 'Password must be include minimum 6 characters.',
@@ -89,8 +90,8 @@ public function saveClientByAdmin(Request $request){
 
             'fName' => 'required|max:115',
             'lName' => 'required|max:115',
-            'contactNo' => 'required|max:10|min:10',
-            'email' => 'required',
+            'contactNo' => 'required|max:10|min:10|regex:/^07\d{8}$/',
+            'email' => 'required|email',
             'password' => 'required|min:6',
 
         ], [
@@ -105,8 +106,10 @@ public function saveClientByAdmin(Request $request){
             'contactNo.required' => 'Contact No should be provided!',
             'contactNo.max' => 'Contact No must be include 10 numbers.',
             'contactNo.min' => 'Contact No must be include 10 numbers.',
+            'contactNo.regex' => 'Enter a valid phone number (e.g. 07XXXXXXXX).',
 
             'email.required' => 'Email should be provided!',
+            'email.email' => 'Please provide a valid email address!',
 
             'password.required' => 'Password should be provided.',
             'password.min' => 'Password must be include minimum 6 characters.',
@@ -117,9 +120,10 @@ public function saveClientByAdmin(Request $request){
             return response()->json(['errors' =>$validator->errors()]);
         }
 
-        $existingUser = User::where('email', $request['email'])->orWhere('pending_email', $request['email'])->first();
+        $email = strtolower($request['email']);
+        $existingUser = User::where('email', $email)->orWhere('pending_email', $email)->first();
         if ($existingUser) {
-            return response()->json(['errors' => 'Email already exists!']);
+            return response()->json(['errors' => ['email' => ['This email address is already registered!']]]);
         }
 
 
@@ -128,7 +132,7 @@ public function saveClientByAdmin(Request $request){
         $saveUser->first_name = strtoupper($request['fName']);
         $saveUser->last_name = strtoupper($request['lName']);
         $saveUser->contact_number = $request['contactNo'];
-        $saveUser->email=strtolower($request['email']);
+        $saveUser->email = $email;
         $saveUser->password = Hash::make($request['password']);
         $saveUser->status = 1;
         $saveUser->user_role_iduser_role = 4;
@@ -162,7 +166,7 @@ public function saveClientByAdmin(Request $request){
 
             'firstName' => 'required|max:115',
             'lastName' => 'required|max:115',
-            'contactNo' => 'required|max:10|min:10',
+            'contactNo' => 'required|max:10|min:10|regex:/^07\d{8}$/',
             'email' => 'required|email',
 
         ], [
@@ -175,6 +179,7 @@ public function saveClientByAdmin(Request $request){
             'contactNo.required' => 'Contact No should be provided!',
             'contactNo.max' => 'Contact No must be include 10 numbers.',
             'contactNo.min' => 'Contact No must be include 10 numbers.',
+            'contactNo.regex' => 'Enter a valid phone number (e.g. 07XXXXXXXX).',
 
             'email.required' => 'Email should be provided!',
             'email.email' => 'Please provide a valid email address!',
@@ -191,10 +196,20 @@ public function saveClientByAdmin(Request $request){
             return response()->json(['errors' => ['general' => ['User not found!']]]);
         }
 
-        $oldEmail = $updateUser->email;
+        $oldEmail = strtolower($updateUser->email);
         $isEmailUpdated = ($oldEmail != $email);
 
         if($isEmailUpdated){
+            $existingUser = User::where('idmaster_user', '!=', $hiddenUserId)
+                ->where(function ($query) use ($email) {
+                    $query->where('email', $email)
+                          ->orWhere('pending_email', $email);
+                })->exists();
+
+            if ($existingUser) {
+                return response()->json(['errors' => ['email' => ['This email address is already registered!']]]);
+            }
+
             $updateUser->email_verified_at = null;
         }
 

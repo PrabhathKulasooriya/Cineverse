@@ -441,6 +441,12 @@
         var email = $("#email").val();
         var password = $("#password").val();
 
+        var phonePattern = /^07\d{8}$/;
+        if (contactNo && !phonePattern.test(contactNo)) {
+            $("#contactNoError").html('Enter a valid 10-digit phone number (e.g., 07XXXXXXXX).');
+            return;
+        }
+
         $.post('saveClientByAdmin',{
             fName: fName,
             lName: lName,
@@ -541,6 +547,12 @@
             return;
         }
 
+        var phonePattern = /^07\d{8}$/;
+        if (contactNo && !phonePattern.test(contactNo)) {
+            $("#updateContactNoError").html('Enter a valid 10-digit phone number (e.g., 07XXXXXXXX).');
+            return;
+        }
+
         $.post('updateClient', {
             hiddenUserId: hiddenUserId,
             firstName: firstName,
@@ -615,8 +627,8 @@
         $("#updateEmailError").html('');
 
         // Clear input values
-        $('input').val('');
-        $('select').val('');
+        $('.modal input:not([type=hidden])').val('');
+        $('.modal select').val('');
     });
 </script>
 

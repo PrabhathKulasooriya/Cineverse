@@ -26,7 +26,7 @@ class CustomerValidation extends FormRequest
         return [
              'fName'=>'required',
              'lName'=>'required',
-             'contactNumber2'=>'required',
+             'contactNumber2'=>'required|min:10|max:10|regex:/^07\d{8}$/',
 
         ];
     }
@@ -36,6 +36,7 @@ class CustomerValidation extends FormRequest
            'fName.required'=>'First Name should be provided!',
            'lName.required'=>'Last Name should be provided!',
            'contactNumber2.required'=>'Mobile Number should be provided!',
+           'contactNumber2.regex'=>'Enter a valid phone number (e.g. 07XXXXXXXX).',
        ];
     }
 }

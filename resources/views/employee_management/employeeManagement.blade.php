@@ -417,6 +417,12 @@
         var contactNo = $("#contactNo").val();
         var password = $("#password").val();
 
+        var phonePattern = /^07\d{8}$/;
+        if (contactNo && !phonePattern.test(contactNo)) {
+            $("#contactNoError").html('Enter a valid 10-digit phone number (e.g., 07XXXXXXXX).');
+            return;
+        }
+
         $.post('saveEmployee', {
             userType: userType,
             fName: fName,
@@ -455,7 +461,7 @@
                     icon: '<img src="{{ URL::asset('assets/images/correct.png')}}" />',
                     message: data.success,
                 });
-                $('input').val('');
+                $('.modal input:not([type=hidden])').val('');
                 setTimeout(function () {
                     $('#addUserModal').modal('hide');
                 }, 200);
@@ -496,6 +502,13 @@
         $("#updateEmailError").html('');
         $("#updateUserTypeError").html('');
 
+        var updateContactNo = $("#updateContactNo").val();
+        var phonePattern = /^07\d{8}$/;
+        if (updateContactNo && !phonePattern.test(updateContactNo)) {
+            $("#updateContactNoError").html('Enter a valid 10-digit phone number (e.g., 07XXXXXXXX).');
+            return;
+        }
+
         $.post('updateEmployee', {
             hiddenUserId: $("#hiddenUserId").val(),
             firstName: $("#updateFname").val(),
@@ -531,7 +544,7 @@
                     icon: '<img src="{{ URL::asset('assets/images/correct.png')}}" />',
                     message: data.success,
                 });
-                $('input').val('');
+                $('.modal input:not([type=hidden])').val('');
                 setTimeout(function () {
                     $('#updateUserModal').modal('hide');
                 }, 200);
@@ -556,7 +569,8 @@
         $("#updateContactNoError").html('');
         $("#updateEmailError").html('');
         $("#updateUserTypeError").html('');
-        $('input').val('');
+        $('.modal input:not([type=hidden])').val('');
+        $('.modal select').val('');
     });
 </script>
 

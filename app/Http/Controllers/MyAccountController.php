@@ -38,7 +38,7 @@ class MyAccountController extends Controller
 
             'fName' => 'required|max:115',
             'lName' => 'required|max:115',
-            'contactNo' => 'required|min:10|max:10',
+            'contactNo' => 'required|min:10|max:10|regex:/^07\d{8}$/',
             'email' => 'required|email',
 
 
@@ -52,6 +52,7 @@ class MyAccountController extends Controller
             'contactNo.required' => 'Contact No should be provided!',
             'contactNo.max' => 'Contact No must be at most 10 numbers.',
             'contactNo.min' => 'Contact No must be at least 10 numbers.',
+            'contactNo.regex' => 'Enter a valid phone number (e.g. 07XXXXXXXX).',
 
             'email.required' => 'Email should be provided!',
             'email.email' => 'Please provide a valid email address!',

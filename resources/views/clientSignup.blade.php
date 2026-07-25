@@ -35,6 +35,17 @@
                     </div>
                 @endif
 
+                @if(isset($errors) && $errors->any())
+                    <div class="alert alert-danger alert-dismissible position-fixed fade show" style="top: 100px; right: 20px; z-index: 1000; min-width: 350px;">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        @foreach ($errors->all() as $error)
+                            <p class="mb-0">{{ $error }}</p>
+                        @endforeach
+                    </div>
+                @endif
+
     <div class="card signup-card" style="background-color: rgba(245, 245, 245, 0.8);">
         
         <div class="card-body">
@@ -208,12 +219,12 @@
 
         if (!contactNo) {
             $('#contactNoError').html('Contact No is required.');
-            hasError = true;
+            return;
         } else {
             var phonePattern = /^07\d{8}$/;
             if (!phonePattern.test(contactNo)) {
                 $('#contactNoError').html('Enter a valid 10-digit phone number (e.g., 07XXXXXXXX).');
-                hasError = true;
+                return;
             }
         }
 

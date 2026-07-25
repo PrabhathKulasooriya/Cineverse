@@ -315,6 +315,13 @@
         // Clear previous errors
         $("#fNameError, #lNameError, #contactNoError, #emailError").html('');
 
+        var contactNo = $("#contactNo").val();
+        var phonePattern = /^07\d{8}$/;
+        if (contactNo && !phonePattern.test(contactNo)) {
+            $("#contactNoError").html('Enter a valid 10-digit phone number (e.g., 07XXXXXXXX).');
+            return;
+        }
+
         $.ajax({
             type: 'POST',
             url: "{{ route('updateUserDetails') }}",

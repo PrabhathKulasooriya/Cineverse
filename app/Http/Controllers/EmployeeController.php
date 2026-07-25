@@ -24,8 +24,8 @@ class EmployeeController extends Controller
             'userType'  => 'required',
             'fName'     => 'required|max:115',
             'lName'     => 'required|max:115',
-            'contactNo' => 'required|max:10|min:10',
-            'email'     => 'required',
+            'contactNo' => 'required|max:10|min:10|regex:/^07\d{8}$/',
+            'email'     => 'required|email',
             'password'  => 'required|min:6',
         ], [
             'userType.required'  => 'User Type should be provided!',
@@ -36,7 +36,9 @@ class EmployeeController extends Controller
             'contactNo.required' => 'Contact No should be provided!',
             'contactNo.max'      => 'Contact No must include 10 numbers.',
             'contactNo.min'      => 'Contact No must include 10 numbers.',
+            'contactNo.regex'    => 'Enter a valid phone number (e.g. 07XXXXXXXX).',
             'email.required'     => 'Email should be provided!',
+            'email.email'        => 'Please provide a valid email address!',
             'password.required'  => 'Password should be provided.',
             'password.min'       => 'Password must include minimum 6 characters.',
         ]);
@@ -45,12 +47,17 @@ class EmployeeController extends Controller
             return response()->json(['errors' => $validator->errors()]);
         }
 
+        $email = strtolower($request['email']);
+        $existingUser = User::where('email', $email)->orWhere('pending_email', $email)->first();
+        if ($existingUser) {
+            return response()->json(['errors' => ['email' => ['This email address is already registered!']]]);
+        }
 
         $saveUser = new User();
         $saveUser->first_name            = strtoupper($request['fName']);
         $saveUser->last_name             = strtoupper($request['lName']);
         $saveUser->contact_number        = $request['contactNo'];
-        $saveUser->email                 = strtolower($request['email']);
+        $saveUser->email                 = $email;
         $saveUser->password              = Hash::make($request['password']);
         $saveUser->status                = 1;
         $saveUser->user_role_iduser_role = $request['userType'];
@@ -66,8 +73,8 @@ class EmployeeController extends Controller
         $validator = \Validator::make($request->all(), [
             'firstName' => 'required|max:115',
             'lastName'  => 'required|max:115',
-            'contactNo' => 'required|max:10|min:10',
-            'email'     => 'required',
+            'contactNo' => 'required|max:10|min:10|regex:/^07\d{8}$/',
+            'email'     => 'required|email',
             'userType'  => 'required',
         ], [
             'firstName.required' => 'First Name should be provided!',
@@ -77,7 +84,9 @@ class EmployeeController extends Controller
             'contactNo.required' => 'Contact No should be provided!',
             'contactNo.max'      => 'Contact No must include 10 numbers.',
             'contactNo.min'      => 'Contact No must include 10 numbers.',
+            'contactNo.regex'    => 'Enter a valid phone number (e.g. 07XXXXXXXX).',
             'email.required'     => 'Email should be provided!',
+            'email.email'        => 'Please provide a valid email address!',
             'userType.required'  => 'User Role should be provided!',
         ]);
 
@@ -88,20 +97,30 @@ class EmployeeController extends Controller
         $update = User::find($request['hiddenUserId']);
 
         if(!$update){
-            return response()->json(['errors' => 'User Not Found!']);
+            return response()->json(['errors' => ['general' => ['User Not Found!']]]);
         }
 
-        $oldEmail=$update->email;
-        $newEmail=strtolower($request['email']);
+        $oldEmail = strtolower($update->email);
+        $newEmail = strtolower($request['email']);
 
-        if($oldEmail!=$newEmail){
+        if($oldEmail != $newEmail){
+            $existingUser = User::where('idmaster_user', '!=', $update->idmaster_user)
+                ->where(function ($query) use ($newEmail) {
+                    $query->where('email', $newEmail)
+                          ->orWhere('pending_email', $newEmail);
+                })->exists();
+
+            if ($existingUser) {
+                return response()->json(['errors' => ['email' => ['This email address is already registered!']]]);
+            }
+
             $update->email_verified_at = null;
         }
 
         $update->first_name            = strtoupper($request['firstName']);
         $update->last_name             = strtoupper($request['lastName']);
         $update->contact_number        = $request['contactNo'];
-        $update->email                 = strtolower($request['email']);
+        $update->email                 = $newEmail;
         $update->user_role_iduser_role = $request['userType'];
         $update->save();
 
