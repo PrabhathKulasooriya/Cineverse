@@ -12,14 +12,16 @@ class ClientInterfaceController extends controller
 public function index(){
 
     $bookingCutOff = now()->addMinutes(env('BOOKING_CUTOFF_MINUTES', 15));
+    $currentDate = now()->format('Y-m-d');
+    $currentTime = $bookingCutOff->format('H:i:s');
 
     $movies = Movies::where('status', 1)
     ->where('screening_status', 1)
-    ->whereHas('shows', function ($query) use ($bookingCutOff) {
-        $query->where('date', '>=', $bookingCutOff->format('Y-m-d'))
-              ->orWhere(function ($q) use ($bookingCutOff) {
-                  $q->where('date', '=', $bookingCutOff->format('Y-m-d'))
-                    ->where('time', '>=', $bookingCutOff->format('H:i:s'));
+    ->whereHas('shows', function ($query) use ($currentDate, $currentTime) {
+        $query->where('date', '>', $currentDate)
+              ->orWhere(function ($q) use ($currentDate, $currentTime) {
+                  $q->where('date', '=', $currentDate)
+                    ->where('time', '>=', $currentTime);
               });
     })
     ->get()
@@ -35,7 +37,6 @@ public function index(){
           ->orWhereNull('movies_movie_id');
     })
     ->get();
-    // $imageSlider = ImageSlider::all();
 
     $title = 'Cineverse';
 

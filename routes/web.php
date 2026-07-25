@@ -61,19 +61,17 @@ Route::group(['middleware' => 'auth', 'prefix' => ''], function () {
     //Log Out
     Route::get('/logout', 'SecurityController@logoutNow')->name('logout');
 
-    //My Account
-    Route::get('/myAccount', 'MyAccountController@index')->name('myAccount');
-    Route::post('/getUserDetails', 'MyAccountController@getUserDetails')->name('getUserDetails');
-    Route::post('/updateUserDetails', 'MyAccountController@updateUserDetails')->name('updateUserDetails');
-    Route::post('/changePassword', 'MyAccountController@changePassword')->name('changePassword');
-    
 
     Route::group(['middleware' => ['auth', 'verified']], function () {
 
         //Status Change
         Route::post('/activateDeactivate', 'StatusController@activateDeactivate')->name('activateDeactivate');
 
-
+        //My Account
+        Route::get('/myAccount', 'MyAccountController@index')->name('myAccount');
+        Route::post('/getUserDetails', 'MyAccountController@getUserDetails')->name('getUserDetails');
+        Route::post('/updateUserDetails', 'MyAccountController@updateUserDetails')->name('updateUserDetails');
+        Route::post('/changePassword', 'MyAccountController@changePassword')->name('changePassword');
 
         //Ticket and Payments
         Route::post('/verifyTicket', 'TicketController@verifyTicket')->name('verifyTicket');

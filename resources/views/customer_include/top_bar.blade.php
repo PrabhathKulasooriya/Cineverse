@@ -40,17 +40,17 @@
                                 @if(\Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==1 || 
                                     \Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==2 ||
                                     \Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==3)
-                                <li data-menuanchor="slide06"><a href="dashboard">Dashboard</a></li>
+                                <li data-menuanchor="slide06"><a href="{{ route('dashboard') }}">Dashboard</a></li>
                                 @endif
 
                                 {{-- customer view --}}
                                 @if(\Illuminate\Support\Facades\Auth::user()->user_role_iduser_role==4)
-                                <li data-menuanchor="slide06"><a href="myAccount">My Account</a></li>
+                                <li data-menuanchor="slide06"><a href="{{ route('myAccount') }}">My Account</a></li>
                                 @endif
                             @else
                                  <!-- If the user is not logged in -->
-                                 <li data-menuanchor="slide05"><a href="clientSignup">Sign Up</a></li>
-                                 <li data-menuanchor="slide05"><a href="signin">Log In</a></li>
+                                 <li data-menuanchor="slide05"><a href="{{ route('clientSignup') }}">Sign Up</a></li>
+                                 <li data-menuanchor="slide05"><a href="{{route('signin')}}">Log In</a></li>
                             @endif
 
                         </ul>
