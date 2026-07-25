@@ -547,8 +547,8 @@ if (expireDateInput) {
         if (value.length >= 3) {
             var year = value.substring(2, 4);
             var currentFullYear = new Date().getFullYear() % 100;
-            if (parseInt(year) > currentFullYear + 7) {
-                year = (currentFullYear + 7).toString();
+            if (parseInt(year) > currentFullYear + 5) {
+                year = (currentFullYear + 5).toString();
             }
             value = value.substring(0, 2) + year;
         }
